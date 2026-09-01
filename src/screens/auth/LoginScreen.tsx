@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { authService } from "../../services/authService";
 import { Alert, View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { apiService } from "../../services/apiService";
 
 
 export function LoginScreen() {
@@ -25,9 +26,15 @@ export function LoginScreen() {
         try {
             setCarregando(true);
 
-            await authService.entrar(email.toLowerCase().trim(), senha);
+            const data = await authService.entrar(email.toLowerCase().trim(), senha);
 
-            Alert.alert('Sucesso', 'Login realizado com sucesso');
+            if (!data.session) {
+                throw new Error('Não foi possível criar a sessão do usuário');
+            }
+
+            const usuario = await apiService.buscarUsuarioAutenticado(data.session.access_token);
+
+            Alert.alert(`Login realizado como ${usuario.papel}`);
 
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível realizar a operação';
