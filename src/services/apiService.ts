@@ -1,30 +1,44 @@
 import { UsuarioAutenticado } from "../types/UsuarioAutenticado";
+import { Comanda, ComandaDetalhada, DadosNovaComanda } from "../types/Comanda";
+import { ItemComanda, DadosNovoItem } from "../types/ItemComanda";
+import { Produto } from "../types/Produto";
+import { apiClient } from "./apiClient";
 
-const urlBase = process.env.EXPO_PUBLIC_API_URL;
-
-
-if (!urlBase) {
-    throw new Error('API não configurada');
+async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
+    return apiClient.requisitar<UsuarioAutenticado>('/api/auth/me');
 }
 
+async function listarComandas(): Promise<Comanda[]> {
+    return apiClient.requisitar<Comanda[]>('/api/comandas');
+}
 
-async function buscarUsuarioAutenticado(token: string): Promise<UsuarioAutenticado> {
-    const response = await fetch(`${urlBase}/api/auth/me`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+async function abrirComanda(dados: DadosNovaComanda): Promise<Comanda> {
+    return apiClient.requisitar<Comanda>('/api/comandas', {
+        method: 'POST',
+        body: JSON.stringify(dados),
     });
-
-    if (!response.ok) {
-        throw new Error('Não foi possível consultar a API');
-    }
-
-    const usuario: UsuarioAutenticado = await response.json();
-
-    return usuario;
 }
 
+async function buscarComanda(id: number): Promise<ComandaDetalhada> {
+    return apiClient.requisitar<ComandaDetalhada>(`/api/comandas/${id}`);
+}
+
+async function listarProdutos(): Promise<Produto[]> {
+    return apiClient.requisitar<Produto[]>('/api/produtos');
+}
+
+async function adicionarItem(comandaId: number, dados: DadosNovoItem): Promise<ItemComanda> {
+    return apiClient.requisitar<ItemComanda>(`/api/comandas/${comandaId}/itens`, {
+        method: 'POST',
+        body: JSON.stringify(dados),
+    });
+}
 
 export const apiService = {
     buscarUsuarioAutenticado,
+    listarComandas,
+    abrirComanda,
+    buscarComanda,
+    listarProdutos,
+    adicionarItem,
 };

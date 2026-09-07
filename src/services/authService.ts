@@ -9,5 +9,23 @@ export const authService = {
         }
 
         return data;
+    },
+
+    async obterSessao() {
+        const { error, data } = await supabase.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        return data.session;
+    },
+
+    async sair() {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+            throw error;
+        }
     }
 };
