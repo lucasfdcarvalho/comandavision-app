@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { authService } from "../../services/authService";
-import { Alert, View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
-import { apiService } from "../../services/apiService";
+import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export function LoginScreen() {
+    const { entrar: autenticar } = useAuth();
+
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [carregando, setCarregando] = useState(false);
@@ -26,15 +27,7 @@ export function LoginScreen() {
         try {
             setCarregando(true);
 
-            const data = await authService.entrar(email.toLowerCase().trim(), senha);
-
-            if (!data.session) {
-                throw new Error('Não foi possível criar a sessão do usuário');
-            }
-
-            const usuario = await apiService.buscarUsuarioAutenticado(data.session.access_token);
-
-            Alert.alert(`Login realizado como ${usuario.papel}`);
+            await autenticar(email, senha);
 
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível realizar a operação';
