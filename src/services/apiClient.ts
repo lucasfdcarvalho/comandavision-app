@@ -26,6 +26,10 @@ async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise
         throw new Error('Não foi possível consultar a API');
     }
 
+    if (response.status === 204) {
+        return undefined as T;
+    }
+
     return response.json() as Promise<T>;
 }
 

@@ -13,7 +13,7 @@ function formatarMoeda(valor: number): string {
     return `R$ ${valor.toFixed(2).replace('.', ',')}`;
 }
 
-export function DetalhesComandaScreen({ route }: Props) {
+export function DetalhesComandaScreen({ route, navigation }: Props) {
     const { comandaId } = route.params;
 
     const [comanda, setComanda] = useState<ComandaDetalhada | null>(null);
@@ -60,6 +60,7 @@ export function DetalhesComandaScreen({ route }: Props) {
     }
 
     const corStatus = colors.status[comanda.status.toLowerCase() as 'aberta' | 'fechada' | 'cancelada'];
+    const comandaAberta = comanda.status === 'ABERTA';
 
     return (
         <View style={styles.container}>
@@ -77,13 +78,23 @@ export function DetalhesComandaScreen({ route }: Props) {
                 contentContainerStyle={styles.listaConteudo}
                 ListEmptyComponent={<Text style={styles.textoVazio}>Nenhum item adicionado</Text>}
                 renderItem={({ item }) => (
-                    <View style={styles.itemCartao}>
+                    <Pressable
+                        style={styles.itemCartao}
+                        disabled={!comandaAberta}
+                        onPress={() => navigation.navigate('EditarItem', {
+                            comandaId,
+                            itemId: item.id,
+                            produtoNome: item.produtoNome,
+                            precoUnitario: item.precoUnitario,
+                            quantidadeAtual: item.quantidade,
+                            observacaoAtual: item.observacao,
+                        })}>
                         <View style={styles.itemLinha}>
                             <Text style={styles.itemNome}>{item.quantidade}x {item.produtoNome}</Text>
                             <Text style={styles.itemSubtotal}>{formatarMoeda(item.subtotal)}</Text>
                         </View>
                         {item.observacao ? <Text style={styles.itemObservacao}>{item.observacao}</Text> : null}
-                    </View>
+                    </Pressable>
                 )}
             />
 

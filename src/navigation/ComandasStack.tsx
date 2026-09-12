@@ -5,6 +5,7 @@ import { NovaComandaScreen } from "../screens/comandas/NovaComandaScreen";
 import { DetalhesComandaScreen } from "../screens/comandas/DetalhesComandaScreen";
 import { AdicionarItemScreen } from "../screens/comandas/AdicionarItemScreen";
 import { ConfirmarItemScreen } from "../screens/comandas/ConfirmarItemScreen";
+import { EditarItemScreen } from "../screens/comandas/EditarItemScreen";
 import { colors } from "../theme/colors";
 
 export type ComandasStackParamList = {
@@ -13,6 +14,14 @@ export type ComandasStackParamList = {
     DetalhesComanda: { comandaId: number };
     AdicionarItem: { comandaId: number };
     ConfirmarItem: { comandaId: number; produtoId: number; produtoNome: string; precoUnitario: number };
+    EditarItem: {
+        comandaId: number;
+        itemId: number;
+        produtoNome: string;
+        precoUnitario: number;
+        quantidadeAtual: number;
+        observacaoAtual?: string;
+    };
 };
 
 const Stack = createNativeStackNavigator<ComandasStackParamList>();
@@ -59,6 +68,11 @@ export function ComandasStack() {
                 name="ConfirmarItem"
                 component={ConfirmarItemScreen}
                 options={{ title: 'Confirmar item' }}
+            />
+            <Stack.Screen
+                name="EditarItem"
+                component={EditarItemScreen}
+                options={{ title: 'Editar item' }}
             />
         </Stack.Navigator>
     );

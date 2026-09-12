@@ -16,3 +16,8 @@ export interface DadosNovoItem {
     quantidade: number;
     observacao?: string;
 }
+
+export interface DadosAtualizarItem {
+    quantidade: number;
+    observacao?: string;
+}

@@ -1,6 +1,6 @@
 import { UsuarioAutenticado } from "../types/UsuarioAutenticado";
 import { Comanda, ComandaDetalhada, DadosNovaComanda } from "../types/Comanda";
-import { ItemComanda, DadosNovoItem } from "../types/ItemComanda";
+import { ItemComanda, DadosNovoItem, DadosAtualizarItem } from "../types/ItemComanda";
 import { Produto } from "../types/Produto";
 import { apiClient } from "./apiClient";
 
@@ -34,6 +34,19 @@ async function adicionarItem(comandaId: number, dados: DadosNovoItem): Promise<I
     });
 }
 
+async function atualizarItem(comandaId: number, itemId: number, dados: DadosAtualizarItem): Promise<ItemComanda> {
+    return apiClient.requisitar<ItemComanda>(`/api/comandas/${comandaId}/itens/${itemId}`, {
+        method: 'PUT',
+        body: JSON.stringify(dados),
+    });
+}
+
+async function removerItem(comandaId: number, itemId: number): Promise<void> {
+    return apiClient.requisitar<void>(`/api/comandas/${comandaId}/itens/${itemId}`, {
+        method: 'DELETE',
+    });
+}
+
 export const apiService = {
     buscarUsuarioAutenticado,
     listarComandas,
@@ -41,4 +54,6 @@ export const apiService = {
     buscarComanda,
     listarProdutos,
     adicionarItem,
+    atualizarItem,
+    removerItem,
 };
