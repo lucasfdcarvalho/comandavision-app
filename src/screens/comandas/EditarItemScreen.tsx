@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
@@ -83,12 +84,12 @@ export function EditarItemScreen({ route, navigation }: Props) {
 
             <Text style={styles.rotulo}>Quantidade</Text>
             <View style={styles.stepper}>
-                <Pressable style={styles.botaoStepper} onPress={diminuir}>
-                    <Text style={styles.textoBotaoStepper}>-</Text>
+                <Pressable style={styles.botaoStepper} onPress={diminuir} disabled={desabilitado}>
+                    <Feather name="minus-circle" size={22} color={colors.laranja} />
                 </Pressable>
                 <Text style={styles.valorStepper}>{quantidade}</Text>
-                <Pressable style={styles.botaoStepper} onPress={aumentar}>
-                    <Text style={styles.textoBotaoStepper}>+</Text>
+                <Pressable style={styles.botaoStepper} onPress={aumentar} disabled={desabilitado}>
+                    <Feather name="plus-circle" size={22} color={colors.laranja} />
                 </Pressable>
             </View>
 
@@ -128,7 +129,10 @@ export function EditarItemScreen({ route, navigation }: Props) {
                 {removendo ? (
                     <ActivityIndicator color={colors.erro} />
                 ) : (
-                    <Text style={styles.textoBotaoRemover}>Remover item</Text>
+                    <View style={styles.conteudoBotaoRemover}>
+                        <Feather name="trash-2" size={16} color={colors.erro} />
+                        <Text style={styles.textoBotaoRemover}>Remover item</Text>
+                    </View>
                 )}
             </Pressable>
         </View>
@@ -172,11 +176,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: colors.borda,
         borderRadius: 8,
-    },
-    textoBotaoStepper: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: colors.laranja,
     },
     valorStepper: {
         fontSize: 18,
@@ -228,6 +227,11 @@ const styles = StyleSheet.create({
         color: colors.superficie,
         fontSize: 16,
         fontWeight: '700',
+    },
+    conteudoBotaoRemover: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     textoBotaoRemover: {
         color: colors.erro,

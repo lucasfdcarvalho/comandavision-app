@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable, Text, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import { ComandasScreen } from "../screens/comandas/ComandasScreen";
 import { NovaComandaScreen } from "../screens/comandas/NovaComandaScreen";
 import { DetalhesComandaScreen } from "../screens/comandas/DetalhesComandaScreen";
@@ -35,8 +36,9 @@ export function ComandasStack() {
                 options={({ navigation }) => ({
                     title: 'Comandas',
                     headerRight: () => (
-                        <Pressable onPress={() => navigation.navigate('NovaComanda')}>
-                            <Text style={styles.botaoHeader}>+ Nova comanda</Text>
+                        <Pressable style={styles.botaoHeaderComIcone} onPress={() => navigation.navigate('NovaComanda')}>
+                            <Feather name="plus-circle" size={16} color={styles.botaoHeader.color} />
+                            <Text style={styles.botaoHeader}>Nova comanda</Text>
                         </Pressable>
                     ),
                 })}
@@ -49,15 +51,7 @@ export function ComandasStack() {
             <Stack.Screen
                 name="DetalhesComanda"
                 component={DetalhesComandaScreen}
-                options={({ navigation, route }) => ({
-                    title: 'Detalhes da comanda',
-                    headerRight: () => (
-                        <Pressable
-                            onPress={() => navigation.navigate('AdicionarItem', { comandaId: route.params.comandaId })}>
-                            <Text style={styles.botaoHeader}>+ Item</Text>
-                        </Pressable>
-                    ),
-                })}
+                options={{ title: 'Detalhes da comanda' }}
             />
             <Stack.Screen
                 name="AdicionarItem"
@@ -79,6 +73,11 @@ export function ComandasStack() {
 }
 
 const styles = StyleSheet.create({
+    botaoHeaderComIcone: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
     botaoHeader: {
         color: colors.laranja,
         fontWeight: '700',

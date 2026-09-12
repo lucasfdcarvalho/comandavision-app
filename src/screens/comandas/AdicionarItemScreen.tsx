@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { View, Text, TextInput, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
@@ -70,12 +71,15 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
 
     return (
         <View style={styles.container}>
-            <TextInput
-                style={styles.busca}
-                value={busca}
-                onChangeText={setBusca}
-                placeholder="Buscar produto..."
-            />
+            <View style={styles.campoBusca}>
+                <Feather name="search" size={18} color={colors.textoSecundario} />
+                <TextInput
+                    style={styles.busca}
+                    value={busca}
+                    onChangeText={setBusca}
+                    placeholder="Buscar produto..."
+                />
+            </View>
             <FlatList
                 data={produtosFiltrados}
                 keyExtractor={(item) => String(item.id)}
@@ -127,16 +131,23 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.fundo,
     },
-    busca: {
+    campoBusca: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
         margin: 16,
         height: 46,
         paddingHorizontal: 14,
-        color: colors.textoPrimario,
-        fontSize: 15,
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
         borderRadius: 8,
+    },
+    busca: {
+        flex: 1,
+        height: '100%',
+        color: colors.textoPrimario,
+        fontSize: 15,
     },
     listaConteudo: {
         paddingHorizontal: 16,

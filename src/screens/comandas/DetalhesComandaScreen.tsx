@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { ComandaDetalhada } from "../../types/Comanda";
@@ -40,6 +41,23 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
         }, [carregarComanda])
     );
 
+    const comandaAberta = comanda?.status === 'ABERTA';
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: comandaAberta
+                ? () => (
+                    <Pressable
+                        style={styles.botaoHeaderComIcone}
+                        onPress={() => navigation.navigate('AdicionarItem', { comandaId })}>
+                        <Feather name="plus-circle" size={16} color={colors.laranja} />
+                        <Text style={styles.botaoHeader}>Item</Text>
+                    </Pressable>
+                )
+                : undefined,
+        });
+    }, [navigation, comandaId, comandaAberta]);
+
     if (carregando) {
         return (
             <View style={styles.centro}>
@@ -60,7 +78,6 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     }
 
     const corStatus = colors.status[comanda.status.toLowerCase() as 'aberta' | 'fechada' | 'cancelada'];
-    const comandaAberta = comanda.status === 'ABERTA';
 
     return (
         <View style={styles.container}>
@@ -91,7 +108,10 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                         })}>
                         <View style={styles.itemLinha}>
                             <Text style={styles.itemNome}>{item.quantidade}x {item.produtoNome}</Text>
-                            <Text style={styles.itemSubtotal}>{formatarMoeda(item.subtotal)}</Text>
+                            <View style={styles.itemValores}>
+                                <Text style={styles.itemSubtotal}>{formatarMoeda(item.subtotal)}</Text>
+                                {comandaAberta ? <Feather name="edit-2" size={14} color={colors.textoSecundario} /> : null}
+                            </View>
                         </View>
                         {item.observacao ? <Text style={styles.itemObservacao}>{item.observacao}</Text> : null}
                     </Pressable>
@@ -107,6 +127,16 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+    botaoHeaderComIcone: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    botaoHeader: {
+        color: colors.laranja,
+        fontWeight: '700',
+        fontSize: 14,
+    },
     centro: {
         flex: 1,
         alignItems: 'center',
@@ -188,6 +218,11 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '600',
         color: colors.textoPrimario,
+    },
+    itemValores: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     itemSubtotal: {
         fontSize: 15,

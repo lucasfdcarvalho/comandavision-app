@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
@@ -57,12 +58,12 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
 
             <Text style={styles.rotulo}>Quantidade</Text>
             <View style={styles.stepper}>
-                <Pressable style={styles.botaoStepper} onPress={diminuir}>
-                    <Text style={styles.textoBotaoStepper}>-</Text>
+                <Pressable style={styles.botaoStepper} onPress={diminuir} disabled={carregando}>
+                    <Feather name="minus-circle" size={22} color={colors.laranja} />
                 </Pressable>
                 <Text style={styles.valorStepper}>{quantidade}</Text>
-                <Pressable style={styles.botaoStepper} onPress={aumentar}>
-                    <Text style={styles.textoBotaoStepper}>+</Text>
+                <Pressable style={styles.botaoStepper} onPress={aumentar} disabled={carregando}>
+                    <Feather name="plus-circle" size={22} color={colors.laranja} />
                 </Pressable>
             </View>
 
@@ -87,7 +88,10 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
                 {carregando ? (
                     <ActivityIndicator color={colors.superficie} />
                 ) : (
-                    <Text style={styles.textoBotaoConfirmar}>Adicionar item</Text>
+                    <View style={styles.conteudoBotaoConfirmar}>
+                        <Feather name="check-circle" size={16} color={colors.superficie} />
+                        <Text style={styles.textoBotaoConfirmar}>Adicionar item</Text>
+                    </View>
                 )}
             </Pressable>
         </View>
@@ -132,11 +136,6 @@ const styles = StyleSheet.create({
         borderColor: colors.borda,
         borderRadius: 8,
     },
-    textoBotaoStepper: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: colors.laranja,
-    },
     valorStepper: {
         fontSize: 18,
         fontWeight: '700',
@@ -172,6 +171,11 @@ const styles = StyleSheet.create({
     },
     botaoDesabilitado: {
         opacity: 0.6,
+    },
+    conteudoBotaoConfirmar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     textoBotaoConfirmar: {
         color: colors.superficie,
