@@ -40,7 +40,7 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
             });
 
             Alert.alert('Item adicionado', `${quantidade}x ${produtoNome} foi adicionado à comanda.`, [
-                { text: 'OK', onPress: () => navigation.navigate('DetalhesComanda', { comandaId }) },
+                { text: 'OK', onPress: () => navigation.popTo('DetalhesComanda', { comandaId }) },
             ]);
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível adicionar o item';
