@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator, Image, StyleSheet, useWindowDimensions } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
+import { MensagemErro } from "../../components/MensagemErro";
 
 const PROPORCAO_LOGO = 1591 / 845;
 
@@ -66,7 +67,7 @@ export function LoginScreen() {
                     <Feather name={senhaVisivel ? 'eye-off' : 'eye'} size={18} color="#6B6B6B" />
                 </Pressable>
             </View>
-            {mensagemErro ? (<Text style={styles.mensagemErro}>{mensagemErro}</Text>) : null}
+            {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
             <Pressable
                 onPress={entrar}
                 disabled={carregando}
@@ -127,12 +128,6 @@ const styles = StyleSheet.create({
         height: '100%',
         color: '#1F1F1F',
         fontSize: 16,
-    },
-
-    mensagemErro: {
-        color: '#C62828',
-        fontSize: 14,
-        textAlign: 'center',
     },
 
     botao: {

@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
+import { MensagemErro } from "../../components/MensagemErro";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'EditarItem'>;
 
@@ -101,7 +102,7 @@ export function EditarItemScreen({ route, navigation }: Props) {
                 placeholder="Ex: Sem gelo"
             />
 
-            {mensagemErro ? <Text style={styles.mensagemErro}>{mensagemErro}</Text> : null}
+            {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
 
             <Pressable
                 onPress={salvar}
@@ -193,11 +194,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: colors.borda,
         borderRadius: 8,
-    },
-    mensagemErro: {
-        marginTop: 8,
-        color: colors.erro,
-        fontSize: 14,
     },
     botaoSalvar: {
         marginTop: 24,

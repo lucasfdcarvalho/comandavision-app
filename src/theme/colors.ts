@@ -15,4 +15,10 @@ export const colors = {
         fechada: '#6B6B6B',
         cancelada: '#C62828',
     },
+
+    statusFundo: {
+        aberta: '#E8F5E9',
+        fechada: '#F0F0F0',
+        cancelada: '#FDECEA',
+    },
 };

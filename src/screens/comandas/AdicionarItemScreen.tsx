@@ -7,6 +7,7 @@ import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
 import { colors } from "../../theme/colors";
+import { MensagemErro } from "../../components/MensagemErro";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'AdicionarItem'>;
 
@@ -61,7 +62,7 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
     if (mensagemErro) {
         return (
             <View style={styles.centro}>
-                <Text style={styles.mensagemErro}>{mensagemErro}</Text>
+                <MensagemErro texto={mensagemErro} />
                 <Pressable style={styles.botaoTentarNovamente} onPress={carregarProdutos}>
                     <Text style={styles.textoBotaoTentarNovamente}>Tentar novamente</Text>
                 </Pressable>
@@ -111,11 +112,6 @@ const styles = StyleSheet.create({
         gap: 16,
         paddingHorizontal: 24,
         backgroundColor: colors.fundo,
-    },
-    mensagemErro: {
-        color: colors.erro,
-        fontSize: 14,
-        textAlign: 'center',
     },
     botaoTentarNovamente: {
         paddingVertical: 10,

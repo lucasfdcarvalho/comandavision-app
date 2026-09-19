@@ -5,6 +5,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
+import { StatusBadge } from "../../components/StatusBadge";
+import { MensagemErro } from "../../components/MensagemErro";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'Lista'>;
 
@@ -18,7 +20,7 @@ export function ComandasScreen({ navigation }: Props) {
         try {
             setMensagemErro('');
             const dados = await apiService.listarComandas();
-            setComandas(dados);
+            setComandas(dados.filter((comanda) => comanda.status === 'ABERTA'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar as comandas';
             setMensagemErro(mensagem);
@@ -53,7 +55,7 @@ export function ComandasScreen({ navigation }: Props) {
     if (mensagemErro) {
         return (
             <View style={styles.centro}>
-                <Text style={styles.mensagemErro}>{mensagemErro}</Text>
+                <MensagemErro texto={mensagemErro} />
             </View>
         );
     }
@@ -75,7 +77,7 @@ export function ComandasScreen({ navigation }: Props) {
                     style={styles.cartao}
                     onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}>
                     <Text style={styles.identificacao}>{item.identificacao}</Text>
-                    <Text style={styles.status}>{item.status}</Text>
+                    <StatusBadge status={item.status} />
                 </Pressable>
             )}
         />
@@ -87,13 +89,8 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FAF9F6',
-    },
-    mensagemErro: {
-        color: '#C62828',
-        fontSize: 14,
-        textAlign: 'center',
         paddingHorizontal: 24,
+        backgroundColor: '#FAF9F6',
     },
     lista: {
         flex: 1,
@@ -120,16 +117,11 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingHorizontal: 18,
         marginBottom: 12,
+        gap: 6,
     },
     identificacao: {
         fontSize: 16,
         fontWeight: '700',
         color: '#1F1F1F',
-    },
-    status: {
-        marginTop: 4,
-        fontSize: 13,
-        color: '#EA8B00',
-        fontWeight: '600',
     },
 });
