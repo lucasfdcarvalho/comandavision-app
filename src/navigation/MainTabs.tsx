@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import { ComandasStack } from "./ComandasStack";
 import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
@@ -18,7 +18,7 @@ export function MainTabs() {
                 component={ComandasStack}
                 options={{
                     headerShown: false,
-                    tabBarIcon: ({ color, size }) => <Ionicons name="receipt-outline" size={size} color={color} />,
+                    tabBarIcon: ({ color, size }) => <Feather name="file-text" size={size} color={color} />,
                 }}
             />
             <Tab.Screen
@@ -26,7 +26,7 @@ export function MainTabs() {
                 component={HistoricoScreen}
                 options={{
                     title: 'Histórico',
-                    tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="history" size={size} color={color} />,
+                    tabBarIcon: ({ color, size }) => <Feather name="clock" size={size} color={color} />,
                 }}
             />
             {usuario?.papel === 'DONO' && (

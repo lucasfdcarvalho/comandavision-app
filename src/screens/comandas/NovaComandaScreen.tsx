@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Alert, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
 import { MensagemErro } from "../../components/MensagemErro";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'NovaComanda'>;
 
@@ -62,20 +63,9 @@ export function NovaComandaScreen({ navigation }: Props) {
 
             {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
 
-            <Pressable
-                onPress={abrirComanda}
-                disabled={carregando}
-                style={({ pressed }) => [
-                    styles.botao,
-                    pressed && !carregando && styles.botaoPressionado,
-                    carregando && styles.botaoDesabilitado,
-                ]}>
-                {carregando ? (
-                    <ActivityIndicator color={colors.superficie} />
-                ) : (
-                    <Text style={styles.textoBotao}>Abrir comanda</Text>
-                )}
-            </Pressable>
+            <View style={styles.botaoContainer}>
+                <PrimaryButton titulo="Abrir comanda" onPress={abrirComanda} carregando={carregando} />
+            </View>
         </View>
     );
 }
@@ -102,23 +92,7 @@ const styles = StyleSheet.create({
         borderColor: colors.borda,
         borderRadius: 8,
     },
-    botao: {
+    botaoContainer: {
         marginTop: 24,
-        minHeight: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.laranja,
-        borderRadius: 8,
-    },
-    botaoPressionado: {
-        opacity: 0.8,
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
-    },
-    textoBotao: {
-        color: colors.superficie,
-        fontSize: 16,
-        fontWeight: '700',
     },
 });

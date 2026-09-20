@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, TextInput, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, FlatList, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -7,19 +7,23 @@ import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
 import { colors } from "../../theme/colors";
-import { MensagemErro } from "../../components/MensagemErro";
+import { formatarMoeda } from "../../utils/formatadores";
+import { EmptyState } from "../../components/EmptyState";
+import { LoadingState } from "../../components/LoadingState";
+import { ErrorState } from "../../components/ErrorState";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'AdicionarItem'>;
 
-function formatarMoeda(valor: number): string {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-}
+const TODAS_CATEGORIAS = 'TODAS';
+
+type ChipCategoria = { id: number | typeof TODAS_CATEGORIAS; nome: string };
 
 export function AdicionarItemScreen({ route, navigation }: Props) {
     const { comandaId } = route.params;
 
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [busca, setBusca] = useState('');
+    const [categoriaSelecionada, setCategoriaSelecionada] = useState<number | typeof TODAS_CATEGORIAS>(TODAS_CATEGORIAS);
     const [carregando, setCarregando] = useState(true);
     const [mensagemErro, setMensagemErro] = useState('');
 
@@ -43,31 +47,28 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
         }, [carregarProdutos])
     );
 
+    // Categorias derivadas dos produtos já carregados (não existe endpoint próprio de categorias).
+    const categorias = useMemo(() => {
+        const vistas = new Map<number, string>();
+        produtos.forEach((produto) => vistas.set(produto.categoria.id, produto.categoria.nome));
+        return Array.from(vistas.entries()).map(([id, nome]) => ({ id, nome }));
+    }, [produtos]);
+
     const produtosFiltrados = useMemo(() => {
         const termo = busca.trim().toLowerCase();
-        if (!termo) {
-            return produtos;
-        }
-        return produtos.filter((produto) => produto.nome.toLowerCase().includes(termo));
-    }, [produtos, busca]);
+        return produtos.filter((produto) => {
+            const combinaBusca = !termo || produto.nome.toLowerCase().includes(termo);
+            const combinaCategoria = categoriaSelecionada === TODAS_CATEGORIAS || produto.categoria.id === categoriaSelecionada;
+            return combinaBusca && combinaCategoria;
+        });
+    }, [produtos, busca, categoriaSelecionada]);
 
     if (carregando) {
-        return (
-            <View style={styles.centro}>
-                <ActivityIndicator size="large" color={colors.laranja} />
-            </View>
-        );
+        return <LoadingState />;
     }
 
     if (mensagemErro) {
-        return (
-            <View style={styles.centro}>
-                <MensagemErro texto={mensagemErro} />
-                <Pressable style={styles.botaoTentarNovamente} onPress={carregarProdutos}>
-                    <Text style={styles.textoBotaoTentarNovamente}>Tentar novamente</Text>
-                </Pressable>
-            </View>
-        );
+        return <ErrorState texto={mensagemErro} aoTentarNovamente={carregarProdutos} />;
     }
 
     return (
@@ -81,11 +82,44 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
                     placeholder="Buscar produto..."
                 />
             </View>
+
+            {categorias.length > 0 ? (
+                <FlatList<ChipCategoria>
+                    style={styles.chipsLista}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={[{ id: TODAS_CATEGORIAS, nome: 'Todos' }, ...categorias]}
+                    keyExtractor={(item) => String(item.id)}
+                    contentContainerStyle={styles.chipsConteudo}
+                    renderItem={({ item }) => {
+                        const selecionado = item.id === categoriaSelecionada;
+                        return (
+                            <Pressable
+                                onPress={() => setCategoriaSelecionada(item.id)}
+                                style={[styles.chip, selecionado && styles.chipSelecionado]}>
+                                <Text style={[styles.textoChip, selecionado && styles.textoChipSelecionado]}>
+                                    {item.nome}
+                                </Text>
+                            </Pressable>
+                        );
+                    }}
+                />
+            ) : null}
+
             <FlatList
+                style={styles.listaProdutos}
                 data={produtosFiltrados}
                 keyExtractor={(item) => String(item.id)}
                 contentContainerStyle={styles.listaConteudo}
-                ListEmptyComponent={<Text style={styles.textoVazio}>Nenhum produto encontrado</Text>}
+                ListEmptyComponent={
+                    <EmptyState
+                        texto={
+                            produtos.length === 0
+                                ? 'Nenhum produto cadastrado'
+                                : 'Nenhum produto encontrado'
+                        }
+                    />
+                }
                 renderItem={({ item }) => (
                     <Pressable
                         style={styles.cartao}
@@ -95,8 +129,16 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
                             produtoNome: item.nome,
                             precoUnitario: item.preco,
                         })}>
-                        <Text style={styles.nomeProduto}>{item.nome}</Text>
-                        <Text style={styles.precoProduto}>{formatarMoeda(item.preco)}</Text>
+                        <View style={styles.placeholderImagem}>
+                            <Feather name="package" size={20} color={colors.textoSecundario} />
+                        </View>
+                        <View style={styles.infoProduto}>
+                            <Text style={styles.nomeProduto}>{item.nome}</Text>
+                            <Text style={styles.precoProduto}>{formatarMoeda(item.preco)}</Text>
+                        </View>
+                        <View style={styles.botaoAdicionar}>
+                            <Feather name="plus" size={20} color={colors.superficie} />
+                        </View>
                     </Pressable>
                 )}
             />
@@ -105,24 +147,6 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-    centro: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 16,
-        paddingHorizontal: 24,
-        backgroundColor: colors.fundo,
-    },
-    botaoTentarNovamente: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: colors.laranja,
-        borderRadius: 8,
-    },
-    textoBotaoTentarNovamente: {
-        color: colors.superficie,
-        fontWeight: '700',
-    },
     container: {
         flex: 1,
         backgroundColor: colors.fundo,
@@ -132,6 +156,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
         margin: 16,
+        marginBottom: 0,
         height: 46,
         paddingHorizontal: 14,
         backgroundColor: colors.superficie,
@@ -145,21 +170,51 @@ const styles = StyleSheet.create({
         color: colors.textoPrimario,
         fontSize: 15,
     },
+    chipsLista: {
+        flexGrow: 0,
+        flexShrink: 0,
+        maxHeight: 52,
+    },
+    chipsConteudo: {
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingRight: 32,
+        paddingVertical: 12,
+        gap: 8,
+    },
+    chip: {
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: colors.superficie,
+        borderWidth: 1,
+        borderColor: '#D9D9D9',
+        borderRadius: 999,
+    },
+    chipSelecionado: {
+        backgroundColor: colors.laranja,
+        borderColor: colors.laranja,
+    },
+    textoChip: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+    },
+    textoChipSelecionado: {
+        color: colors.superficie,
+    },
+    listaProdutos: {
+        flex: 1,
+    },
     listaConteudo: {
         paddingHorizontal: 16,
         paddingBottom: 16,
         gap: 12,
     },
-    textoVazio: {
-        color: colors.textoSecundario,
-        fontSize: 16,
-        textAlign: 'center',
-        marginTop: 24,
-    },
     cartao: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        gap: 12,
         backgroundColor: colors.superficie,
         borderRadius: 12,
         borderWidth: 1,
@@ -168,14 +223,34 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 12,
     },
+    placeholderImagem: {
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.fundo,
+        borderRadius: 8,
+    },
+    infoProduto: {
+        flex: 1,
+    },
     nomeProduto: {
         fontSize: 15,
         fontWeight: '600',
         color: colors.textoPrimario,
     },
     precoProduto: {
-        fontSize: 15,
+        marginTop: 2,
+        fontSize: 14,
         fontWeight: '600',
         color: colors.laranja,
+    },
+    botaoAdicionar: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.laranja,
+        borderRadius: 8,
     },
 });

@@ -1,17 +1,23 @@
-import { useCallback, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, RefreshControl, Pressable, StyleSheet } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
-import { StatusBadge } from "../../components/StatusBadge";
-import { MensagemErro } from "../../components/MensagemErro";
+import { ComandaCard } from "../../components/ComandaCard";
+import { EmptyState } from "../../components/EmptyState";
+import { LoadingState } from "../../components/LoadingState";
+import { ErrorState } from "../../components/ErrorState";
+import { colors } from "../../theme/colors";
+import { formatarTempoDecorrido } from "../../utils/formatadores";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'Lista'>;
 
 export function ComandasScreen({ navigation }: Props) {
     const [comandas, setComandas] = useState<Comanda[]>([]);
+    const [busca, setBusca] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
@@ -20,7 +26,10 @@ export function ComandasScreen({ navigation }: Props) {
         try {
             setMensagemErro('');
             const dados = await apiService.listarComandas();
-            setComandas(dados.filter((comanda) => comanda.status === 'ABERTA'));
+            const abertas = dados
+                .filter((comanda) => comanda.status === 'ABERTA')
+                .sort((a, b) => new Date(b.abertaEm).getTime() - new Date(a.abertaEm).getTime());
+            setComandas(abertas);
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar as comandas';
             setMensagemErro(mensagem);
@@ -44,57 +53,101 @@ export function ComandasScreen({ navigation }: Props) {
         setAtualizando(false);
     }
 
+    // Busca local: filtra apenas as comandas já carregadas nesta tela, por identificação.
+    // Não há endpoint de busca no backend para este recurso.
+    const comandasFiltradas = useMemo(() => {
+        const termo = busca.trim().toLowerCase();
+        if (!termo) {
+            return comandas;
+        }
+        return comandas.filter((comanda) => comanda.identificacao.toLowerCase().includes(termo));
+    }, [comandas, busca]);
+
     if (carregando) {
-        return (
-            <View style={styles.centro}>
-                <ActivityIndicator size="large" color="#EA8B00" />
-            </View>
-        );
+        return <LoadingState />;
     }
 
     if (mensagemErro) {
-        return (
-            <View style={styles.centro}>
-                <MensagemErro texto={mensagemErro} />
-            </View>
-        );
+        return <ErrorState texto={mensagemErro} aoTentarNovamente={carregarComandas} />;
     }
 
     return (
-        <FlatList
-            style={styles.lista}
-            data={comandas}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={comandas.length === 0 ? styles.listaVazia : styles.listaConteudo}
-            refreshControl={
-                <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={['#EA8B00']} />
-            }
-            ListEmptyComponent={
-                <Text style={styles.textoVazio}>Nenhuma comanda aberta</Text>
-            }
-            renderItem={({ item }) => (
-                <Pressable
-                    style={styles.cartao}
-                    onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}>
-                    <Text style={styles.identificacao}>{item.identificacao}</Text>
-                    <StatusBadge status={item.status} />
-                </Pressable>
-            )}
-        />
+        <View style={styles.container}>
+            <View style={styles.cabecalho}>
+                <Text style={styles.contagem}>{comandas.length} {comandas.length === 1 ? 'aberta' : 'abertas'}</Text>
+            </View>
+
+            <View style={styles.campoBusca}>
+                <Feather name="search" size={18} color={colors.textoSecundario} />
+                <TextInput
+                    style={styles.busca}
+                    value={busca}
+                    onChangeText={setBusca}
+                    placeholder="Buscar por identificação..."
+                />
+            </View>
+
+            <FlatList
+                style={styles.lista}
+                data={comandasFiltradas}
+                keyExtractor={(item) => String(item.id)}
+                contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                refreshControl={
+                    <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />
+                }
+                ListEmptyComponent={
+                    <EmptyState
+                        texto={busca ? 'Nenhuma comanda encontrada para a busca' : 'Nenhuma comanda aberta'}
+                    />
+                }
+                renderItem={({ item }) => (
+                    <ComandaCard
+                        comanda={item}
+                        subtitulo={`Aberta ${formatarTempoDecorrido(item.abertaEm)}`}
+                        onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}
+                    />
+                )}
+            />
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    centro: {
+    container: {
         flex: 1,
+        backgroundColor: colors.fundo,
+    },
+    cabecalho: {
+        paddingHorizontal: 16,
+        paddingTop: 12,
+    },
+    contagem: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+    },
+    campoBusca: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-        backgroundColor: '#FAF9F6',
+        gap: 8,
+        marginHorizontal: 16,
+        marginTop: 12,
+        height: 46,
+        paddingHorizontal: 14,
+        backgroundColor: colors.superficie,
+        borderWidth: 1,
+        borderColor: colors.borda,
+        borderRadius: 8,
+    },
+    busca: {
+        flex: 1,
+        height: '100%',
+        color: colors.textoPrimario,
+        fontSize: 15,
     },
     lista: {
         flex: 1,
-        backgroundColor: '#FAF9F6',
+        marginTop: 8,
     },
     listaConteudo: {
         padding: 16,
@@ -104,24 +157,5 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    textoVazio: {
-        color: '#6B6B6B',
-        fontSize: 16,
-    },
-    cartao: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#EFEFEF',
-        paddingVertical: 16,
-        paddingHorizontal: 18,
-        marginBottom: 12,
-        gap: 6,
-    },
-    identificacao: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1F1F1F',
     },
 });

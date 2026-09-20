@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
+import { formatarMoeda } from "../../utils/formatadores";
 import { MensagemErro } from "../../components/MensagemErro";
+import { PrimaryButton } from "../../components/PrimaryButton";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'ConfirmarItem'>;
-
-function formatarMoeda(valor: number): string {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-}
 
 export function ConfirmarItemScreen({ route, navigation }: Props) {
     const { comandaId, produtoId, produtoNome, precoUnitario } = route.params;
@@ -78,23 +76,14 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
 
             {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
 
-            <Pressable
-                onPress={confirmar}
-                disabled={carregando}
-                style={({ pressed }) => [
-                    styles.botaoConfirmar,
-                    pressed && !carregando && styles.botaoPressionado,
-                    carregando && styles.botaoDesabilitado,
-                ]}>
-                {carregando ? (
-                    <ActivityIndicator color={colors.superficie} />
-                ) : (
-                    <View style={styles.conteudoBotaoConfirmar}>
-                        <Feather name="check-circle" size={16} color={colors.superficie} />
-                        <Text style={styles.textoBotaoConfirmar}>Adicionar item</Text>
-                    </View>
-                )}
-            </Pressable>
+            <View style={styles.botaoConfirmarContainer}>
+                <PrimaryButton
+                    titulo="Adicionar item"
+                    icone="check-circle"
+                    onPress={confirmar}
+                    carregando={carregando}
+                />
+            </View>
         </View>
     );
 }
@@ -154,28 +143,7 @@ const styles = StyleSheet.create({
         borderColor: colors.borda,
         borderRadius: 8,
     },
-    botaoConfirmar: {
+    botaoConfirmarContainer: {
         marginTop: 24,
-        minHeight: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.laranja,
-        borderRadius: 8,
-    },
-    botaoPressionado: {
-        opacity: 0.8,
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
-    },
-    conteudoBotaoConfirmar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    textoBotaoConfirmar: {
-        color: colors.superficie,
-        fontSize: 16,
-        fontWeight: '700',
     },
 });

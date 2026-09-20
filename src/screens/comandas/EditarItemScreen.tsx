@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
+import { formatarMoeda } from "../../utils/formatadores";
 import { MensagemErro } from "../../components/MensagemErro";
+import { PrimaryButton } from "../../components/PrimaryButton";
+import { SecondaryButton } from "../../components/SecondaryButton";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'EditarItem'>;
-
-function formatarMoeda(valor: number): string {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-}
 
 export function EditarItemScreen({ route, navigation }: Props) {
     const { comandaId, itemId, produtoNome, precoUnitario, quantidadeAtual, observacaoAtual } = route.params;
@@ -104,38 +103,24 @@ export function EditarItemScreen({ route, navigation }: Props) {
 
             {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
 
-            <Pressable
-                onPress={salvar}
-                disabled={desabilitado}
-                style={({ pressed }) => [
-                    styles.botaoSalvar,
-                    pressed && !desabilitado && styles.botaoPressionado,
-                    desabilitado && styles.botaoDesabilitado,
-                ]}>
-                {carregando ? (
-                    <ActivityIndicator color={colors.superficie} />
-                ) : (
-                    <Text style={styles.textoBotaoSalvar}>Salvar alterações</Text>
-                )}
-            </Pressable>
+            <View style={styles.botaoSalvarContainer}>
+                <PrimaryButton
+                    titulo="Salvar alterações"
+                    onPress={salvar}
+                    disabled={desabilitado}
+                    carregando={carregando}
+                />
+            </View>
 
-            <Pressable
-                onPress={confirmarRemocao}
-                disabled={desabilitado}
-                style={({ pressed }) => [
-                    styles.botaoRemover,
-                    pressed && !desabilitado && styles.botaoPressionado,
-                    desabilitado && styles.botaoDesabilitado,
-                ]}>
-                {removendo ? (
-                    <ActivityIndicator color={colors.erro} />
-                ) : (
-                    <View style={styles.conteudoBotaoRemover}>
-                        <Feather name="trash-2" size={16} color={colors.erro} />
-                        <Text style={styles.textoBotaoRemover}>Remover item</Text>
-                    </View>
-                )}
-            </Pressable>
+            <View style={styles.botaoRemoverContainer}>
+                <SecondaryButton
+                    titulo="Remover item"
+                    icone="trash-2"
+                    onPress={confirmarRemocao}
+                    disabled={desabilitado}
+                    carregando={removendo}
+                />
+            </View>
         </View>
     );
 }
@@ -195,43 +180,10 @@ const styles = StyleSheet.create({
         borderColor: colors.borda,
         borderRadius: 8,
     },
-    botaoSalvar: {
+    botaoSalvarContainer: {
         marginTop: 24,
-        minHeight: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.laranja,
-        borderRadius: 8,
     },
-    botaoRemover: {
+    botaoRemoverContainer: {
         marginTop: 12,
-        minHeight: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.superficie,
-        borderWidth: 1,
-        borderColor: colors.erro,
-        borderRadius: 8,
-    },
-    botaoPressionado: {
-        opacity: 0.8,
-    },
-    botaoDesabilitado: {
-        opacity: 0.6,
-    },
-    textoBotaoSalvar: {
-        color: colors.superficie,
-        fontSize: 16,
-        fontWeight: '700',
-    },
-    conteudoBotaoRemover: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    textoBotaoRemover: {
-        color: colors.erro,
-        fontSize: 16,
-        fontWeight: '700',
     },
 });
