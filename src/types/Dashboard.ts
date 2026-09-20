@@ -1,25 +1,28 @@
 import { FormaPagamento } from "./Pagamento";
 
 export interface ResumoDashboard {
-    faturamentoTotal: number;
-    quantidadeComandas: number;
+    faturamento: number;
+    quantidadeVendas: number;
     ticketMedio: number;
+    quantidadeItensVendidos: number;
 }
 
 export interface ProdutoMaisVendido {
     produtoId: number;
     produtoNome: string;
     quantidadeVendida: number;
-    totalVendido: number;
+    faturamento: number;
 }
 
 export interface FormaPagamentoResumo {
     forma: FormaPagamento;
-    total: number;
-    quantidade: number;
+    quantidadePagamentos: number;
+    valorRecebido: number;
+    percentual: number;
 }
 
 export interface FaturamentoDiario {
     data: string;
-    total: number;
+    faturamento: number;
+    quantidadeVendas: number;
 }

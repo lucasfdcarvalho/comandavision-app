@@ -1,14 +1,19 @@
-export type FormaPagamento = 'PIX' | 'DINHEIRO' | 'DEBITO' | 'CREDITO';
+export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO';
+
+export type StatusPagamento = 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO' | 'ESTORNADO';
+
+export type SituacaoPagamento = 'NAO_PAGO' | 'PARCIAL' | 'PAGO';
 
 export interface Pagamento {
     id: number;
     comandaId: number;
     forma: FormaPagamento;
+    status: StatusPagamento;
     valor: number;
     referenciaExterna?: string;
-    estornado: boolean;
+    pagoEm?: string;
     criadoEm: string;
-    estornadoEm?: string;
+    atualizadoEm: string;
 }
 
 export interface DadosNovoPagamento {
@@ -18,8 +23,9 @@ export interface DadosNovoPagamento {
 }
 
 export interface ResumoPagamentos {
+    comandaId: number;
     totalComanda: number;
     totalPago: number;
-    restante: number;
-    quitado: boolean;
+    saldoRestante: number;
+    situacao: SituacaoPagamento;
 }

@@ -1,23 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, ActivityIndicator, RefreshControl, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
+import { LoadingState } from "../../components/LoadingState";
+import { ErrorState } from "../../components/ErrorState";
 import { MensagemErro } from "../../components/MensagemErro";
 import { colors } from "../../theme/colors";
+import { formatarMoeda, paraDataISOBrasil, subtrairDiasData } from "../../utils/formatadores";
+import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../../types/Dashboard";
-import { FormaPagamento } from "../../types/Pagamento";
-
-function formatarMoeda(valor: number): string {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-}
-
-function paraDataISO(data: Date): string {
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, '0');
-    const dia = String(data.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
-}
 
 type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
@@ -28,40 +20,25 @@ const PERIODOS: { chave: ChavePeriodo; rotulo: string }[] = [
     { chave: 'mes', rotulo: 'Este mês' },
 ];
 
+// O backend calcula o período em America/Sao_Paulo. Se calculássemos "hoje" com o
+// relógio/fuso do próprio dispositivo, um emulador ou celular configurado em outro
+// fuso mandaria a data errada e o filtro "Hoje" voltaria vazio mesmo havendo vendas.
 function calcularPeriodo(chave: ChavePeriodo): { inicio: string; fim: string } {
-    const hoje = new Date();
-    const fim = paraDataISO(hoje);
+    const fim = paraDataISOBrasil(new Date());
 
     if (chave === 'hoje') {
         return { inicio: fim, fim };
     }
     if (chave === '7dias') {
-        const inicio = new Date(hoje);
-        inicio.setDate(inicio.getDate() - 6);
-        return { inicio: paraDataISO(inicio), fim };
+        return { inicio: subtrairDiasData(fim, 6), fim };
     }
     if (chave === '30dias') {
-        const inicio = new Date(hoje);
-        inicio.setDate(inicio.getDate() - 29);
-        return { inicio: paraDataISO(inicio), fim };
+        return { inicio: subtrairDiasData(fim, 29), fim };
     }
-    const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    return { inicio: paraDataISO(inicio), fim };
+
+    const [ano, mes] = fim.split('-');
+    return { inicio: `${ano}-${mes}-01`, fim };
 }
-
-const ICONE_FORMA: Record<FormaPagamento, keyof typeof Feather.glyphMap> = {
-    PIX: 'zap',
-    DINHEIRO: 'dollar-sign',
-    DEBITO: 'credit-card',
-    CREDITO: 'repeat',
-};
-
-const ROTULO_FORMA: Record<FormaPagamento, string> = {
-    PIX: 'Pix',
-    DINHEIRO: 'Dinheiro',
-    DEBITO: 'Débito',
-    CREDITO: 'Crédito',
-};
 
 export function DashboardScreen() {
     const [periodo, setPeriodo] = useState<ChavePeriodo>('30dias');
@@ -142,22 +119,26 @@ export function DashboardScreen() {
     }
 
     if (carregando) {
-        return (
-            <View style={styles.centro}>
-                <ActivityIndicator size="large" color={colors.laranja} />
-            </View>
-        );
+        return <LoadingState />;
     }
 
     if (mensagemErro) {
-        return (
-            <View style={styles.centro}>
-                <MensagemErro texto={mensagemErro} />
-            </View>
-        );
+        return <ErrorState texto={mensagemErro} aoTentarNovamente={carregarSnapshot} />;
     }
 
-    const maiorFaturamentoDiario = Math.max(1, ...faturamentoDiario.map((dia) => dia.total));
+    const DIAS_EXIBIDOS_NO_GRAFICO = 14;
+    const temFaturamentoNoPeriodo = faturamentoDiario.some((dia) => (dia.faturamento ?? 0) > 0);
+    const diasExibidos = faturamentoDiario.length > DIAS_EXIBIDOS_NO_GRAFICO
+        ? faturamentoDiario.slice(-DIAS_EXIBIDOS_NO_GRAFICO)
+        : faturamentoDiario;
+    const maiorFaturamentoExibido = Math.max(0, ...diasExibidos.map((dia) => dia.faturamento ?? 0));
+
+    function larguraBarra(total: number | null | undefined): number {
+        if (maiorFaturamentoExibido <= 0) {
+            return 0;
+        }
+        return Math.min(100, Math.max(0, ((total ?? 0) / maiorFaturamentoExibido) * 100));
+    }
 
     return (
         <ScrollView
@@ -209,13 +190,13 @@ export function DashboardScreen() {
                     <View style={styles.linhaCartoes}>
                         <View style={styles.cartao}>
                             <Feather name="dollar-sign" size={20} color={colors.laranja} />
-                            <Text style={styles.valorCartao}>{formatarMoeda(resumo?.faturamentoTotal ?? 0)}</Text>
+                            <Text style={styles.valorCartao}>{formatarMoeda(resumo?.faturamento ?? 0)}</Text>
                             <Text style={styles.rotuloCartao}>Faturamento</Text>
                         </View>
                         <View style={styles.cartao}>
                             <Feather name="shopping-bag" size={20} color={colors.laranja} />
-                            <Text style={styles.valorCartao}>{resumo?.quantidadeComandas ?? 0}</Text>
-                            <Text style={styles.rotuloCartao}>Comandas</Text>
+                            <Text style={styles.valorCartao}>{resumo?.quantidadeVendas ?? 0}</Text>
+                            <Text style={styles.rotuloCartao}>Vendas</Text>
                         </View>
                         <View style={styles.cartao}>
                             <Feather name="trending-up" size={20} color={colors.laranja} />
@@ -233,7 +214,7 @@ export function DashboardScreen() {
                                 <View key={produto.produtoId} style={styles.linhaProduto}>
                                     <Text style={styles.nomeProduto} numberOfLines={1}>{produto.produtoNome}</Text>
                                     <Text style={styles.quantidadeProduto}>{produto.quantidadeVendida}x</Text>
-                                    <Text style={styles.totalProduto}>{formatarMoeda(produto.totalVendido)}</Text>
+                                    <Text style={styles.totalProduto}>{formatarMoeda(produto.faturamento)}</Text>
                                 </View>
                             ))
                         )}
@@ -246,10 +227,10 @@ export function DashboardScreen() {
                         ) : (
                             formas.map((forma) => (
                                 <View key={forma.forma} style={styles.linhaForma}>
-                                    <Feather name={ICONE_FORMA[forma.forma]} size={16} color={colors.laranja} />
+                                    <MaterialCommunityIcons name={ICONE_FORMA[forma.forma]} size={16} color={colors.laranja} />
                                     <Text style={styles.rotuloForma}>{ROTULO_FORMA[forma.forma]}</Text>
-                                    <Text style={styles.quantidadeForma}>{forma.quantidade}x</Text>
-                                    <Text style={styles.totalForma}>{formatarMoeda(forma.total)}</Text>
+                                    <Text style={styles.quantidadeForma}>{forma.quantidadePagamentos}x</Text>
+                                    <Text style={styles.totalForma}>{formatarMoeda(forma.valorRecebido)}</Text>
                                 </View>
                             ))
                         )}
@@ -257,23 +238,30 @@ export function DashboardScreen() {
 
                     <View style={styles.secao}>
                         <Text style={styles.secaoTitulo}>Faturamento diário</Text>
-                        {faturamentoDiario.length === 0 ? (
-                            <Text style={styles.textoVazio}>Nenhum faturamento no período</Text>
+                        {faturamentoDiario.length === 0 || !temFaturamentoNoPeriodo ? (
+                            <Text style={styles.textoVazio}>Nenhum faturamento registrado no período</Text>
                         ) : (
-                            faturamentoDiario.map((dia) => (
-                                <View key={dia.data} style={styles.linhaDia}>
-                                    <Text style={styles.dataDia}>{dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}</Text>
-                                    <View style={styles.barraFundo}>
-                                        <View
-                                            style={[
-                                                styles.barraPreenchida,
-                                                { width: `${Math.max(4, (dia.total / maiorFaturamentoDiario) * 100)}%` },
-                                            ]}
-                                        />
+                            <>
+                                {faturamentoDiario.length > DIAS_EXIBIDOS_NO_GRAFICO ? (
+                                    <Text style={styles.textoAvisoCompacto}>
+                                        Mostrando os últimos {DIAS_EXIBIDOS_NO_GRAFICO} dias
+                                    </Text>
+                                ) : null}
+                                {diasExibidos.map((dia) => (
+                                    <View key={dia.data} style={styles.linhaDia}>
+                                        <Text style={styles.dataDia}>{dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}</Text>
+                                        <View style={styles.barraFundo}>
+                                            <View
+                                                style={[
+                                                    styles.barraPreenchida,
+                                                    { width: `${larguraBarra(dia.faturamento)}%` },
+                                                ]}
+                                            />
+                                        </View>
+                                        <Text style={styles.totalDia}>{formatarMoeda(dia.faturamento)}</Text>
                                     </View>
-                                    <Text style={styles.totalDia}>{formatarMoeda(dia.total)}</Text>
-                                </View>
-                            ))
+                                ))}
+                            </>
                         )}
                     </View>
                 </>
@@ -283,13 +271,6 @@ export function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-    centro: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-        backgroundColor: colors.fundo,
-    },
     container: {
         flex: 1,
         backgroundColor: colors.fundo,
@@ -368,6 +349,11 @@ const styles = StyleSheet.create({
     },
     textoVazio: {
         fontSize: 14,
+        color: colors.textoSecundario,
+    },
+    textoAvisoCompacto: {
+        fontSize: 12,
+        fontStyle: 'italic',
         color: colors.textoSecundario,
     },
     linhaProduto: {

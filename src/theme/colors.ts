@@ -9,6 +9,7 @@ export const colors = {
     textoSecundario: '#6B6B6B',
 
     erro: '#C62828',
+    sucesso: '#2E7D32',
 
     status: {
         aberta: '#2E7D32',
