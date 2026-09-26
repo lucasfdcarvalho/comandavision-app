@@ -4,6 +4,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
+import { useAuth } from "../../hooks/useAuth";
 import { apiService } from "../../services/apiService";
 import { ComandaDetalhada } from "../../types/Comanda";
 import { Pagamento, ResumoPagamentos } from "../../types/Pagamento";
@@ -18,6 +19,7 @@ import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SecondaryButton } from "../../components/SecondaryButton";
+import { ProdutoImagem } from "../../components/ProdutoImagem";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'DetalhesComanda'>;
 
@@ -31,6 +33,8 @@ const ROTULO_STATUS_PAGAMENTO: Partial<Record<Pagamento['status'], string>> = {
 
 export function DetalhesComandaScreen({ route, navigation }: Props) {
     const { comandaId } = route.params;
+    const { usuario } = useAuth();
+    const ehDono = usuario?.papel === 'DONO';
 
     const [comanda, setComanda] = useState<ComandaDetalhada | null>(null);
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
@@ -232,15 +236,18 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                             quantidadeAtual: item.quantidade,
                             observacaoAtual: item.observacao,
                         })}>
-                        <View style={styles.itemLinha}>
-                            <Text style={styles.itemNome}>{item.quantidade}x {item.produtoNome}</Text>
-                            <View style={styles.itemValores}>
-                                <Text style={styles.itemSubtotal}>{formatarMoeda(item.subtotal)}</Text>
-                                {comandaAberta ? <Feather name="edit-2" size={14} color={colors.textoSecundario} /> : null}
+                        <ProdutoImagem imagemUrl={item.produtoImagemUrl} tamanho={44} />
+                        <View style={styles.itemInfo}>
+                            <View style={styles.itemLinha}>
+                                <Text style={styles.itemNome}>{item.quantidade}x {item.produtoNome}</Text>
+                                <View style={styles.itemValores}>
+                                    <Text style={styles.itemSubtotal}>{formatarMoeda(item.subtotal)}</Text>
+                                    {comandaAberta ? <Feather name="edit-2" size={14} color={colors.textoSecundario} /> : null}
+                                </View>
                             </View>
+                            <Text style={styles.itemPrecoUnitario}>{formatarMoeda(item.precoUnitario)} cada</Text>
+                            {item.observacao ? <Text style={styles.itemObservacao}>{item.observacao}</Text> : null}
                         </View>
-                        <Text style={styles.itemPrecoUnitario}>{formatarMoeda(item.precoUnitario)} cada</Text>
-                        {item.observacao ? <Text style={styles.itemObservacao}>{item.observacao}</Text> : null}
                     </Pressable>
                 )}
                 ListFooterComponent={
@@ -309,7 +316,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                         {formatarDataHora(pagamento.pagoEm ?? pagamento.criadoEm)}
                                                     </Text>
                                                 </View>
-                                                {confirmado ? (
+                                                {confirmado && ehDono ? (
                                                     <Pressable
                                                         onPress={() => confirmarEstorno(pagamento)}
                                                         disabled={estornandoId === pagamento.id}
@@ -320,11 +327,11 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                             <Feather name="rotate-ccw" size={16} color={colors.erro} />
                                                         )}
                                                     </Pressable>
-                                                ) : (
+                                                ) : !confirmado ? (
                                                     <Text style={styles.badgeEstornado}>
                                                         {ROTULO_STATUS_PAGAMENTO[pagamento.status]}
                                                     </Text>
-                                                )}
+                                                ) : null}
                                             </View>
                                         );
                                     })
@@ -365,13 +372,15 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                         disabled={acaoEmAndamento !== null || comandaSemItens}
                                         carregando={acaoEmAndamento === 'fechar'}
                                     />
-                                    <SecondaryButton
-                                        titulo="Cancelar comanda"
-                                        icone="x-circle"
-                                        onPress={confirmarCancelamento}
-                                        disabled={acaoEmAndamento !== null}
-                                        carregando={acaoEmAndamento === 'cancelar'}
-                                    />
+                                    {ehDono ? (
+                                        <SecondaryButton
+                                            titulo="Cancelar comanda"
+                                            icone="x-circle"
+                                            onPress={confirmarCancelamento}
+                                            disabled={acaoEmAndamento !== null}
+                                            carregando={acaoEmAndamento === 'cancelar'}
+                                        />
+                                    ) : null}
                                 </View>
                             </View>
                         ) : null}
@@ -428,6 +437,9 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     itemCartao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
         backgroundColor: colors.superficie,
         borderRadius: 12,
         borderWidth: 1,
@@ -435,6 +447,9 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
+    },
+    itemInfo: {
+        flex: 1,
     },
     itemLinha: {
         flexDirection: 'row',

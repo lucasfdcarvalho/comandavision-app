@@ -1,5 +1,17 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, Image, StyleSheet, useWindowDimensions } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    Pressable,
+    ActivityIndicator,
+    Image,
+    StyleSheet,
+    useWindowDimensions,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
 import { MensagemErro } from "../../components/MensagemErro";
@@ -46,49 +58,63 @@ export function LoginScreen() {
 
 
     return (
-        <View style={styles.container}>
-            <Image
-                source={require('../../../assets/images/supri-logo-v2.png')}
-                style={[styles.logo, { width: larguraLogo, height: larguraLogo / PROPORCAO_LOGO }]}
-                resizeMode="contain"
-            />
-            <TextInput style={styles.campo} value={email} onChangeText={setEmail} placeholder="Digite o seu e-mail" keyboardType="email-address" autoCapitalize="none" autoCorrect={false}></TextInput>
-            <View style={styles.campoSenha}>
-                <Feather name="lock" size={18} color="#6B6B6B" />
-                <TextInput
-                    style={styles.campoSenhaTexto}
-                    value={senha}
-                    onChangeText={setSenha}
-                    placeholder="Digite a sua senha"
-                    secureTextEntry={!senhaVisivel}
-                    autoCapitalize="none"
+        <KeyboardAvoidingView
+            style={styles.flex}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : undefined}>
+            <ScrollView
+                contentContainerStyle={styles.container}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}>
+                <Image
+                    source={require('../../../assets/images/supri-logo-v2.png')}
+                    style={[styles.logo, { width: larguraLogo, height: larguraLogo / PROPORCAO_LOGO }]}
+                    resizeMode="contain"
                 />
-                <Pressable onPress={() => setSenhaVisivel((visivel) => !visivel)} hitSlop={8}>
-                    <Feather name={senhaVisivel ? 'eye-off' : 'eye'} size={18} color="#6B6B6B" />
+                <TextInput style={styles.campo} value={email} onChangeText={setEmail} placeholder="Digite o seu e-mail" keyboardType="email-address" autoCapitalize="none" autoCorrect={false}></TextInput>
+                <View style={styles.campoSenha}>
+                    <Feather name="lock" size={18} color="#6B6B6B" />
+                    <TextInput
+                        style={styles.campoSenhaTexto}
+                        value={senha}
+                        onChangeText={setSenha}
+                        placeholder="Digite a sua senha"
+                        secureTextEntry={!senhaVisivel}
+                        autoCapitalize="none"
+                    />
+                    <Pressable onPress={() => setSenhaVisivel((visivel) => !visivel)} hitSlop={8}>
+                        <Feather name={senhaVisivel ? 'eye-off' : 'eye'} size={18} color="#6B6B6B" />
+                    </Pressable>
+                </View>
+                {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
+                <Pressable
+                    onPress={entrar}
+                    disabled={carregando}
+                    style={({ pressed }) => [
+                        styles.botao,
+                        pressed && !carregando && styles.botaoPressionado,
+                        carregando && styles.botaoDesabilitado,
+                    ]}>
+                    {carregando ? (<ActivityIndicator color="#FFFFFF" />) : (<Text style={styles.textoBotao}>Entrar</Text>)}
                 </Pressable>
-            </View>
-            {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
-            <Pressable
-                onPress={entrar}
-                disabled={carregando}
-                style={({ pressed }) => [
-                    styles.botao,
-                    pressed && !carregando && styles.botaoPressionado,
-                    carregando && styles.botaoDesabilitado,
-                ]}>
-                {carregando ? (<ActivityIndicator color="#FFFFFF" />) : (<Text style={styles.textoBotao}>Entrar</Text>)}
-            </Pressable>
-        </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
     )
 
 }
 
 
 const styles = StyleSheet.create({
-    container: {
+    flex: {
         flex: 1,
+        backgroundColor: '#FAF9F6',
+    },
+
+    container: {
+        flexGrow: 1,
         justifyContent: 'center',
         paddingHorizontal: 24,
+        paddingVertical: 24,
         backgroundColor: '#FAF9F6',
         gap: 14,
     },

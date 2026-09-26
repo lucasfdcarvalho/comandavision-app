@@ -8,11 +8,12 @@ import { colors } from "../../theme/colors";
 import { formatarMoeda } from "../../utils/formatadores";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
+import { ProdutoImagem } from "../../components/ProdutoImagem";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'ConfirmarItem'>;
 
 export function ConfirmarItemScreen({ route, navigation }: Props) {
-    const { comandaId, produtoId, produtoNome, precoUnitario } = route.params;
+    const { comandaId, produtoId, produtoNome, precoUnitario, produtoImagemUrl } = route.params;
 
     const [quantidade, setQuantidade] = useState(1);
     const [observacao, setObservacao] = useState('');
@@ -52,8 +53,13 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.nomeProduto}>{produtoNome}</Text>
-            <Text style={styles.preco}>{formatarMoeda(precoUnitario)} / unidade</Text>
+            <View style={styles.cabecalhoProduto}>
+                <ProdutoImagem imagemUrl={produtoImagemUrl} tamanho={64} />
+                <View style={styles.infoProduto}>
+                    <Text style={styles.nomeProduto}>{produtoNome}</Text>
+                    <Text style={styles.preco}>{formatarMoeda(precoUnitario)} / unidade</Text>
+                </View>
+            </View>
 
             <Text style={styles.rotulo}>Quantidade</Text>
             <View style={styles.stepper}>
@@ -95,15 +101,24 @@ const styles = StyleSheet.create({
         gap: 8,
         backgroundColor: colors.fundo,
     },
+    cabecalhoProduto: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+        marginBottom: 12,
+    },
+    infoProduto: {
+        flex: 1,
+    },
     nomeProduto: {
         fontSize: 20,
         fontWeight: '700',
         color: colors.textoPrimario,
     },
     preco: {
+        marginTop: 2,
         fontSize: 14,
         color: colors.textoSecundario,
-        marginBottom: 12,
     },
     rotulo: {
         marginTop: 12,

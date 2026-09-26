@@ -11,6 +11,7 @@ import { formatarMoeda } from "../../utils/formatadores";
 import { EmptyState } from "../../components/EmptyState";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
+import { ProdutoImagem } from "../../components/ProdutoImagem";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'AdicionarItem'>;
 
@@ -128,10 +129,9 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
                             produtoId: item.id,
                             produtoNome: item.nome,
                             precoUnitario: item.preco,
+                            produtoImagemUrl: item.imagemUrl,
                         })}>
-                        <View style={styles.placeholderImagem}>
-                            <Feather name="package" size={20} color={colors.textoSecundario} />
-                        </View>
+                        <ProdutoImagem imagemUrl={item.imagemUrl} />
                         <View style={styles.infoProduto}>
                             <Text style={styles.nomeProduto}>{item.nome}</Text>
                             <Text style={styles.precoProduto}>{formatarMoeda(item.preco)}</Text>
@@ -222,14 +222,6 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
-    },
-    placeholderImagem: {
-        width: 44,
-        height: 44,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: colors.fundo,
-        borderRadius: 8,
     },
     infoProduto: {
         flex: 1,

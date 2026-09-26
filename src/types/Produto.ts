@@ -7,4 +7,8 @@ export interface Produto {
     preco: number;
     categoria: Categoria;
     ativo: boolean;
+    // O backend ainda não retorna esse campo (ver TODO em ProdutoImagem.tsx).
+    // Mantido opcional/nullable de propósito para já funcionar assim que a API
+    // passar a devolver a URL do Supabase Storage.
+    imagemUrl?: string | null;
 }

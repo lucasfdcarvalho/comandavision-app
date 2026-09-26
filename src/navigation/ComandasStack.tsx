@@ -15,7 +15,13 @@ export type ComandasStackParamList = {
     NovaComanda: undefined;
     DetalhesComanda: { comandaId: number };
     AdicionarItem: { comandaId: number };
-    ConfirmarItem: { comandaId: number; produtoId: number; produtoNome: string; precoUnitario: number };
+    ConfirmarItem: {
+        comandaId: number;
+        produtoId: number;
+        produtoNome: string;
+        precoUnitario: number;
+        produtoImagemUrl?: string | null;
+    };
     EditarItem: {
         comandaId: number;
         itemId: number;
