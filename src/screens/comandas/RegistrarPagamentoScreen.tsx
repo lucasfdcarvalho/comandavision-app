@@ -136,8 +136,9 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
             <PagamentoConcluido
                 comandaIdentificacao={comandaIdentificacao}
                 totalPagoCentavos={saldo.totalPagoCentavos}
-                onVoltarComandas={() => navigation.popTo('Lista')}
+                onVerComprovante={() => navigation.navigate('Comprovante', { comandaId })}
                 onVerDetalhes={() => navigation.popTo('DetalhesComanda', { comandaId })}
+                onVoltarComandas={() => navigation.popTo('Lista')}
             />
         );
     }
@@ -244,11 +245,18 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
 type PagamentoConcluidoProps = {
     comandaIdentificacao: string;
     totalPagoCentavos: number;
-    onVoltarComandas: () => void;
+    onVerComprovante: () => void;
     onVerDetalhes: () => void;
+    onVoltarComandas: () => void;
 };
 
-function PagamentoConcluido({ comandaIdentificacao, totalPagoCentavos, onVoltarComandas, onVerDetalhes }: PagamentoConcluidoProps) {
+function PagamentoConcluido({
+    comandaIdentificacao,
+    totalPagoCentavos,
+    onVerComprovante,
+    onVerDetalhes,
+    onVoltarComandas,
+}: PagamentoConcluidoProps) {
     return (
         <View style={styles.telaConcluida}>
             <Feather name="check-circle" size={72} color={colors.sucesso} />
@@ -261,8 +269,11 @@ function PagamentoConcluido({ comandaIdentificacao, totalPagoCentavos, onVoltarC
             </View>
 
             <View style={styles.botoesConcluidoContainer}>
-                <PrimaryButton titulo="Voltar para comandas" onPress={onVoltarComandas} />
+                <PrimaryButton titulo="Ver comprovante" icone="file-text" onPress={onVerComprovante} />
                 <SecondaryButton titulo="Ver detalhes" onPress={onVerDetalhes} />
+                <Pressable onPress={onVoltarComandas} style={styles.linkVoltarComandas} accessibilityRole="button">
+                    <Text style={styles.textoLinkVoltarComandas}>Voltar para comandas</Text>
+                </Pressable>
             </View>
         </View>
     );
@@ -422,5 +433,15 @@ const styles = StyleSheet.create({
     botoesConcluidoContainer: {
         width: '100%',
         gap: 10,
+    },
+    linkVoltarComandas: {
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    textoLinkVoltarComandas: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+        textDecorationLine: 'underline',
     },
 });

@@ -282,7 +282,16 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                             <Text style={styles.valorResumo}>{centavosParaMoeda(saldo.totalPagoCentavos)}</Text>
                                         </View>
                                         {saldo.quitado ? (
-                                            <Text style={styles.restanteQuitado}>Pagamento concluído</Text>
+                                            <>
+                                                <Text style={styles.restanteQuitado}>Pagamento concluído</Text>
+                                                <View style={styles.botaoComprovanteContainer}>
+                                                    <SecondaryButton
+                                                        titulo="Ver comprovante"
+                                                        icone="file-text"
+                                                        onPress={() => navigation.navigate('Comprovante', { comandaId })}
+                                                    />
+                                                </View>
+                                            </>
                                         ) : (
                                             <View style={styles.linhaResumo}>
                                                 <Text style={styles.rotuloResumoDestaque}>Saldo pendente</Text>
@@ -561,6 +570,9 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '700',
         color: colors.sucesso,
+    },
+    botaoComprovanteContainer: {
+        marginTop: 8,
     },
     pagamentoLinha: {
         flexDirection: 'row',

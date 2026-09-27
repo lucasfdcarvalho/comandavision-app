@@ -8,6 +8,7 @@ import { AdicionarItemScreen } from "../screens/comandas/AdicionarItemScreen";
 import { ConfirmarItemScreen } from "../screens/comandas/ConfirmarItemScreen";
 import { EditarItemScreen } from "../screens/comandas/EditarItemScreen";
 import { RegistrarPagamentoScreen } from "../screens/comandas/RegistrarPagamentoScreen";
+import { ComprovanteScreen } from "../screens/comandas/ComprovanteScreen";
 import { colors } from "../theme/colors";
 
 export type ComandasStackParamList = {
@@ -31,6 +32,7 @@ export type ComandasStackParamList = {
         observacaoAtual?: string;
     };
     RegistrarPagamento: { comandaId: number; comandaIdentificacao: string; valorSugerido: number };
+    Comprovante: { comandaId: number };
 };
 
 const Stack = createNativeStackNavigator<ComandasStackParamList>();
@@ -84,6 +86,11 @@ export function ComandasStack() {
                 name="RegistrarPagamento"
                 component={RegistrarPagamentoScreen}
                 options={{ title: 'Registrar pagamento' }}
+            />
+            <Stack.Screen
+                name="Comprovante"
+                component={ComprovanteScreen}
+                options={{ title: 'Comprovante' }}
             />
         </Stack.Navigator>
     );
