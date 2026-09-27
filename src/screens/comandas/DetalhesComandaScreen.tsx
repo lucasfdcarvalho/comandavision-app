@@ -344,6 +344,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                             icone="plus-circle"
                                             onPress={() => navigation.navigate('RegistrarPagamento', {
                                                 comandaId,
+                                                comandaIdentificacao: comanda.identificacao,
                                                 valorSugerido: saldo.disponivel ? saldo.restanteCentavos / 100 : 0,
                                             })}
                                         />

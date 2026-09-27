@@ -10,6 +10,7 @@ import { colors } from "../../theme/colors";
 import { formatarMoeda, paraDataISOBrasil, subtrairDiasData } from "../../utils/formatadores";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../../types/Dashboard";
+import { GraficoLinhaFaturamento } from "../../components/GraficoLinhaFaturamento";
 
 type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
@@ -131,14 +132,13 @@ export function DashboardScreen() {
     const diasExibidos = faturamentoDiario.length > DIAS_EXIBIDOS_NO_GRAFICO
         ? faturamentoDiario.slice(-DIAS_EXIBIDOS_NO_GRAFICO)
         : faturamentoDiario;
-    const maiorFaturamentoExibido = Math.max(0, ...diasExibidos.map((dia) => dia.faturamento ?? 0));
-
-    function larguraBarra(total: number | null | undefined): number {
-        if (maiorFaturamentoExibido <= 0) {
-            return 0;
+    const totalExibido = diasExibidos.reduce((soma, dia) => soma + (dia.faturamento ?? 0), 0);
+    const melhorDia = diasExibidos.reduce<FaturamentoDiario | null>((melhor, atual) => {
+        if (!melhor || (atual.faturamento ?? 0) > (melhor.faturamento ?? 0)) {
+            return atual;
         }
-        return Math.min(100, Math.max(0, ((total ?? 0) / maiorFaturamentoExibido) * 100));
-    }
+        return melhor;
+    }, null);
 
     return (
         <ScrollView
@@ -247,20 +247,25 @@ export function DashboardScreen() {
                                         Mostrando os últimos {DIAS_EXIBIDOS_NO_GRAFICO} dias
                                     </Text>
                                 ) : null}
-                                {diasExibidos.map((dia) => (
-                                    <View key={dia.data} style={styles.linhaDia}>
-                                        <Text style={styles.dataDia}>{dia.data.slice(8, 10)}/{dia.data.slice(5, 7)}</Text>
-                                        <View style={styles.barraFundo}>
-                                            <View
-                                                style={[
-                                                    styles.barraPreenchida,
-                                                    { width: `${larguraBarra(dia.faturamento)}%` },
-                                                ]}
-                                            />
-                                        </View>
-                                        <Text style={styles.totalDia}>{formatarMoeda(dia.faturamento)}</Text>
-                                    </View>
-                                ))}
+
+                                <GraficoLinhaFaturamento
+                                    pontos={diasExibidos.map((dia) => ({
+                                        rotulo: `${dia.data.slice(8, 10)}/${dia.data.slice(5, 7)}`,
+                                        valor: dia.faturamento ?? 0,
+                                    }))}
+                                />
+
+                                <View style={styles.resumoGrafico}>
+                                    <Text style={styles.textoResumoGrafico}>
+                                        Total no período: <Text style={styles.textoResumoGraficoDestaque}>{formatarMoeda(totalExibido)}</Text>
+                                    </Text>
+                                    {melhorDia ? (
+                                        <Text style={styles.textoResumoGrafico}>
+                                            Melhor dia: {melhorDia.data.slice(8, 10)}/{melhorDia.data.slice(5, 7)} —{' '}
+                                            <Text style={styles.textoResumoGraficoDestaque}>{formatarMoeda(melhorDia.faturamento)}</Text>
+                                        </Text>
+                                    ) : null}
+                                </View>
                             </>
                         )}
                     </View>
@@ -398,33 +403,16 @@ const styles = StyleSheet.create({
         minWidth: 80,
         textAlign: 'right',
     },
-    linhaDia: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
+    resumoGrafico: {
+        marginTop: 4,
+        gap: 2,
     },
-    dataDia: {
-        width: 40,
-        fontSize: 12,
+    textoResumoGrafico: {
+        fontSize: 13,
         color: colors.textoSecundario,
     },
-    barraFundo: {
-        flex: 1,
-        height: 8,
-        backgroundColor: colors.fundo,
-        borderRadius: 999,
-        overflow: 'hidden',
-    },
-    barraPreenchida: {
-        height: '100%',
-        backgroundColor: colors.laranja,
-        borderRadius: 999,
-    },
-    totalDia: {
-        fontSize: 13,
-        fontWeight: '600',
+    textoResumoGraficoDestaque: {
+        fontWeight: '700',
         color: colors.textoPrimario,
-        minWidth: 76,
-        textAlign: 'right',
     },
 });

@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { ComandasScreen } from "../screens/comandas/ComandasScreen";
 import { NovaComandaScreen } from "../screens/comandas/NovaComandaScreen";
@@ -30,7 +30,7 @@ export type ComandasStackParamList = {
         quantidadeAtual: number;
         observacaoAtual?: string;
     };
-    RegistrarPagamento: { comandaId: number; valorSugerido: number };
+    RegistrarPagamento: { comandaId: number; comandaIdentificacao: string; valorSugerido: number };
 };
 
 const Stack = createNativeStackNavigator<ComandasStackParamList>();
@@ -44,9 +44,13 @@ export function ComandasStack() {
                 options={({ navigation }) => ({
                     title: 'Comandas',
                     headerRight: () => (
-                        <Pressable style={styles.botaoHeaderComIcone} onPress={() => navigation.navigate('NovaComanda')}>
-                            <Feather name="plus-circle" size={16} color={styles.botaoHeader.color} />
-                            <Text style={styles.botaoHeader}>Nova comanda</Text>
+                        <Pressable
+                            style={({ pressed }) => [styles.botaoHeaderIcone, pressed && styles.botaoHeaderIconePressionado]}
+                            onPress={() => navigation.navigate('NovaComanda')}
+                            hitSlop={8}
+                            accessibilityRole="button"
+                            accessibilityLabel="Nova comanda">
+                            <Feather name="plus-circle" size={24} color={colors.laranja} />
                         </Pressable>
                     ),
                 })}
@@ -86,14 +90,11 @@ export function ComandasStack() {
 }
 
 const styles = StyleSheet.create({
-    botaoHeaderComIcone: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
+    botaoHeaderIcone: {
+        paddingHorizontal: 4,
+        paddingVertical: 4,
     },
-    botaoHeader: {
-        color: colors.laranja,
-        fontWeight: '700',
-        fontSize: 14,
+    botaoHeaderIconePressionado: {
+        opacity: 0.6,
     },
 });
