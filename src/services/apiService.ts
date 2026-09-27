@@ -1,7 +1,8 @@
 import { UsuarioAutenticado } from "../types/UsuarioAutenticado";
 import { Comanda, ComandaDetalhada, DadosNovaComanda } from "../types/Comanda";
 import { ItemComanda, DadosNovoItem, DadosAtualizarItem } from "../types/ItemComanda";
-import { Produto } from "../types/Produto";
+import { Produto, DadosNovoProduto, DadosAtualizarProduto } from "../types/Produto";
+import { Categoria, DadosNovaCategoria, DadosAtualizarCategoria } from "../types/Categoria";
 import { Pagamento, DadosNovoPagamento, ResumoPagamentos } from "../types/Pagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../types/Dashboard";
 import { apiClient } from "./apiClient";
@@ -27,6 +28,38 @@ async function buscarComanda(id: number): Promise<ComandaDetalhada> {
 
 async function listarProdutos(): Promise<Produto[]> {
     return apiClient.requisitar<Produto[]>('/api/produtos');
+}
+
+async function criarProduto(dados: DadosNovoProduto): Promise<Produto> {
+    return apiClient.requisitar<Produto>('/api/produtos', {
+        method: 'POST',
+        body: JSON.stringify(dados),
+    });
+}
+
+async function atualizarProduto(id: number, dados: DadosAtualizarProduto): Promise<Produto> {
+    return apiClient.requisitar<Produto>(`/api/produtos/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(dados),
+    });
+}
+
+async function listarCategorias(): Promise<Categoria[]> {
+    return apiClient.requisitar<Categoria[]>('/api/categorias');
+}
+
+async function criarCategoria(dados: DadosNovaCategoria): Promise<Categoria> {
+    return apiClient.requisitar<Categoria>('/api/categorias', {
+        method: 'POST',
+        body: JSON.stringify(dados),
+    });
+}
+
+async function atualizarCategoria(id: number, dados: DadosAtualizarCategoria): Promise<Categoria> {
+    return apiClient.requisitar<Categoria>(`/api/categorias/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(dados),
+    });
 }
 
 async function adicionarItem(comandaId: number, dados: DadosNovoItem): Promise<ItemComanda> {
@@ -106,6 +139,11 @@ export const apiService = {
     abrirComanda,
     buscarComanda,
     listarProdutos,
+    criarProduto,
+    atualizarProduto,
+    listarCategorias,
+    criarCategoria,
+    atualizarCategoria,
     adicionarItem,
     atualizarItem,
     removerItem,

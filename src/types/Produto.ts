@@ -12,3 +12,20 @@ export interface Produto {
     // passar a devolver a URL do Supabase Storage.
     imagemUrl?: string | null;
 }
+
+// Criação/atualização não enviam `imagemUrl` de propósito — o backend ainda
+// não aceita esse campo oficialmente (ver TODO em ProdutoImagem.tsx).
+export interface DadosNovoProduto {
+    nome: string;
+    descricao?: string;
+    preco: number;
+    categoriaId: number;
+}
+
+export interface DadosAtualizarProduto {
+    nome: string;
+    descricao?: string;
+    preco: number;
+    categoriaId: number;
+    ativo: boolean;
+}

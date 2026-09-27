@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, ActivityIndicator, RefreshControl, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
@@ -11,6 +13,8 @@ import { formatarMoeda, paraDataISOBrasil, subtrairDiasData } from "../../utils/
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../../types/Dashboard";
 import { GraficoLinhaFaturamento } from "../../components/GraficoLinhaFaturamento";
+
+type Props = NativeStackScreenProps<GestaoStackParamList, 'Dashboard'>;
 
 type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
@@ -41,7 +45,7 @@ function calcularPeriodo(chave: ChavePeriodo): { inicio: string; fim: string } {
     return { inicio: `${ano}-${mes}-01`, fim };
 }
 
-export function DashboardScreen() {
+export function DashboardScreen({ navigation }: Props) {
     const [periodo, setPeriodo] = useState<ChavePeriodo>('30dias');
     const [carregando, setCarregando] = useState(true);
     const [carregandoPeriodo, setCarregandoPeriodo] = useState(false);
@@ -163,6 +167,21 @@ export function DashboardScreen() {
                     <Text style={styles.rotuloCartao}>Canceladas</Text>
                 </View>
             </View>
+
+            <Pressable
+                style={({ pressed }) => [styles.cartaoCardapio, pressed && styles.cartaoCardapioPressionado]}
+                onPress={() => navigation.navigate('Catalogo')}
+                accessibilityRole="button"
+                accessibilityLabel="Gerenciar cardápio">
+                <View style={styles.iconeCardapio}>
+                    <Feather name="book-open" size={22} color={colors.laranja} />
+                </View>
+                <View style={styles.infoCardapio}>
+                    <Text style={styles.tituloCardapio}>Gerenciar cardápio</Text>
+                    <Text style={styles.subtituloCardapio}>Categorias, produtos, preços e disponibilidade</Text>
+                </View>
+                <Feather name="chevron-right" size={20} color={colors.textoSecundario} />
+            </Pressable>
 
             <View style={styles.periodos}>
                 {PERIODOS.map((opcao) => {
@@ -312,6 +331,40 @@ const styles = StyleSheet.create({
     },
     rotuloCartao: {
         fontSize: 12,
+        color: colors.textoSecundario,
+    },
+    cartaoCardapio: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        padding: 14,
+        backgroundColor: colors.superficie,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.borda,
+    },
+    cartaoCardapioPressionado: {
+        opacity: 0.8,
+    },
+    iconeCardapio: {
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.fundo,
+        borderRadius: 10,
+    },
+    infoCardapio: {
+        flex: 1,
+    },
+    tituloCardapio: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.textoPrimario,
+    },
+    subtituloCardapio: {
+        marginTop: 2,
+        fontSize: 13,
         color: colors.textoSecundario,
     },
     periodos: {

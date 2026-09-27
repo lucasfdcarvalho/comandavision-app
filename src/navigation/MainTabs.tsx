@@ -3,7 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import { ComandasStack } from "./ComandasStack";
 import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
-import { DashboardScreen } from "../screens/dashboard/DashboardScreen";
+import { GestaoStack } from "./GestaoStack";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
 
 const Tab = createBottomTabNavigator();
@@ -32,9 +32,10 @@ export function MainTabs() {
             {usuario?.papel === 'DONO' && (
                 <Tab.Screen
                     name="Gestao"
-                    component={DashboardScreen}
+                    component={GestaoStack}
                     options={{
                         title: 'Gestão',
+                        headerShown: false,
                         tabBarIcon: ({ color, size }) => <Feather name="bar-chart-2" size={size} color={color} />,
                     }}
                 />
