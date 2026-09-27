@@ -173,7 +173,6 @@ const styles = StyleSheet.create({
     chipsLista: {
         flexGrow: 0,
         flexShrink: 0,
-        maxHeight: 52,
     },
     chipsConteudo: {
         alignItems: 'center',
