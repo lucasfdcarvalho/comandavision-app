@@ -6,6 +6,15 @@ if (!urlBase) {
     throw new Error('API não configurada');
 }
 
+const MENSAGEM_SESSAO_EXPIRADA = 'Sua sessão expirou. Entre novamente.';
+
+// Registrado pelo AuthProvider: desloga o usuário quando a API recusa o token (401).
+let aoExpirarSessao: (() => void) | null = null;
+
+function definirAoExpirarSessao(callback: (() => void) | null) {
+    aoExpirarSessao = callback;
+}
+
 async function extrairMensagemErro(response: Response): Promise<string> {
     try {
         // Formato real da API (ErroResponse): { status, erro, mensagem, dataHora, campos }.
@@ -34,7 +43,8 @@ async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise
     const sessao = await authService.obterSessao();
 
     if (!sessao) {
-        throw new Error('Sessão não encontrada');
+        aoExpirarSessao?.();
+        throw new Error(MENSAGEM_SESSAO_EXPIRADA);
     }
 
     const response = await fetch(`${urlBase}${caminho}`, {
@@ -45,6 +55,11 @@ async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise
             Authorization: `Bearer ${sessao.access_token}`,
         },
     });
+
+    if (response.status === 401) {
+        aoExpirarSessao?.();
+        throw new Error(MENSAGEM_SESSAO_EXPIRADA);
+    }
 
     if (!response.ok) {
         throw new Error(await extrairMensagemErro(response));
@@ -59,4 +74,5 @@ async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise
 
 export const apiClient = {
     requisitar,
+    definirAoExpirarSessao,
 };

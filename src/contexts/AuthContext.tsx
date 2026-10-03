@@ -1,10 +1,15 @@
-import { createContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useEffect, useRef, useState, ReactNode } from "react";
+import { Alert } from "react-native";
 
 import { UsuarioAutenticado } from "../types/UsuarioAutenticado";
 
 import { authService } from "../services/authService";
 
 import { apiService } from "../services/apiService";
+
+import { apiClient } from "../services/apiClient";
+
+import { supabase } from "../services/supabase";
 
 
 interface AuthContextData {
@@ -24,6 +29,43 @@ export const AuthContext = createContext<AuthContextData | undefined>(undefined)
 export function AuthProvider({ children }: AuthProviderProps) {
     const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
     const [carregandoSessao, setCarregandoSessao] = useState<boolean>(true);
+    // Evita vários avisos quando requisições paralelas recebem 401 ao mesmo tempo.
+    const encerrandoSessao = useRef(false);
+    const usuarioAtual = useRef(usuario);
+    usuarioAtual.current = usuario;
+
+    useEffect(() => {
+        apiClient.definirAoExpirarSessao(() => {
+            if (encerrandoSessao.current) {
+                return;
+            }
+
+            encerrandoSessao.current = true;
+            // Lido antes do signOut, que dispara SIGNED_OUT e zera o usuário.
+            const estavaLogado = usuarioAtual.current !== null;
+            authService.encerrarSessaoLocal()
+                .catch(() => undefined)
+                .finally(() => {
+                    if (estavaLogado) {
+                        Alert.alert('Sessão expirada', 'Sua sessão expirou. Entre novamente para continuar.');
+                    }
+                    setUsuario(null);
+                    encerrandoSessao.current = false;
+                });
+        });
+
+        // Cobre o caso em que o Supabase não consegue renovar o token e encerra a sessão sozinho.
+        const { data } = supabase.auth.onAuthStateChange((evento) => {
+            if (evento === 'SIGNED_OUT') {
+                setUsuario(null);
+            }
+        });
+
+        return () => {
+            apiClient.definirAoExpirarSessao(null);
+            data.subscription.unsubscribe();
+        };
+    }, []);
 
 
     useEffect(() => {

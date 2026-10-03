@@ -1,3 +1,4 @@
+import { AppState } from "react-native";
 import { createClient } from "@supabase/supabase-js";
 
 import 'react-native-url-polyfill/auto';
@@ -24,4 +25,12 @@ export const supabase = createClient(enderecoServidor, supabaseChavePublica, {
     }
 });
 
-
+// Em React Native a renovação automática do token só deve rodar com o app em primeiro plano;
+// ao voltar do segundo plano, o token vencido é renovado antes das próximas requisições.
+AppState.addEventListener('change', (estado) => {
+    if (estado === 'active') {
+        supabase.auth.startAutoRefresh();
+    } else {
+        supabase.auth.stopAutoRefresh();
+    }
+});
