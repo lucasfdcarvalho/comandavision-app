@@ -5,11 +5,12 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
+import { imagemProdutoService } from "../../services/imagemProdutoService";
 import { Categoria } from "../../types/Categoria";
 import { colors } from "../../theme/colors";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { ProdutoImagem } from "../../components/ProdutoImagem";
+import { SeletorImagemProduto, type ImagemSelecionada } from "../../components/SeletorImagemProduto";
 import { SeletorCategoria } from "../../components/SeletorCategoria";
 import { LoadingState } from "../../components/LoadingState";
 
@@ -27,6 +28,9 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
     const [preco, setPreco] = useState(produto.preco.toFixed(2).replace('.', ','));
     const [categoriaId, setCategoriaId] = useState<number | null>(produto.categoria.id);
     const [ativo, setAtivo] = useState(produto.ativo);
+    // `imagemAtualUrl` é a URL já salva; `imagemNova` só existe quando o usuário escolhe outra foto.
+    const [imagemAtualUrl, setImagemAtualUrl] = useState<string | null>(produto.imagemUrl ?? null);
+    const [imagemNova, setImagemNova] = useState<ImagemSelecionada | null>(null);
     const [carregando, setCarregando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
 
@@ -91,12 +95,17 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
         try {
             setCarregando(true);
 
+            const imagemUrl = imagemNova
+                ? await imagemProdutoService.enviarImagem(imagemNova.uri, imagemNova.mimeType)
+                : imagemAtualUrl;
+
             await apiService.atualizarProduto(produto.id, {
                 nome: nome.trim(),
                 descricao: descricao.trim() || undefined,
                 preco: precoCentavos / 100,
                 categoriaId: categoriaId as number,
                 ativo,
+                imagemUrl,
             });
 
             Alert.alert('Produto atualizado', 'As alterações foram salvas com sucesso.', [
@@ -117,9 +126,15 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
     return (
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <View style={styles.previaContainer}>
-                    <ProdutoImagem imagemUrl={produto.imagemUrl} tamanho={72} />
-                </View>
+                <SeletorImagemProduto
+                    imagemUri={imagemNova?.uri ?? imagemAtualUrl}
+                    onSelecionar={setImagemNova}
+                    onRemover={() => {
+                        setImagemNova(null);
+                        setImagemAtualUrl(null);
+                    }}
+                    desabilitado={carregando}
+                />
 
                 <Text style={styles.rotulo}>Nome</Text>
                 <TextInput
@@ -202,10 +217,6 @@ const styles = StyleSheet.create({
         padding: 24,
         gap: 8,
         backgroundColor: colors.fundo,
-    },
-    previaContainer: {
-        alignItems: 'center',
-        marginBottom: 12,
     },
     rotulo: {
         marginTop: 12,

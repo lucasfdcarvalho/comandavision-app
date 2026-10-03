@@ -3,7 +3,6 @@ export interface ItemComanda {
     comandaId: number;
     produtoId: number;
     produtoNome: string;
-    // Mesma pendência de backend do campo em Produto: ainda não é retornado aqui.
     produtoImagemUrl?: string | null;
     quantidade: number;
     precoUnitario: number;

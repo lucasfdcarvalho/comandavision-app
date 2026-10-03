@@ -4,11 +4,12 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
+import { imagemProdutoService } from "../../services/imagemProdutoService";
 import { Categoria } from "../../types/Categoria";
 import { colors } from "../../theme/colors";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { ProdutoImagem } from "../../components/ProdutoImagem";
+import { SeletorImagemProduto, type ImagemSelecionada } from "../../components/SeletorImagemProduto";
 import { SeletorCategoria } from "../../components/SeletorCategoria";
 import { LoadingState } from "../../components/LoadingState";
 
@@ -23,6 +24,7 @@ export function NovoProdutoScreen({ navigation }: Props) {
     const [descricao, setDescricao] = useState('');
     const [preco, setPreco] = useState('');
     const [categoriaId, setCategoriaId] = useState<number | null>(null);
+    const [imagem, setImagem] = useState<ImagemSelecionada | null>(null);
     const [carregando, setCarregando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
 
@@ -69,11 +71,14 @@ export function NovoProdutoScreen({ navigation }: Props) {
         try {
             setCarregando(true);
 
+            const imagemUrl = imagem ? await imagemProdutoService.enviarImagem(imagem.uri, imagem.mimeType) : null;
+
             await apiService.criarProduto({
                 nome: nome.trim(),
                 descricao: descricao.trim() || undefined,
                 preco: precoCentavos / 100,
                 categoriaId,
+                imagemUrl,
             });
 
             Alert.alert('Produto criado', 'O produto foi criado com sucesso.', [
@@ -94,10 +99,12 @@ export function NovoProdutoScreen({ navigation }: Props) {
     return (
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <View style={styles.previaContainer}>
-                    <ProdutoImagem tamanho={72} />
-                    <Text style={styles.textoPrevia}>A imagem poderá ser adicionada quando o backend suportar upload</Text>
-                </View>
+                <SeletorImagemProduto
+                    imagemUri={imagem?.uri ?? null}
+                    onSelecionar={setImagem}
+                    onRemover={() => setImagem(null)}
+                    desabilitado={carregando}
+                />
 
                 <Text style={styles.rotulo}>Nome</Text>
                 <TextInput
@@ -158,16 +165,6 @@ const styles = StyleSheet.create({
         padding: 24,
         gap: 8,
         backgroundColor: colors.fundo,
-    },
-    previaContainer: {
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 12,
-    },
-    textoPrevia: {
-        fontSize: 12,
-        color: colors.textoSecundario,
-        textAlign: 'center',
     },
     rotulo: {
         marginTop: 12,

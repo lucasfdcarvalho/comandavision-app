@@ -7,19 +7,16 @@ export interface Produto {
     preco: number;
     categoria: Categoria;
     ativo: boolean;
-    // O backend ainda não retorna esse campo (ver TODO em ProdutoImagem.tsx).
-    // Mantido opcional/nullable de propósito para já funcionar assim que a API
-    // passar a devolver a URL do Supabase Storage.
+    // URL pública do arquivo no Supabase Storage (bucket `produtos`).
     imagemUrl?: string | null;
 }
 
-// Criação/atualização não enviam `imagemUrl` de propósito — o backend ainda
-// não aceita esse campo oficialmente (ver TODO em ProdutoImagem.tsx).
 export interface DadosNovoProduto {
     nome: string;
     descricao?: string;
     preco: number;
     categoriaId: number;
+    imagemUrl?: string | null;
 }
 
 export interface DadosAtualizarProduto {
@@ -28,4 +25,6 @@ export interface DadosAtualizarProduto {
     preco: number;
     categoriaId: number;
     ativo: boolean;
+    // A API trata ausência como "sem imagem": sempre envie a URL atual para não apagá-la.
+    imagemUrl: string | null;
 }
