@@ -8,8 +8,12 @@ import { NovoProdutoScreen } from "../screens/gestao/NovoProdutoScreen";
 import { EditarProdutoScreen } from "../screens/gestao/EditarProdutoScreen";
 import { NovaCategoriaScreen } from "../screens/gestao/NovaCategoriaScreen";
 import { EditarCategoriaScreen } from "../screens/gestao/EditarCategoriaScreen";
+import { EquipeScreen } from "../screens/gestao/EquipeScreen";
+import { NovoUsuarioScreen } from "../screens/gestao/NovoUsuarioScreen";
+import { GerenciarUsuarioScreen } from "../screens/gestao/GerenciarUsuarioScreen";
 import type { Produto } from "../types/Produto";
 import type { Categoria } from "../types/Categoria";
+import type { Usuario } from "../types/Usuario";
 import { colors } from "../theme/colors";
 
 export type GestaoStackParamList = {
@@ -19,6 +23,9 @@ export type GestaoStackParamList = {
     EditarProduto: { produto: Produto };
     NovaCategoria: undefined;
     EditarCategoria: { categoria: Categoria };
+    Equipe: undefined;
+    NovoUsuario: undefined;
+    GerenciarUsuario: { usuario: Usuario };
 };
 
 const Stack = createNativeStackNavigator<GestaoStackParamList>();
@@ -49,6 +56,9 @@ export function GestaoStack() {
             <Stack.Screen name="EditarProduto" component={EditarProdutoScreen} options={{ title: 'Editar produto' }} />
             <Stack.Screen name="NovaCategoria" component={NovaCategoriaScreen} options={{ title: 'Nova categoria' }} />
             <Stack.Screen name="EditarCategoria" component={EditarCategoriaScreen} options={{ title: 'Editar categoria' }} />
+            <Stack.Screen name="Equipe" component={EquipeScreen} options={{ title: 'Equipe' }} />
+            <Stack.Screen name="NovoUsuario" component={NovoUsuarioScreen} options={{ title: 'Novo usuário' }} />
+            <Stack.Screen name="GerenciarUsuario" component={GerenciarUsuarioScreen} options={{ title: 'Usuário' }} />
         </Stack.Navigator>
     );
 }

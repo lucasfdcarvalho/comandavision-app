@@ -183,6 +183,21 @@ export function DashboardScreen({ navigation }: Props) {
                 <Feather name="chevron-right" size={20} color={colors.textoSecundario} />
             </Pressable>
 
+            <Pressable
+                style={({ pressed }) => [styles.cartaoCardapio, pressed && styles.cartaoCardapioPressionado]}
+                onPress={() => navigation.navigate('Equipe')}
+                accessibilityRole="button"
+                accessibilityLabel="Gerenciar equipe">
+                <View style={styles.iconeCardapio}>
+                    <Feather name="users" size={22} color={colors.laranja} />
+                </View>
+                <View style={styles.infoCardapio}>
+                    <Text style={styles.tituloCardapio}>Gerenciar equipe</Text>
+                    <Text style={styles.subtituloCardapio}>Contas, papéis e acesso dos funcionários</Text>
+                </View>
+                <Feather name="chevron-right" size={20} color={colors.textoSecundario} />
+            </Pressable>
+
             <View style={styles.periodos}>
                 {PERIODOS.map((opcao) => {
                     const selecionado = opcao.chave === periodo;

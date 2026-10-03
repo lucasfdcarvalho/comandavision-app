@@ -5,6 +5,7 @@ import { Produto, DadosNovoProduto, DadosAtualizarProduto } from "../types/Produ
 import { Categoria, DadosNovaCategoria, DadosAtualizarCategoria } from "../types/Categoria";
 import { Pagamento, DadosNovoPagamento, ResumoPagamentos } from "../types/Pagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../types/Dashboard";
+import { Usuario, DadosNovoUsuario, PapelUsuario } from "../types/Usuario";
 import { apiClient } from "./apiClient";
 
 async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
@@ -133,6 +134,32 @@ async function listarFaturamentoDiario(inicio: string, fim: string): Promise<Fat
     return apiClient.requisitar<FaturamentoDiario[]>(`/api/dashboard/faturamento-diario?inicio=${inicio}&fim=${fim}`);
 }
 
+async function listarUsuarios(): Promise<Usuario[]> {
+    return apiClient.requisitar<Usuario[]>('/api/usuarios');
+}
+
+async function criarUsuario(dados: DadosNovoUsuario): Promise<Usuario> {
+    return apiClient.requisitar<Usuario>('/api/usuarios', {
+        method: 'POST',
+        body: JSON.stringify(dados),
+    });
+}
+
+async function alterarPapelUsuario(id: string, papel: PapelUsuario): Promise<Usuario> {
+    return apiClient.requisitar<Usuario>(`/api/usuarios/${id}/papel`, {
+        method: 'PATCH',
+        body: JSON.stringify({ papel }),
+    });
+}
+
+async function desativarUsuario(id: string): Promise<Usuario> {
+    return apiClient.requisitar<Usuario>(`/api/usuarios/${id}/desativar`, { method: 'PATCH' });
+}
+
+async function reativarUsuario(id: string): Promise<Usuario> {
+    return apiClient.requisitar<Usuario>(`/api/usuarios/${id}/reativar`, { method: 'PATCH' });
+}
+
 export const apiService = {
     buscarUsuarioAutenticado,
     listarComandas,
@@ -157,4 +184,9 @@ export const apiService = {
     listarProdutosMaisVendidos,
     listarFormasPagamento,
     listarFaturamentoDiario,
+    listarUsuarios,
+    criarUsuario,
+    alterarPapelUsuario,
+    desativarUsuario,
+    reativarUsuario,
 };
