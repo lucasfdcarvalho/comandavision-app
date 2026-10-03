@@ -33,7 +33,8 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
             setCarregando(true);
             setMensagemErro('');
             const dados = await apiService.listarProdutos();
-            setProdutos(dados.filter((produto) => produto.ativo));
+            // Produto de categoria inativa também fica indisponível (a API recusa a inclusão).
+            setProdutos(dados.filter((produto) => produto.ativo && produto.categoria.ativa));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar os produtos';
             setMensagemErro(mensagem);
