@@ -14,6 +14,7 @@ export type ItemColuna = {
 
 type Props = {
     itens: ItemColuna[];
+    // null = nenhum selecionado: todas as colunas ficam na cor de destaque.
     indiceSelecionado: number | null;
     onSelecionar: (indice: number) => void;
     // Máximo de rótulos no eixo X; com mais itens, mostra uma amostra espaçada.
@@ -23,6 +24,8 @@ type Props = {
 
 const LARGURA_EIXO_Y = 52;
 const ESPACO_TOPO = 10;
+// Folga abaixo da linha de base para o rótulo "R$ 0" do eixo não ser cortado.
+const ESPACO_BASE = 8;
 const ALTURA_EIXO_X = 22;
 const LARGURA_ROTULO_X = 44;
 const LARGURA_MAXIMA_COLUNA = 24;
@@ -81,7 +84,7 @@ export function GraficoColunas({ itens, indiceSelecionado, onSelecionar, maximoR
     }
 
     const larguraPlot = largura - LARGURA_EIXO_Y;
-    const alturaPlot = alturaGrafico - ESPACO_TOPO;
+    const alturaPlot = alturaGrafico - ESPACO_TOPO - ESPACO_BASE;
     const base = ESPACO_TOPO + alturaPlot;
     const teto = arredondarTetoEixo(Math.max(...itens.map((item) => item.valor)));
     const marcas = [0, teto / 2, teto];

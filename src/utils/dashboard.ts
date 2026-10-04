@@ -5,12 +5,13 @@ export type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
 export type Periodo = { inicio: string; fim: string };
 
-export const PERIODOS: { chave: ChavePeriodo; rotulo: string; descricao: string; comparacao: string }[] = [
-    { chave: 'hoje', rotulo: 'Hoje', descricao: 'hoje', comparacao: 'vs. ontem (dia inteiro)' },
-    { chave: '7dias', rotulo: '7 dias', descricao: 'nos últimos 7 dias', comparacao: 'vs. 7 dias anteriores' },
-    { chave: '30dias', rotulo: '30 dias', descricao: 'nos últimos 30 dias', comparacao: 'vs. 30 dias anteriores' },
-    { chave: 'mes', rotulo: 'Este mês', descricao: 'neste mês', comparacao: 'vs. mesmo período do mês passado' },
-];
+// `referencia` aparece uma única vez, abaixo do seletor, explicando com o que os selos comparam.
+export const PERIODOS: { chave: ChavePeriodo; rotulo: string; referencia: string }[] = [
+    { chave: 'hoje', rotulo: 'Hoje', referencia: 'Em relação a ontem' },
+    { chave: '7dias', rotulo: '7 dias', referencia: 'Em relação aos 7 dias anteriores' },
+    { chave: '30dias', rotulo: '30 dias', referencia: 'Em relação aos 30 dias anteriores' },
+    { chave: 'mes', rotulo: 'Este mês', referencia: 'Em relação ao mesmo período do mês passado' },
+]
 
 const NOMES_DIA_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const NOMES_DIA_SEMANA_CURTOS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];

@@ -7,7 +7,7 @@ import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { IndicadorVariacao } from "../../components/dashboard/IndicadorVariacao";
+import { SeloVariacao } from "../../components/dashboard/SeloVariacao";
 import { colors } from "../../theme/colors";
 import { formatarMoeda } from "../../utils/formatadores";
 import { calcularPeriodo, calcularPeriodoAnterior, calcularVariacao } from "../../utils/dashboard";
@@ -85,7 +85,12 @@ export function DashboardScreen({ navigation }: Props) {
                 <Text style={styles.valorPrincipal} numberOfLines={1} adjustsFontSizeToFit>
                     {formatarMoeda(hoje?.faturamento ?? 0)}
                 </Text>
-                <IndicadorVariacao variacao={variacao('faturamento')} comparacao="vs. ontem (dia inteiro)" />
+                {variacao('faturamento') !== null ? (
+                    <View style={styles.linhaVariacao}>
+                        <SeloVariacao variacao={variacao('faturamento')} />
+                        <Text style={styles.rotuloPequeno}>em relação a ontem</Text>
+                    </View>
+                ) : null}
 
                 <View style={styles.linhaIndicadores}>
                     <View style={styles.indicador}>
@@ -202,6 +207,11 @@ const styles = StyleSheet.create({
         fontSize: 32,
         fontWeight: '700',
         color: colors.textoPrimario,
+    },
+    linhaVariacao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     linhaIndicadores: {
         flexDirection: 'row',

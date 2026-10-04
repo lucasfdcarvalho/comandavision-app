@@ -6,7 +6,7 @@ import { apiService } from "../../services/apiService";
 import { LoadingState } from "../../components/LoadingState";
 import { MensagemErro } from "../../components/MensagemErro";
 import { GraficoColunas } from "../../components/dashboard/GraficoColunas";
-import { IndicadorVariacao } from "../../components/dashboard/IndicadorVariacao";
+import { CartaoIndicador } from "../../components/dashboard/CartaoIndicador";
 import { BarraProporcional } from "../../components/dashboard/BarraProporcional";
 import { colors } from "../../theme/colors";
 import { formatarMoeda } from "../../utils/formatadores";
@@ -35,13 +35,14 @@ export function IndicadoresScreen() {
     const [carregando, setCarregando] = useState(true);
     const [carregandoPeriodo, setCarregandoPeriodo] = useState(false);
     const [atualizando, setAtualizando] = useState(false);
-    const [mensagemErroPeriodo, setMensagemErroPeriodo] = useState('');
+    const [mensagemErro, setMensagemErro] = useState('');
 
     const [resumo, setResumo] = useState<ResumoDashboard | null>(null);
     const [resumoAnterior, setResumoAnterior] = useState<ResumoDashboard | null>(null);
     const [produtos, setProdutos] = useState<ProdutoMaisVendido[]>([]);
     const [formas, setFormas] = useState<FormaPagamentoResumo[]>([]);
     const [faturamentoDiario, setFaturamentoDiario] = useState<FaturamentoDiario[]>([]);
+    // null = nada selecionado: o topo do gráfico mostra o total e todas as colunas ficam em destaque.
     const [diaSelecionado, setDiaSelecionado] = useState<number | null>(null);
     const [diaSemanaSelecionado, setDiaSemanaSelecionado] = useState<number | null>(null);
 
@@ -49,7 +50,7 @@ export function IndicadoresScreen() {
         const atual = calcularPeriodo(chave);
         const anterior = calcularPeriodoAnterior(chave, atual);
         try {
-            setMensagemErroPeriodo('');
+            setMensagemErro('');
             const [resumoDados, resumoAnteriorDados, produtosDados, formasDados, faturamentoDados] = await Promise.all([
                 apiService.buscarResumoDashboard(atual.inicio, atual.fim),
                 // A comparação é um extra: se falhar, o resto do painel continua.
@@ -58,17 +59,16 @@ export function IndicadoresScreen() {
                 apiService.listarFormasPagamento(atual.inicio, atual.fim),
                 apiService.listarFaturamentoDiario(atual.inicio, atual.fim),
             ]);
-            const dias = preencherDiasSemVenda(faturamentoDados, atual);
             setResumo(resumoDados);
             setResumoAnterior(resumoAnteriorDados);
             setProdutos(produtosDados);
             setFormas([...formasDados].sort((a, b) => b.valorRecebido - a.valorRecebido));
-            setFaturamentoDiario(dias);
-            setDiaSelecionado(dias.length ? dias.length - 1 : null);
+            setFaturamentoDiario(preencherDiasSemVenda(faturamentoDados, atual));
+            setDiaSelecionado(null);
             setDiaSemanaSelecionado(null);
         } catch (error: unknown) {
-            const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar os dados do período';
-            setMensagemErroPeriodo(mensagem);
+            const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar os indicadores';
+            setMensagemErro(mensagem);
         }
     }, []);
 
@@ -116,20 +116,19 @@ export function IndicadoresScreen() {
         return <LoadingState />;
     }
 
-    const configuracaoPeriodo = PERIODOS.find((opcao) => opcao.chave === periodo) ?? PERIODOS[0];
+    const referencia = PERIODOS.find((opcao) => opcao.chave === periodo)?.referencia ?? '';
     const variacao = (campo: keyof ResumoDashboard) =>
         resumoAnterior ? calcularVariacao(resumo?.[campo] ?? 0, resumoAnterior[campo] ?? 0) : null;
 
     const totalPeriodo = faturamentoDiario.reduce((soma, dia) => soma + (dia.faturamento ?? 0), 0);
-    const diasComVenda = faturamentoDiario.filter((dia) => (dia.faturamento ?? 0) > 0).length;
-    const melhorDia = faturamentoDiario.reduce<FaturamentoDiario | null>(
-        (melhor, atual) => (!melhor || atual.faturamento > melhor.faturamento ? atual : melhor), null);
     const diaAtual = diaSelecionado !== null ? faturamentoDiario[diaSelecionado] : null;
-    const mostrarEvolucao = periodo !== 'hoje' && faturamentoDiario.length > 1;
+    const mostrarEvolucao = periodo !== 'hoje' && faturamentoDiario.length > 1 && totalPeriodo > 0;
     const mostrarSemana = faturamentoDiario.length >= DIAS_MINIMOS_ANALISE_SEMANA && totalPeriodo > 0;
-    const indiceSemanaExibido = diaSemanaSelecionado ?? indiceMelhorDiaSemana;
-    const semanaExibida = mediasSemana[indiceSemanaExibido];
+    const semanaExibida = mediasSemana[diaSemanaSelecionado ?? indiceMelhorDiaSemana];
     const maiorQuantidadeProduto = Math.max(1, ...produtos.map((produto) => produto.quantidadeVendida));
+
+    // Tocar de novo na coluna já selecionada volta para o total do período.
+    const alternarSelecao = (atual: number | null, indice: number) => (atual === indice ? null : indice);
 
     return (
         <ScrollView
@@ -154,119 +153,54 @@ export function IndicadoresScreen() {
                     );
                 })}
             </View>
+            <Text style={styles.referencia}>{referencia}</Text>
 
             {carregandoPeriodo ? (
                 <ActivityIndicator color={colors.laranja} style={styles.carregandoPeriodo} />
-            ) : mensagemErroPeriodo ? (
-                <MensagemErro texto={mensagemErroPeriodo} />
+            ) : mensagemErro ? (
+                <MensagemErro texto={mensagemErro} />
             ) : (
                 <>
-                    <View style={styles.secao}>
-                        <Text style={styles.rotuloSecao}>Faturamento {configuracaoPeriodo.descricao}</Text>
-                        <Text style={styles.valorPrincipal} numberOfLines={1} adjustsFontSizeToFit>
-                            {formatarMoeda(resumo?.faturamento ?? 0)}
-                        </Text>
-                        <IndicadorVariacao variacao={variacao('faturamento')} comparacao={configuracaoPeriodo.comparacao} />
-
-                        <View style={styles.divisor} />
-
-                        <View style={styles.linhaIndicadores}>
-                            <View style={styles.indicador}>
-                                <Text style={styles.rotuloPequeno}>Vendas</Text>
-                                <Text style={styles.valorIndicador} numberOfLines={1} adjustsFontSizeToFit>
-                                    {resumo?.quantidadeVendas ?? 0}
-                                </Text>
-                                <IndicadorVariacao variacao={variacao('quantidadeVendas')} compacto />
-                            </View>
-                            <View style={styles.indicador}>
-                                <Text style={styles.rotuloPequeno}>Ticket médio</Text>
-                                <Text style={styles.valorIndicador} numberOfLines={1} adjustsFontSizeToFit>
-                                    {formatarMoeda(resumo?.ticketMedio ?? 0)}
-                                </Text>
-                                <IndicadorVariacao variacao={variacao('ticketMedio')} compacto />
-                            </View>
-                            <View style={styles.indicador}>
-                                <Text style={styles.rotuloPequeno}>Itens vendidos</Text>
-                                <Text style={styles.valorIndicador} numberOfLines={1} adjustsFontSizeToFit>
-                                    {resumo?.quantidadeItensVendidos ?? 0}
-                                </Text>
-                                <IndicadorVariacao variacao={variacao('quantidadeItensVendidos')} compacto />
-                            </View>
-                        </View>
+                    <View style={styles.grade}>
+                        <CartaoIndicador rotulo="Faturamento" valor={formatarMoeda(resumo?.faturamento ?? 0)} variacao={variacao('faturamento')} />
+                        <CartaoIndicador rotulo="Vendas" valor={String(resumo?.quantidadeVendas ?? 0)} variacao={variacao('quantidadeVendas')} />
+                    </View>
+                    <View style={styles.grade}>
+                        <CartaoIndicador rotulo="Ticket médio" valor={formatarMoeda(resumo?.ticketMedio ?? 0)} variacao={variacao('ticketMedio')} />
+                        <CartaoIndicador rotulo="Itens vendidos" valor={String(resumo?.quantidadeItensVendidos ?? 0)} variacao={variacao('quantidadeItensVendidos')} />
                     </View>
 
                     {mostrarEvolucao ? (
                         <View style={styles.secao}>
                             <Text style={styles.secaoTitulo}>Faturamento por dia</Text>
-                            {totalPeriodo === 0 ? (
-                                <Text style={styles.textoVazio}>Nenhum faturamento registrado no período</Text>
-                            ) : (
-                                <>
-                                    {diaAtual ? (
-                                        <View style={styles.detalheSelecao}>
-                                            <Text style={styles.rotuloSecao}>{formatarDiaComSemana(diaAtual.data)}</Text>
-                                            <Text style={styles.valorSelecao}>{formatarMoeda(diaAtual.faturamento)}</Text>
-                                            <Text style={styles.rotuloPequeno}>
-                                                {diaAtual.quantidadeVendas === 1 ? '1 venda' : `${diaAtual.quantidadeVendas} vendas`}
-                                            </Text>
-                                        </View>
-                                    ) : null}
-
-                                    <GraficoColunas
-                                        itens={faturamentoDiario.map((dia) => ({
-                                            chave: dia.data,
-                                            rotulo: faturamentoDiario.length <= 7 ? nomeDiaSemanaCurto(dia.data) : formatarDiaCurto(dia.data),
-                                            valor: dia.faturamento ?? 0,
-                                            descricaoAcessivel: `${formatarDiaComSemana(dia.data)}: ${formatarMoeda(dia.faturamento)}`,
-                                        }))}
-                                        indiceSelecionado={diaSelecionado}
-                                        onSelecionar={setDiaSelecionado}
-                                        maximoRotulos={faturamentoDiario.length <= 7 ? 7 : 5}
-                                    />
-                                    <Text style={styles.dica}>Toque numa coluna para ver o dia</Text>
-
-                                    <View style={styles.linhaResumo}>
-                                        <View style={styles.itemResumo}>
-                                            <Text style={styles.rotuloPequeno}>Média por dia</Text>
-                                            <Text style={styles.valorResumo} numberOfLines={1} adjustsFontSizeToFit>
-                                                {formatarMoeda(totalPeriodo / faturamentoDiario.length)}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.itemResumo}>
-                                            <Text style={styles.rotuloPequeno}>Melhor dia</Text>
-                                            <Text style={styles.valorResumo} numberOfLines={1} adjustsFontSizeToFit>
-                                                {melhorDia ? formatarDiaCurto(melhorDia.data) : '—'}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.itemResumo}>
-                                            <Text style={styles.rotuloPequeno}>Dias com venda</Text>
-                                            <Text style={styles.valorResumo}>
-                                                {diasComVenda} de {faturamentoDiario.length}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </>
-                            )}
+                            <View style={styles.cabecalhoGrafico}>
+                                <Text style={styles.rotuloGrafico}>
+                                    {diaAtual ? formatarDiaComSemana(diaAtual.data) : 'Total no período'}
+                                </Text>
+                                <Text style={styles.valorGrafico}>{formatarMoeda(diaAtual ? diaAtual.faturamento : totalPeriodo)}</Text>
+                            </View>
+                            <GraficoColunas
+                                itens={faturamentoDiario.map((dia) => ({
+                                    chave: dia.data,
+                                    rotulo: faturamentoDiario.length <= 7 ? nomeDiaSemanaCurto(dia.data) : formatarDiaCurto(dia.data),
+                                    valor: dia.faturamento ?? 0,
+                                    descricaoAcessivel: `${formatarDiaComSemana(dia.data)}: ${formatarMoeda(dia.faturamento)}`,
+                                }))}
+                                indiceSelecionado={diaSelecionado}
+                                onSelecionar={(indice) => setDiaSelecionado((atual) => alternarSelecao(atual, indice))}
+                                maximoRotulos={faturamentoDiario.length <= 7 ? 7 : 5}
+                            />
                         </View>
-                    ) : periodo === 'hoje' ? (
-                        <Text style={styles.dicaPeriodo}>
-                            Para ver a evolução dia a dia, escolha 7 dias, 30 dias ou Este mês.
-                        </Text>
                     ) : null}
 
                     {mostrarSemana && semanaExibida ? (
                         <View style={styles.secao}>
-                            <Text style={styles.secaoTitulo}>Movimento por dia da semana</Text>
-                            <View style={styles.detalheSelecao}>
-                                <Text style={styles.rotuloSecao}>
-                                    {indiceSemanaExibido === indiceMelhorDiaSemana
-                                        ? `${semanaExibida.nome} é o dia mais forte`
-                                        : semanaExibida.nome}
+                            <Text style={styles.secaoTitulo}>Média por dia da semana</Text>
+                            <View style={styles.cabecalhoGrafico}>
+                                <Text style={styles.rotuloGrafico}>
+                                    {diaSemanaSelecionado === null ? `Melhor dia: ${semanaExibida.nome}` : semanaExibida.nome}
                                 </Text>
-                                <Text style={styles.valorSelecao}>{formatarMoeda(semanaExibida.media)}</Text>
-                                <Text style={styles.rotuloPequeno}>
-                                    média por dia, em {semanaExibida.ocorrencias} {semanaExibida.ocorrencias === 1 ? 'dia' : 'dias'} do período
-                                </Text>
+                                <Text style={styles.valorGrafico}>{formatarMoeda(semanaExibida.media)}</Text>
                             </View>
                             <GraficoColunas
                                 itens={mediasSemana.map((dia) => ({
@@ -275,8 +209,8 @@ export function IndicadoresScreen() {
                                     valor: dia.media,
                                     descricaoAcessivel: `${dia.nome}: média de ${formatarMoeda(dia.media)}`,
                                 }))}
-                                indiceSelecionado={indiceSemanaExibido}
-                                onSelecionar={setDiaSemanaSelecionado}
+                                indiceSelecionado={diaSemanaSelecionado}
+                                onSelecionar={(indice) => setDiaSemanaSelecionado((atual) => alternarSelecao(atual, indice))}
                                 maximoRotulos={7}
                                 altura={150}
                             />
@@ -322,9 +256,7 @@ export function IndicadoresScreen() {
                                         <View style={styles.flex}>
                                             <BarraProporcional proporcao={forma.percentual / 100} />
                                         </View>
-                                        <Text style={styles.complementoRanking}>
-                                            {formatarMoeda(forma.valorRecebido)} · {forma.quantidadePagamentos}x
-                                        </Text>
+                                        <Text style={styles.complementoRanking}>{formatarMoeda(forma.valorRecebido)}</Text>
                                     </View>
                                 </View>
                             ))
@@ -343,14 +275,10 @@ const styles = StyleSheet.create({
     },
     conteudo: {
         padding: 16,
-        gap: 14,
+        gap: 12,
     },
     flex: {
         flex: 1,
-    },
-    rotuloPequeno: {
-        fontSize: 12,
-        color: colors.textoSecundario,
     },
     periodos: {
         flexDirection: 'row',
@@ -377,8 +305,18 @@ const styles = StyleSheet.create({
     textoBotaoPeriodoSelecionado: {
         color: colors.superficie,
     },
+    referencia: {
+        marginTop: -4,
+        fontSize: 12,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+    },
     carregandoPeriodo: {
         marginVertical: 24,
+    },
+    grade: {
+        flexDirection: 'row',
+        gap: 12,
     },
     secao: {
         padding: 16,
@@ -393,65 +331,15 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colors.textoPrimario,
     },
-    rotuloSecao: {
+    cabecalhoGrafico: {
+        gap: 2,
+    },
+    rotuloGrafico: {
         fontSize: 13,
         color: colors.textoSecundario,
     },
-    valorPrincipal: {
-        fontSize: 36,
-        fontWeight: '700',
-        color: colors.textoPrimario,
-    },
-    divisor: {
-        height: 1,
-        marginVertical: 4,
-        backgroundColor: colors.borda,
-    },
-    linhaIndicadores: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    indicador: {
-        flex: 1,
-        gap: 2,
-    },
-    valorIndicador: {
-        fontSize: 17,
-        fontWeight: '700',
-        color: colors.textoPrimario,
-    },
-    detalheSelecao: {
-        gap: 2,
-    },
-    valorSelecao: {
+    valorGrafico: {
         fontSize: 22,
-        fontWeight: '700',
-        color: colors.textoPrimario,
-    },
-    dica: {
-        fontSize: 12,
-        color: colors.textoSecundario,
-        textAlign: 'center',
-    },
-    dicaPeriodo: {
-        fontSize: 13,
-        color: colors.textoSecundario,
-        textAlign: 'center',
-        paddingHorizontal: 16,
-    },
-    linhaResumo: {
-        flexDirection: 'row',
-        gap: 12,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.borda,
-    },
-    itemResumo: {
-        flex: 1,
-        gap: 2,
-    },
-    valorResumo: {
-        fontSize: 14,
         fontWeight: '700',
         color: colors.textoPrimario,
     },
@@ -490,7 +378,7 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     complementoRanking: {
-        minWidth: 92,
+        minWidth: 84,
         fontSize: 12,
         color: colors.textoSecundario,
         textAlign: 'right',
