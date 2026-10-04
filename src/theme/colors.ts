@@ -22,4 +22,12 @@ export const colors = {
         fechada: '#F0F0F0',
         cancelada: '#FDECEA',
     },
+
+    // Marcas dos gráficos. O laranja da marca tem só 2,5:1 de contraste no branco;
+    // `destaque` é um passo mais escuro da mesma rampa (3,7:1) e `suave` é o tom de fundo.
+    grafico: {
+        destaque: '#C46F00',
+        suave: '#F3C27E',
+        trilho: '#F5EEE4',
+    },
 };
