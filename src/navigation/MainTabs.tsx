@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ComandasStack } from "./ComandasStack";
 import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
 import { GestaoStack } from "./GestaoStack";
+import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
 
 const Tab = createBottomTabNavigator();
@@ -31,12 +32,21 @@ export function MainTabs() {
             />
             {usuario?.papel === 'DONO' && (
                 <Tab.Screen
+                    name="Indicadores"
+                    component={IndicadoresScreen}
+                    options={{
+                        tabBarIcon: ({ color, size }) => <Feather name="bar-chart-2" size={size} color={color} />,
+                    }}
+                />
+            )}
+            {usuario?.papel === 'DONO' && (
+                <Tab.Screen
                     name="Gestao"
                     component={GestaoStack}
                     options={{
                         title: 'Gestão',
                         headerShown: false,
-                        tabBarIcon: ({ color, size }) => <Feather name="bar-chart-2" size={size} color={color} />,
+                        tabBarIcon: ({ color, size }) => <Feather name="briefcase" size={size} color={color} />,
                     }}
                 />
             )}
