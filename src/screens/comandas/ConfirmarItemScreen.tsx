@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
@@ -13,6 +14,7 @@ import { ProdutoImagem } from "../../components/ProdutoImagem";
 type Props = NativeStackScreenProps<ComandasStackParamList, 'ConfirmarItem'>;
 
 export function ConfirmarItemScreen({ route, navigation }: Props) {
+    const { mostrarSucesso } = useDialogo();
     const { comandaId, produtoId, produtoNome, precoUnitario, produtoImagemUrl } = route.params;
 
     const [quantidade, setQuantidade] = useState(1);
@@ -40,9 +42,8 @@ export function ConfirmarItemScreen({ route, navigation }: Props) {
                 observacao: observacao.trim() || undefined,
             });
 
-            Alert.alert('Item adicionado', `${quantidade}x ${produtoNome} foi adicionado à comanda.`, [
-                { text: 'OK', onPress: () => navigation.popTo('DetalhesComanda', { comandaId }) },
-            ]);
+            mostrarSucesso('Item adicionado', `${quantidade}x ${produtoNome} foi adicionado à comanda.`,
+                () => navigation.popTo('DetalhesComanda', { comandaId }));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível adicionar o item';
             setMensagemErro(mensagem);

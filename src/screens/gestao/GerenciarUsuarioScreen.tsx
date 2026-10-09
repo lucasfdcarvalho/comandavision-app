@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, Alert, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
@@ -21,6 +22,7 @@ const NOME_PAPEL: Record<PapelUsuario, string> = {
 };
 
 export function GerenciarUsuarioScreen({ route }: Props) {
+    const { alertar } = useDialogo();
     const { usuario: usuarioLogado } = useAuth();
     const [usuario, setUsuario] = useState<Usuario>(route.params.usuario);
     const [carregando, setCarregando] = useState(false);
@@ -51,13 +53,13 @@ export function GerenciarUsuarioScreen({ route }: Props) {
             return;
         }
 
-        Alert.alert(
+        alertar(
             'Alterar papel',
             `${nomeExibido} passará a ser ${NOME_PAPEL[papel]}. A mudança passa a valer em até 1 hora, quando o login da pessoa for renovado.`,
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
-                    text: 'Alterar',
+                    text: 'Alterar papel',
                     onPress: () => executar(
                         () => apiService.alterarPapelUsuario(usuario.id, papel),
                         `Papel alterado para ${NOME_PAPEL[papel]}`),
@@ -67,7 +69,7 @@ export function GerenciarUsuarioScreen({ route }: Props) {
     }
 
     function confirmarDesativar() {
-        Alert.alert(
+        alertar(
             'Desativar usuário',
             `${nomeExibido} não conseguirá mais entrar no app. O histórico de comandas é mantido e você pode reativar depois.`,
             [

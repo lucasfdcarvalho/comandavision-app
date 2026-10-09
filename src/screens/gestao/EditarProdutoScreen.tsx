@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ import { LoadingState } from "../../components/LoadingState";
 type Props = NativeStackScreenProps<GestaoStackParamList, 'EditarProduto'>;
 
 export function EditarProdutoScreen({ route, navigation }: Props) {
+    const { alertar, mostrarSucesso } = useDialogo();
     const { produto } = route.params;
 
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -75,7 +77,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
         setMensagemErro('');
 
         if (produto.ativo && !ativo) {
-            Alert.alert(
+            alertar(
                 'Desativar produto',
                 'Este produto deixará de aparecer para adição em novas comandas.',
                 [
@@ -108,9 +110,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
                 imagemUrl,
             });
 
-            Alert.alert('Produto atualizado', 'As alterações foram salvas com sucesso.', [
-                { text: 'OK', onPress: () => navigation.popTo('Catalogo') },
-            ]);
+            mostrarSucesso('Produto atualizado', 'As alterações foram salvas com sucesso.', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível salvar as alterações';
             setMensagemErro(mensagem);

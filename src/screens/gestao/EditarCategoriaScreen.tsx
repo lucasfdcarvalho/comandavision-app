@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
@@ -11,6 +12,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 type Props = NativeStackScreenProps<GestaoStackParamList, 'EditarCategoria'>;
 
 export function EditarCategoriaScreen({ route, navigation }: Props) {
+    const { alertar, mostrarSucesso } = useDialogo();
     const { categoria } = route.params;
 
     const [nome, setNome] = useState(categoria.nome);
@@ -28,7 +30,7 @@ export function EditarCategoriaScreen({ route, navigation }: Props) {
         // Só pede confirmação quando o usuário está desativando agora — editar
         // nome/descrição de uma categoria já inativa não precisa de aviso extra.
         if (categoria.ativa && !ativa) {
-            Alert.alert(
+            alertar(
                 'Desativar categoria',
                 'Desativar esta categoria pode afetar a disponibilidade dos produtos vinculados a ela.',
                 [
@@ -54,9 +56,7 @@ export function EditarCategoriaScreen({ route, navigation }: Props) {
                 ativa,
             });
 
-            Alert.alert('Categoria atualizada', 'As alterações foram salvas com sucesso.', [
-                { text: 'OK', onPress: () => navigation.popTo('Catalogo') },
-            ]);
+            mostrarSucesso('Categoria atualizada', 'As alterações foram salvas com sucesso.', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível salvar as alterações';
             setMensagemErro(mensagem);

@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useLayoutEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, Pressable, Alert, StyleSheet } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -32,6 +33,7 @@ const ROTULO_STATUS_PAGAMENTO: Partial<Record<Pagamento['status'], string>> = {
 };
 
 export function DetalhesComandaScreen({ route, navigation }: Props) {
+    const { alertar } = useDialogo();
     const { comandaId } = route.params;
     const { usuario } = useAuth();
     const ehDono = usuario?.papel === 'DONO';
@@ -110,12 +112,12 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     const saldo = comanda ? avaliarSaldoPagamento(comanda.total, resumoPagamentos) : { disponivel: false as const };
 
     function confirmarFechamento() {
-        Alert.alert(
+        alertar(
             'Fechar comanda',
             'Deseja fechar esta comanda? Os itens deixarão de ser editáveis e você poderá registrar o pagamento em seguida.',
             [
                 { text: 'Cancelar', style: 'cancel' },
-                { text: 'Fechar', onPress: fechar },
+                { text: 'Fechar comanda', onPress: fechar },
             ]
         );
     }
@@ -136,11 +138,11 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     }
 
     function confirmarCancelamento() {
-        Alert.alert(
+        alertar(
             'Cancelar comanda',
             'Deseja cancelar esta comanda? Essa ação não pode ser desfeita.',
             [
-                { text: 'Voltar', style: 'cancel' },
+                { text: 'Manter comanda', style: 'cancel' },
                 { text: 'Cancelar comanda', style: 'destructive', onPress: cancelar },
             ]
         );
@@ -161,12 +163,12 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     }
 
     function confirmarEstorno(pagamento: Pagamento) {
-        Alert.alert(
+        alertar(
             'Estornar pagamento',
             `Deseja estornar o pagamento de ${formatarMoeda(pagamento.valor)} (${ROTULO_FORMA[pagamento.forma]})?`,
             [
-                { text: 'Voltar', style: 'cancel' },
-                { text: 'Estornar', style: 'destructive', onPress: () => estornar(pagamento.id) },
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Estornar pagamento', style: 'destructive', onPress: () => estornar(pagamento.id) },
             ]
         );
     }

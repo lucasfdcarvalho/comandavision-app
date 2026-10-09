@@ -8,7 +8,7 @@ type Props = {
 
 export function MensagemSucesso({ texto }: Props) {
     return (
-        <View style={styles.container}>
+        <View style={styles.container} accessible accessibilityLabel={texto} accessibilityLiveRegion="polite">
             <Feather name="check-circle" size={16} color={colors.sucesso} />
             <Text style={styles.texto}>{texto}</Text>
         </View>

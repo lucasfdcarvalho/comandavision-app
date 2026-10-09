@@ -8,7 +8,7 @@ type Props = {
 
 export function MensagemErro({ texto }: Props) {
     return (
-        <View style={styles.container}>
+        <View style={styles.container} accessible accessibilityRole="alert" accessibilityLabel={texto} accessibilityLiveRegion="polite">
             <Feather name="alert-circle" size={16} color={colors.erro} />
             <Text style={styles.texto}>{texto}</Text>
         </View>

@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
@@ -10,6 +11,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 type Props = NativeStackScreenProps<ComandasStackParamList, 'NovaComanda'>;
 
 export function NovaComandaScreen({ navigation }: Props) {
+    const { alertar, mostrarSucesso } = useDialogo();
     const [identificacao, setIdentificacao] = useState('');
     const [observacao, setObservacao] = useState('');
     const [carregando, setCarregando] = useState(false);
@@ -31,12 +33,11 @@ export function NovaComandaScreen({ navigation }: Props) {
                 observacao: observacao.trim() || undefined,
             });
 
-            Alert.alert('Comanda aberta', 'A comanda foi aberta com sucesso.', [
-                { text: 'OK', onPress: () => navigation.goBack() },
-            ]);
+            mostrarSucesso('Comanda aberta', 'A comanda foi aberta com sucesso.', () => navigation.popTo('Lista'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível abrir a comanda';
             setMensagemErro(mensagem);
+            alertar('Não foi possível abrir a comanda', mensagem, [], 'erro');
         } finally {
             setCarregando(false);
         }

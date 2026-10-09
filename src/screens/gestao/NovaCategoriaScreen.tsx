@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
@@ -10,6 +11,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 type Props = NativeStackScreenProps<GestaoStackParamList, 'NovaCategoria'>;
 
 export function NovaCategoriaScreen({ navigation }: Props) {
+    const { mostrarSucesso } = useDialogo();
     const [nome, setNome] = useState('');
     const [descricao, setDescricao] = useState('');
     const [carregando, setCarregando] = useState(false);
@@ -31,9 +33,7 @@ export function NovaCategoriaScreen({ navigation }: Props) {
                 descricao: descricao.trim() || undefined,
             });
 
-            Alert.alert('Categoria criada', 'A categoria foi criada com sucesso.', [
-                { text: 'OK', onPress: () => navigation.popTo('Catalogo') },
-            ]);
+            mostrarSucesso('Categoria criada', 'A categoria foi criada com sucesso.', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível criar a categoria';
             setMensagemErro(mensagem);

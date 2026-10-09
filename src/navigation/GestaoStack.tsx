@@ -1,3 +1,4 @@
+import { stackScreenOptions } from './stackScreenOptions';
 import { View, Text, StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -49,7 +50,7 @@ export function GestaoStack() {
     }
 
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={stackScreenOptions}>
             <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Gestão' }} />
             <Stack.Screen name="Catalogo" component={CatalogoScreen} options={{ title: 'Cardápio' }} />
             <Stack.Screen name="NovoProduto" component={NovoProdutoScreen} options={{ title: 'Novo produto' }} />

@@ -1,5 +1,5 @@
+import { useDialogo } from "./DialogoContext";
 import { createContext, useEffect, useRef, useState, ReactNode } from "react";
-import { Alert } from "react-native";
 
 import { UsuarioAutenticado } from "../types/UsuarioAutenticado";
 
@@ -27,6 +27,7 @@ export const AuthContext = createContext<AuthContextData | undefined>(undefined)
 
 
 export function AuthProvider({ children }: AuthProviderProps) {
+    const { alertar } = useDialogo();
     const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
     const [carregandoSessao, setCarregandoSessao] = useState<boolean>(true);
     // Evita vários avisos quando requisições paralelas recebem 401 ao mesmo tempo.
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 .catch(() => undefined)
                 .finally(() => {
                     if (estavaLogado) {
-                        Alert.alert('Sessão expirada', 'Sua sessão expirou. Entre novamente para continuar.');
+                        alertar('Sessão expirada', 'Sua sessão expirou. Entre novamente para continuar.', undefined, 'aviso');
                     }
                     setUsuario(null);
                     encerrandoSessao.current = false;
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             apiClient.definirAoExpirarSessao(null);
             data.subscription.unsubscribe();
         };
-    }, []);
+    }, [alertar]);
 
 
     useEffect(() => {

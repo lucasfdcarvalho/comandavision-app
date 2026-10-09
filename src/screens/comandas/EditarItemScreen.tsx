@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
@@ -13,6 +14,7 @@ import { SecondaryButton } from "../../components/SecondaryButton";
 type Props = NativeStackScreenProps<ComandasStackParamList, 'EditarItem'>;
 
 export function EditarItemScreen({ route, navigation }: Props) {
+    const { alertar } = useDialogo();
     const { comandaId, itemId, produtoNome, precoUnitario, quantidadeAtual, observacaoAtual } = route.params;
 
     const [quantidade, setQuantidade] = useState(quantidadeAtual);
@@ -50,7 +52,7 @@ export function EditarItemScreen({ route, navigation }: Props) {
     }
 
     function confirmarRemocao() {
-        Alert.alert(
+        alertar(
             'Remover item',
             `Deseja remover ${produtoNome} da comanda?`,
             [

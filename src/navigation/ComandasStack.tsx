@@ -1,3 +1,4 @@
+import { stackScreenOptions } from './stackScreenOptions';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -39,7 +40,7 @@ const Stack = createNativeStackNavigator<ComandasStackParamList>();
 
 export function ComandasStack() {
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={stackScreenOptions}>
             <Stack.Screen
                 name="Lista"
                 component={ComandasScreen}

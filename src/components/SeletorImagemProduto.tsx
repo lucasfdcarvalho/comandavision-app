@@ -1,4 +1,5 @@
-import { View, Pressable, Text, Alert, StyleSheet } from "react-native";
+import { useDialogo } from "../contexts/DialogoContext";
+import { View, Pressable, Text, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { colors } from "../theme/colors";
@@ -18,11 +19,12 @@ type Props = {
 };
 
 export function SeletorImagemProduto({ imagemUri, onSelecionar, onRemover, desabilitado }: Props) {
+    const { alertar } = useDialogo();
     async function escolherImagem() {
         const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (!permissao.granted) {
-            Alert.alert('Permissão necessária', 'Libere o acesso às fotos nas configurações do aparelho para escolher uma imagem.');
+            alertar('Permissão necessária', 'Libere o acesso às fotos nas configurações do aparelho para escolher uma imagem.', undefined, 'aviso');
             return;
         }
 

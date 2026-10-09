@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<GestaoStackParamList, 'NovoUsuario'>;
 const TAMANHO_MINIMO_SENHA = 6;
 
 export function NovoUsuarioScreen({ navigation }: Props) {
+    const { mostrarSucesso } = useDialogo();
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
@@ -51,10 +53,10 @@ export function NovoUsuarioScreen({ navigation }: Props) {
                 papel,
             });
 
-            Alert.alert(
+            mostrarSucesso(
                 'Usuário criado',
                 `Passe para ${usuario.nome ?? 'o usuário'} o e-mail ${usuario.email} e a senha provisória para o primeiro acesso.`,
-                [{ text: 'OK', onPress: () => navigation.popTo('Equipe') }]
+                () => navigation.popTo('Equipe')
             );
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível criar o usuário';

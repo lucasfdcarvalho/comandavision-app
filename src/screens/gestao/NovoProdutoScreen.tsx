@@ -1,5 +1,6 @@
+import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";
@@ -16,6 +17,7 @@ import { LoadingState } from "../../components/LoadingState";
 type Props = NativeStackScreenProps<GestaoStackParamList, 'NovoProduto'>;
 
 export function NovoProdutoScreen({ navigation }: Props) {
+    const { mostrarSucesso } = useDialogo();
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [carregandoCategorias, setCarregandoCategorias] = useState(true);
     const [mensagemErroCategorias, setMensagemErroCategorias] = useState('');
@@ -81,9 +83,7 @@ export function NovoProdutoScreen({ navigation }: Props) {
                 imagemUrl,
             });
 
-            Alert.alert('Produto criado', 'O produto foi criado com sucesso.', [
-                { text: 'OK', onPress: () => navigation.popTo('Catalogo') },
-            ]);
+            mostrarSucesso('Produto criado', 'O produto foi criado com sucesso.', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível criar o produto';
             setMensagemErro(mensagem);
