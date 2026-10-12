@@ -1,4 +1,4 @@
-import { ResumoPagamentos } from "../types/Pagamento";
+import type { ResumoPagamentos } from "../types/Pagamento";
 
 export type SaldoPagamento =
     | {
