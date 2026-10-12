@@ -1,5 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, TextInput, FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    Pressable,
+    RefreshControl,
+    Image,
+    StyleSheet,
+    useWindowDimensions,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -12,15 +22,20 @@ import { formatarMoeda } from "../../utils/formatadores";
 import { ProdutoImagem } from "../../components/ProdutoImagem";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { EmptyState } from "../../components/EmptyState";
 
 type Props = NativeStackScreenProps<GestaoStackParamList, 'Catalogo'>;
+
+const PROPORCAO_LOGO = 1591 / 845;
 
 type Aba = 'produtos' | 'categorias';
 type FiltroProduto = 'todos' | 'ativos' | 'inativos';
 type FiltroCategoria = 'todas' | 'ativas' | 'inativas';
 
 export function CatalogoScreen({ navigation }: Props) {
+    const { width: larguraTela } = useWindowDimensions();
+    const larguraMarca = Math.min(larguraTela * 0.72, 320);
+    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
+
     const [aba, setAba] = useState<Aba>('produtos');
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -94,6 +109,16 @@ export function CatalogoScreen({ navigation }: Props) {
             return combinaBusca && combinaFiltro;
         });
     }, [categorias, busca, filtroCategoria]);
+
+    const mensagemVazia = useMemo(() => {
+        if (aba === 'produtos') {
+            if (produtosFiltrados.length > 0) return null;
+            return produtos.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado';
+        } else {
+            if (categoriasFiltradas.length > 0) return null;
+            return categorias.length === 0 ? 'Nenhuma categoria cadastrada' : 'Nenhuma categoria encontrada';
+        }
+    }, [aba, produtosFiltrados.length, produtos.length, categoriasFiltradas.length, categorias.length]);
 
     if (carregando) {
         return <LoadingState />;
@@ -173,82 +198,103 @@ export function CatalogoScreen({ navigation }: Props) {
                 </View>
             )}
 
-            {aba === 'produtos' ? (
-                <FlatList
-                    style={styles.lista}
-                    data={produtosFiltrados}
-                    keyExtractor={(item) => String(item.id)}
-                    contentContainerStyle={styles.listaConteudo}
-                    refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
-                    ListEmptyComponent={
-                        <EmptyState
-                            texto={produtos.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado'}
-                        />
-                    }
-                    renderItem={({ item }) => (
-                        <Pressable
-                            style={[styles.cartaoProduto, !item.ativo && styles.cartaoInativo]}
-                            onPress={() => navigation.navigate('EditarProduto', { produto: item })}>
-                            <ProdutoImagem imagemUrl={item.imagemUrl} />
-                            <View style={styles.infoProduto}>
-                                <Text style={[styles.nomeProduto, !item.ativo && styles.textoInativo]} numberOfLines={1}>
-                                    {item.nome}
-                                </Text>
-                                <Text style={styles.categoriaProduto} numberOfLines={1}>{item.categoria.nome}</Text>
-                                <Text style={[styles.precoProduto, !item.ativo && styles.textoInativo]}>
-                                    {formatarMoeda(item.preco)}
-                                </Text>
-                            </View>
-                            <View style={styles.colunaAcao}>
-                                <View style={[styles.badge, item.ativo ? styles.badgeAtivo : styles.badgeInativo]}>
-                                    <Text style={[styles.textoBadge, item.ativo ? styles.textoBadgeAtivo : styles.textoBadgeInativo]}>
-                                        {item.ativo ? 'Ativo' : 'Inativo'}
+            {mensagemVazia ? (
+                <Text style={styles.avisoVazio}>
+                    {mensagemVazia}
+                </Text>
+            ) : null}
+
+            <View style={styles.areaLista}>
+                <View
+                    style={styles.marcaDaguaContainer}
+                    pointerEvents="none"
+                    accessible={false}
+                    aria-hidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                >
+                    <Image
+                        source={require('../../../assets/images/supri-logo-v2.png')}
+                        style={[
+                            styles.marcaDaguaLogo,
+                            {
+                                width: larguraMarca,
+                                height: alturaMarca,
+                            },
+                        ]}
+                        resizeMode="contain"
+                        accessible={false}
+                        aria-hidden={true}
+                        importantForAccessibility="no"
+                    />
+                </View>
+
+                {aba === 'produtos' ? (
+                    <FlatList
+                        style={styles.lista}
+                        data={produtosFiltrados}
+                        keyExtractor={(item) => String(item.id)}
+                        contentContainerStyle={produtosFiltrados.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
+                        renderItem={({ item }) => (
+                            <Pressable
+                                style={[styles.cartaoProduto, !item.ativo && styles.cartaoInativo]}
+                                onPress={() => navigation.navigate('EditarProduto', { produto: item })}>
+                                <ProdutoImagem imagemUrl={item.imagemUrl} />
+                                <View style={styles.infoProduto}>
+                                    <Text style={[styles.nomeProduto, !item.ativo && styles.textoInativo]} numberOfLines={1}>
+                                        {item.nome}
+                                    </Text>
+                                    <Text style={styles.categoriaProduto} numberOfLines={1}>{item.categoria.nome}</Text>
+                                    <Text style={[styles.precoProduto, !item.ativo && styles.textoInativo]}>
+                                        {formatarMoeda(item.preco)}
+                                    </Text>
+                                </View>
+                                <View style={styles.colunaAcao}>
+                                    <View style={[styles.badge, item.ativo ? styles.badgeAtivo : styles.badgeInativo]}>
+                                        <Text style={[styles.textoBadge, item.ativo ? styles.textoBadgeAtivo : styles.textoBadgeInativo]}>
+                                            {item.ativo ? 'Ativo' : 'Inativo'}
+                                        </Text>
+                                    </View>
+                                    <Feather name="edit-2" size={16} color={colors.textoSecundario} />
+                                </View>
+                            </Pressable>
+                        )}
+                    />
+                ) : (
+                    <FlatList
+                        style={styles.lista}
+                        data={categoriasFiltradas}
+                        keyExtractor={(item) => String(item.id)}
+                        contentContainerStyle={categoriasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                        refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
+                        renderItem={({ item }) => (
+                            <Pressable
+                                style={[styles.cartaoCategoria, !item.ativa && styles.cartaoInativo]}
+                                onPress={() => navigation.navigate('EditarCategoria', { categoria: item })}>
+                                <View style={styles.infoCategoria}>
+                                    <View style={styles.linhaCabecalhoCategoria}>
+                                        <Text style={[styles.nomeCategoria, !item.ativa && styles.textoInativo]} numberOfLines={1}>
+                                            {item.nome}
+                                        </Text>
+                                        <View style={[styles.badge, item.ativa ? styles.badgeAtivo : styles.badgeInativo]}>
+                                            <Text style={[styles.textoBadge, item.ativa ? styles.textoBadgeAtivo : styles.textoBadgeInativo]}>
+                                                {item.ativa ? 'Ativa' : 'Inativa'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    {item.descricao ? (
+                                        <Text style={styles.descricaoCategoria} numberOfLines={2}>{item.descricao}</Text>
+                                    ) : null}
+                                    <Text style={styles.quantidadeProdutos}>
+                                        {quantidadePorCategoria.get(item.id) ?? 0} produto(s)
                                     </Text>
                                 </View>
                                 <Feather name="edit-2" size={16} color={colors.textoSecundario} />
-                            </View>
-                        </Pressable>
-                    )}
-                />
-            ) : (
-                <FlatList
-                    style={styles.lista}
-                    data={categoriasFiltradas}
-                    keyExtractor={(item) => String(item.id)}
-                    contentContainerStyle={styles.listaConteudo}
-                    refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
-                    ListEmptyComponent={
-                        <EmptyState
-                            texto={categorias.length === 0 ? 'Nenhuma categoria cadastrada' : 'Nenhuma categoria encontrada'}
-                        />
-                    }
-                    renderItem={({ item }) => (
-                        <Pressable
-                            style={[styles.cartaoCategoria, !item.ativa && styles.cartaoInativo]}
-                            onPress={() => navigation.navigate('EditarCategoria', { categoria: item })}>
-                            <View style={styles.infoCategoria}>
-                                <View style={styles.linhaCabecalhoCategoria}>
-                                    <Text style={[styles.nomeCategoria, !item.ativa && styles.textoInativo]} numberOfLines={1}>
-                                        {item.nome}
-                                    </Text>
-                                    <View style={[styles.badge, item.ativa ? styles.badgeAtivo : styles.badgeInativo]}>
-                                        <Text style={[styles.textoBadge, item.ativa ? styles.textoBadgeAtivo : styles.textoBadgeInativo]}>
-                                            {item.ativa ? 'Ativa' : 'Inativa'}
-                                        </Text>
-                                    </View>
-                                </View>
-                                {item.descricao ? (
-                                    <Text style={styles.descricaoCategoria} numberOfLines={2}>{item.descricao}</Text>
-                                ) : null}
-                                <Text style={styles.quantidadeProdutos}>
-                                    {quantidadePorCategoria.get(item.id) ?? 0} produto(s)
-                                </Text>
-                            </View>
-                            <Feather name="edit-2" size={16} color={colors.textoSecundario} />
-                        </Pressable>
-                    )}
-                />
-            )}
+                            </Pressable>
+                        )}
+                    />
+                )}
+            </View>
         </View>
     );
 }
@@ -345,13 +391,42 @@ const styles = StyleSheet.create({
     textoChipSelecionado: {
         color: colors.superficie,
     },
-    lista: {
+    avisoVazio: {
+        fontSize: 13,
+        lineHeight: 18,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+        marginHorizontal: 16,
+        marginTop: 10,
+        marginBottom: 6,
+    },
+    areaLista: {
         flex: 1,
         marginTop: 8,
+        position: 'relative',
+    },
+    marcaDaguaContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    marcaDaguaLogo: {
+        opacity: 0.06,
+    },
+    lista: {
+        flex: 1,
+        backgroundColor: 'transparent',
     },
     listaConteudo: {
         padding: 16,
         gap: 12,
+    },
+    listaVazia: {
+        flexGrow: 1,
     },
     cartaoProduto: {
         flexDirection: 'row',

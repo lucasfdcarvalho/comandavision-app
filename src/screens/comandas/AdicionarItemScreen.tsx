@@ -1,5 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, TextInput, FlatList, Pressable, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    Pressable,
+    Image,
+    StyleSheet,
+    useWindowDimensions,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -8,19 +17,22 @@ import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
 import { colors } from "../../theme/colors";
 import { formatarMoeda } from "../../utils/formatadores";
-import { EmptyState } from "../../components/EmptyState";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { ProdutoImagem } from "../../components/ProdutoImagem";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'AdicionarItem'>;
 
+const PROPORCAO_LOGO = 1591 / 845;
 const TODAS_CATEGORIAS = 'TODAS';
 
 type ChipCategoria = { id: number | typeof TODAS_CATEGORIAS; nome: string };
 
 export function AdicionarItemScreen({ route, navigation }: Props) {
     const { comandaId } = route.params;
+    const { width: larguraTela } = useWindowDimensions();
+    const larguraMarca = Math.min(larguraTela * 0.72, 320);
+    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
 
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [busca, setBusca] = useState('');
@@ -65,6 +77,16 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
         });
     }, [produtos, busca, categoriaSelecionada]);
 
+    const mensagemVazia = useMemo(() => {
+        if (produtosFiltrados.length > 0) {
+            return null;
+        }
+        if (produtos.length === 0) {
+            return 'Nenhum produto cadastrado';
+        }
+        return 'Nenhum produto encontrado';
+    }, [produtosFiltrados.length, produtos.length]);
+
     if (carregando) {
         return <LoadingState />;
     }
@@ -108,41 +130,63 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
                 />
             ) : null}
 
-            <FlatList
-                style={styles.listaProdutos}
-                data={produtosFiltrados}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={styles.listaConteudo}
-                ListEmptyComponent={
-                    <EmptyState
-                        texto={
-                            produtos.length === 0
-                                ? 'Nenhum produto cadastrado'
-                                : 'Nenhum produto encontrado'
-                        }
+            {mensagemVazia ? (
+                <Text style={styles.avisoVazio}>
+                    {mensagemVazia}
+                </Text>
+            ) : null}
+
+            <View style={styles.areaLista}>
+                <View
+                    style={styles.marcaDaguaContainer}
+                    pointerEvents="none"
+                    accessible={false}
+                    aria-hidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                >
+                    <Image
+                        source={require('../../../assets/images/supri-logo-v2.png')}
+                        style={[
+                            styles.marcaDaguaLogo,
+                            {
+                                width: larguraMarca,
+                                height: alturaMarca,
+                            },
+                        ]}
+                        resizeMode="contain"
+                        accessible={false}
+                        aria-hidden={true}
+                        importantForAccessibility="no"
                     />
-                }
-                renderItem={({ item }) => (
-                    <Pressable
-                        style={styles.cartao}
-                        onPress={() => navigation.navigate('ConfirmarItem', {
-                            comandaId,
-                            produtoId: item.id,
-                            produtoNome: item.nome,
-                            precoUnitario: item.preco,
-                            produtoImagemUrl: item.imagemUrl,
-                        })}>
-                        <ProdutoImagem imagemUrl={item.imagemUrl} />
-                        <View style={styles.infoProduto}>
-                            <Text style={styles.nomeProduto}>{item.nome}</Text>
-                            <Text style={styles.precoProduto}>{formatarMoeda(item.preco)}</Text>
-                        </View>
-                        <View style={styles.botaoAdicionar}>
-                            <Feather name="plus" size={20} color={colors.superficie} />
-                        </View>
-                    </Pressable>
-                )}
-            />
+                </View>
+
+                <FlatList
+                    style={styles.listaProdutos}
+                    data={produtosFiltrados}
+                    keyExtractor={(item) => String(item.id)}
+                    contentContainerStyle={produtosFiltrados.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                    renderItem={({ item }) => (
+                        <Pressable
+                            style={styles.cartao}
+                            onPress={() => navigation.navigate('ConfirmarItem', {
+                                comandaId,
+                                produtoId: item.id,
+                                produtoNome: item.nome,
+                                precoUnitario: item.preco,
+                                produtoImagemUrl: item.imagemUrl,
+                            })}>
+                            <ProdutoImagem imagemUrl={item.imagemUrl} />
+                            <View style={styles.infoProduto}>
+                                <Text style={styles.nomeProduto}>{item.nome}</Text>
+                                <Text style={styles.precoProduto}>{formatarMoeda(item.preco)}</Text>
+                            </View>
+                            <View style={styles.botaoAdicionar}>
+                                <Feather name="plus" size={20} color={colors.superficie} />
+                            </View>
+                        </Pressable>
+                    )}
+                />
+            </View>
         </View>
     );
 }
@@ -203,13 +247,42 @@ const styles = StyleSheet.create({
     textoChipSelecionado: {
         color: colors.superficie,
     },
+    avisoVazio: {
+        fontSize: 13,
+        lineHeight: 18,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+        marginHorizontal: 16,
+        marginTop: 4,
+        marginBottom: 10,
+    },
+    areaLista: {
+        flex: 1,
+        position: 'relative',
+    },
+    marcaDaguaContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    marcaDaguaLogo: {
+        opacity: 0.06,
+    },
     listaProdutos: {
         flex: 1,
+        backgroundColor: 'transparent',
     },
     listaConteudo: {
         paddingHorizontal: 16,
         paddingBottom: 16,
         gap: 12,
+    },
+    listaVazia: {
+        flexGrow: 1,
     },
     cartao: {
         flexDirection: 'row',

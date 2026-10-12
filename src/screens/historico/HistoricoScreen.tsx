@@ -1,11 +1,20 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, TextInput, FlatList, RefreshControl, Pressable, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    RefreshControl,
+    Pressable,
+    Image,
+    StyleSheet,
+    useWindowDimensions,
+} from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
 import { ComandaCard } from "../../components/ComandaCard";
-import { EmptyState } from "../../components/EmptyState";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
@@ -27,6 +36,8 @@ const PERIODOS: { chave: ChavePeriodo; rotulo: string }[] = [
     { chave: '30dias', rotulo: '30 dias' },
 ];
 
+const PROPORCAO_LOGO = 1591 / 845;
+
 function dataDeReferencia(comanda: Comanda): string {
     return comanda.status === 'FECHADA' && comanda.fechadaEm ? comanda.fechadaEm : comanda.atualizadoEm;
 }
@@ -42,6 +53,9 @@ function estaDentroDoPeriodo(dataIso: string, chave: ChavePeriodo): boolean {
 
 export function HistoricoScreen() {
     const navigation = useNavigation();
+    const { width: larguraTela } = useWindowDimensions();
+    const larguraMarca = Math.min(larguraTela * 0.72, 320);
+    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
 
     const [comandas, setComandas] = useState<Comanda[]>([]);
     const [busca, setBusca] = useState('');
@@ -92,6 +106,19 @@ export function HistoricoScreen() {
         });
     }, [comandas, busca, periodo]);
 
+    const mensagemVazia = useMemo(() => {
+        if (comandasFiltradas.length > 0) {
+            return null;
+        }
+        if (busca.trim().length > 0) {
+            return 'Nenhuma comanda encontrada';
+        }
+        if (periodo !== 'todos') {
+            return 'Nenhuma comanda encontrada neste período';
+        }
+        return null;
+    }, [comandasFiltradas.length, busca, periodo]);
+
     if (carregando) {
         return <LoadingState />;
     }
@@ -128,38 +155,60 @@ export function HistoricoScreen() {
                 })}
             </View>
 
-            <FlatList
-                style={styles.lista}
-                data={comandasFiltradas}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
-                refreshControl={
-                    <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />
-                }
-                ListEmptyComponent={
-                    <EmptyState
-                        texto={
-                            busca || periodo !== 'todos'
-                                ? 'Nenhuma comanda encontrada para esse filtro'
-                                : 'Nenhuma comanda fechada ou cancelada ainda'
-                        }
+            {mensagemVazia ? (
+                <Text style={styles.avisoVazio}>
+                    {mensagemVazia}
+                </Text>
+            ) : null}
+
+            <View style={styles.areaLista}>
+                <View
+                    style={styles.marcaDaguaContainer}
+                    pointerEvents="none"
+                    accessible={false}
+                    aria-hidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                >
+                    <Image
+                        source={require('../../../assets/images/supri-logo-v2.png')}
+                        style={[
+                            styles.marcaDaguaLogo,
+                            {
+                                width: larguraMarca,
+                                height: alturaMarca,
+                            },
+                        ]}
+                        resizeMode="contain"
+                        accessible={false}
+                        aria-hidden={true}
+                        importantForAccessibility="no"
                     />
-                }
-                renderItem={({ item }) => (
-                    <ComandaCard
-                        comanda={item}
-                        subtitulo={
-                            item.status === 'FECHADA' && item.fechadaEm
-                                ? `Fechada em ${formatarDataHora(item.fechadaEm)}`
-                                : `Atualizada em ${formatarDataHora(item.atualizadoEm)}`
-                        }
-                        onPress={() => (navigation as any).navigate('Comandas', {
-                            screen: 'DetalhesComanda',
-                            params: { comandaId: item.id },
-                        })}
-                    />
-                )}
-            />
+                </View>
+
+                <FlatList
+                    style={styles.lista}
+                    data={comandasFiltradas}
+                    keyExtractor={(item) => String(item.id)}
+                    contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                    refreshControl={
+                        <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />
+                    }
+                    renderItem={({ item }) => (
+                        <ComandaCard
+                            comanda={item}
+                            subtitulo={
+                                item.status === 'FECHADA' && item.fechadaEm
+                                    ? `Fechada em ${formatarDataHora(item.fechadaEm)}`
+                                    : `Atualizada em ${formatarDataHora(item.atualizadoEm)}`
+                            }
+                            onPress={() => (navigation as any).navigate('Comandas', {
+                                screen: 'DetalhesComanda',
+                                params: { comandaId: item.id },
+                            })}
+                        />
+                    )}
+                />
+            </View>
         </View>
     );
 }
@@ -215,9 +264,34 @@ const styles = StyleSheet.create({
     textoBotaoPeriodoSelecionado: {
         color: colors.superficie,
     },
-    lista: {
+    avisoVazio: {
+        fontSize: 13,
+        lineHeight: 18,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+        marginHorizontal: 16,
+        marginTop: 14,
+    },
+    areaLista: {
         flex: 1,
         marginTop: 8,
+        position: 'relative',
+    },
+    marcaDaguaContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    marcaDaguaLogo: {
+        opacity: 0.06,
+    },
+    lista: {
+        flex: 1,
+        backgroundColor: 'transparent',
     },
     listaConteudo: {
         padding: 16,
@@ -225,8 +299,5 @@ const styles = StyleSheet.create({
     },
     listaVazia: {
         flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 24,
     },
 });

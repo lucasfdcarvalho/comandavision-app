@@ -1,5 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, TextInput, FlatList, RefreshControl, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    FlatList,
+    RefreshControl,
+    Image,
+    StyleSheet,
+    useWindowDimensions,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -7,7 +16,6 @@ import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
 import { ComandaCard } from "../../components/ComandaCard";
-import { EmptyState } from "../../components/EmptyState";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
@@ -15,7 +23,13 @@ import { formatarTempoDecorrido } from "../../utils/formatadores";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'Lista'>;
 
+const PROPORCAO_LOGO = 1591 / 845;
+
 export function ComandasScreen({ navigation }: Props) {
+    const { width: larguraTela } = useWindowDimensions();
+    const larguraMarca = Math.min(larguraTela * 0.72, 320);
+    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
+
     const [comandas, setComandas] = useState<Comanda[]>([]);
     const [busca, setBusca] = useState('');
     const [carregando, setCarregando] = useState(true);
@@ -63,6 +77,8 @@ export function ComandasScreen({ navigation }: Props) {
         return comandas.filter((comanda) => comanda.identificacao.toLowerCase().includes(termo));
     }, [comandas, busca]);
 
+    const buscaSemResultados = Boolean(busca.trim()) && comandasFiltradas.length === 0;
+
     if (carregando) {
         return <LoadingState />;
     }
@@ -87,27 +103,53 @@ export function ComandasScreen({ navigation }: Props) {
                 />
             </View>
 
-            <FlatList
-                style={styles.lista}
-                data={comandasFiltradas}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
-                refreshControl={
-                    <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />
-                }
-                ListEmptyComponent={
-                    <EmptyState
-                        texto={busca ? 'Nenhuma comanda encontrada para a busca' : 'Nenhuma comanda aberta'}
+            {buscaSemResultados ? (
+                <Text style={styles.avisoBuscaVazia}>
+                    Nenhuma comanda encontrada
+                </Text>
+            ) : null}
+
+            <View style={styles.areaLista}>
+                <View
+                    style={styles.marcaDaguaContainer}
+                    pointerEvents="none"
+                    accessible={false}
+                    aria-hidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                >
+                    <Image
+                        source={require('../../../assets/images/supri-logo-v2.png')}
+                        style={[
+                            styles.marcaDaguaLogo,
+                            {
+                                width: larguraMarca,
+                                height: alturaMarca,
+                            },
+                        ]}
+                        resizeMode="contain"
+                        accessible={false}
+                        aria-hidden={true}
+                        importantForAccessibility="no"
                     />
-                }
-                renderItem={({ item }) => (
-                    <ComandaCard
-                        comanda={item}
-                        subtitulo={`Aberta ${formatarTempoDecorrido(item.abertaEm)}`}
-                        onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}
-                    />
-                )}
-            />
+                </View>
+
+                <FlatList
+                    style={styles.lista}
+                    data={comandasFiltradas}
+                    keyExtractor={(item) => String(item.id)}
+                    contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
+                    refreshControl={
+                        <RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />
+                    }
+                    renderItem={({ item }) => (
+                        <ComandaCard
+                            comanda={item}
+                            subtitulo={`Aberta ${formatarTempoDecorrido(item.abertaEm)}`}
+                            onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}
+                        />
+                    )}
+                />
+            </View>
         </View>
     );
 }
@@ -145,9 +187,34 @@ const styles = StyleSheet.create({
         color: colors.textoPrimario,
         fontSize: 15,
     },
-    lista: {
+    avisoBuscaVazia: {
+        fontSize: 13,
+        lineHeight: 18,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+        marginHorizontal: 16,
+        marginTop: 14,
+    },
+    areaLista: {
         flex: 1,
         marginTop: 8,
+        position: 'relative',
+    },
+    marcaDaguaContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    marcaDaguaLogo: {
+        opacity: 0.06,
+    },
+    lista: {
+        flex: 1,
+        backgroundColor: 'transparent',
     },
     listaConteudo: {
         padding: 16,
