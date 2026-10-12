@@ -13,18 +13,40 @@ const {
 // São Paulo é UTC-03:00 o ano todo (sem horário de verão desde 2019).
 // Portanto 03:00Z é meia-noite em São Paulo e 02:59:59Z ainda é o dia anterior.
 
-test('formatarMoeda usa vírgula nos centavos e ponto no milhar', () => {
-    assert.equal(formatarMoeda(0), 'R$ 0,00');
-    assert.equal(formatarMoeda(5), 'R$ 5,00');
-    assert.equal(formatarMoeda(0.5), 'R$ 0,50');
+test('formatarMoeda: milhares com separador de ponto', () => {
     assert.equal(formatarMoeda(1234.56), 'R$ 1.234,56');
+    assert.equal(formatarMoeda(10000), 'R$ 10.000,00');
     assert.equal(formatarMoeda(1000000), 'R$ 1.000.000,00');
+    assert.equal(formatarMoeda(987654321.09), 'R$ 987.654.321,09');
 });
 
-test('formatarMoeda trata nulo e indefinido como zero e mantém o sinal negativo', () => {
+test('formatarMoeda: centavos e casas decimais', () => {
+    assert.equal(formatarMoeda(0.01), 'R$ 0,01');
+    assert.equal(formatarMoeda(0.05), 'R$ 0,05');
+    assert.equal(formatarMoeda(0.5), 'R$ 0,50');
+    assert.equal(formatarMoeda(5), 'R$ 5,00');
+    assert.equal(formatarMoeda(10.99), 'R$ 10,99');
+});
+
+test('formatarMoeda: zero, nulo e indefinido', () => {
+    assert.equal(formatarMoeda(0), 'R$ 0,00');
+    assert.equal(formatarMoeda(-0), 'R$ 0,00');
     assert.equal(formatarMoeda(null), 'R$ 0,00');
     assert.equal(formatarMoeda(undefined), 'R$ 0,00');
+});
+
+test('formatarMoeda: valores negativos com sinal antes do R$ e sem zero negativo', () => {
     assert.equal(formatarMoeda(-5.5), '-R$ 5,50');
+    assert.equal(formatarMoeda(-1234.56), '-R$ 1.234,56');
+    assert.equal(formatarMoeda(-1000000), '-R$ 1.000.000,00');
+    assert.equal(formatarMoeda(-0.001), 'R$ 0,00');
+    assert.equal(formatarMoeda(-0.004), 'R$ 0,00');
+});
+
+test('formatarMoeda: valores inválidos (NaN e Infinity) retornam traço sem texto inválido nem zero', () => {
+    assert.equal(formatarMoeda(NaN), '-');
+    assert.equal(formatarMoeda(Infinity), '-');
+    assert.equal(formatarMoeda(-Infinity), '-');
 });
 
 test('paraDataISOBrasil: virada do dia', () => {

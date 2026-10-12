@@ -1,9 +1,16 @@
 // Formatado à mão (sem Intl) porque o Hermes nem sempre traz os dados de localidade pt-BR.
 export function formatarMoeda(valor: number | null | undefined): string {
-    const numero = valor ?? 0;
-    const [inteiro, centavos] = Math.abs(numero).toFixed(2).split('.');
+    if (valor === null || valor === undefined) {
+        return 'R$ 0,00';
+    }
+    if (typeof valor !== 'number' || !Number.isFinite(valor)) {
+        return '-';
+    }
+    const [inteiro, centavos] = Math.abs(valor).toFixed(2).split('.');
+    const ehZero = inteiro === '0' && centavos === '00';
+    const sinal = (valor < 0 && !ehZero) ? '-' : '';
     const inteiroComMilhar = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    return `${numero < 0 ? '-' : ''}R$ ${inteiroComMilhar},${centavos}`;
+    return `${sinal}R$ ${inteiroComMilhar},${centavos}`;
 }
 
 // O backend calcula tudo em America/Sao_Paulo (ver DashboardService no repositório da API).

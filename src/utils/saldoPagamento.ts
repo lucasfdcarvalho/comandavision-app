@@ -53,6 +53,17 @@ export function avaliarSaldoPagamento(totalComandaConfiavel: number, resumo: Res
     };
 }
 
-export function centavosParaMoeda(centavos: number): string {
-    return `R$ ${(centavos / 100).toFixed(2).replace('.', ',')}`;
+export function centavosParaMoeda(centavos: number | null | undefined): string {
+    if (centavos === null || centavos === undefined) {
+        return 'R$ 0,00';
+    }
+    if (typeof centavos !== 'number' || !Number.isFinite(centavos)) {
+        return '-';
+    }
+    const valor = centavos / 100;
+    const [inteiro, centavosStr] = Math.abs(valor).toFixed(2).split('.');
+    const ehZero = inteiro === '0' && centavosStr === '00';
+    const sinal = (valor < 0 && !ehZero) ? '-' : '';
+    const inteiroComMilhar = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${sinal}R$ ${inteiroComMilhar},${centavosStr}`;
 }

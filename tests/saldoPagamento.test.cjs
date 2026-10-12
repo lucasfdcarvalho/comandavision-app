@@ -107,10 +107,38 @@ test('total da comanda inválido deixa o saldo indisponível', () => {
     }
 });
 
-test('centavosParaMoeda formata em reais com vírgula', () => {
-    assert.equal(centavosParaMoeda(0), 'R$ 0,00');
+test('centavosParaMoeda: milhares com separador de ponto', () => {
+    assert.equal(centavosParaMoeda(123456), 'R$ 1.234,56');
+    assert.equal(centavosParaMoeda(1000000), 'R$ 10.000,00');
+    assert.equal(centavosParaMoeda(100000000), 'R$ 1.000.000,00');
+    assert.equal(centavosParaMoeda(98765432109), 'R$ 987.654.321,09');
+});
+
+test('centavosParaMoeda: centavos e frações de real', () => {
+    assert.equal(centavosParaMoeda(1), 'R$ 0,01');
     assert.equal(centavosParaMoeda(5), 'R$ 0,05');
+    assert.equal(centavosParaMoeda(50), 'R$ 0,50');
     assert.equal(centavosParaMoeda(100), 'R$ 1,00');
     assert.equal(centavosParaMoeda(10050), 'R$ 100,50');
     assert.equal(centavosParaMoeda(3334), 'R$ 33,34');
+});
+
+test('centavosParaMoeda: zero, nulo e indefinido', () => {
+    assert.equal(centavosParaMoeda(0), 'R$ 0,00');
+    assert.equal(centavosParaMoeda(-0), 'R$ 0,00');
+    assert.equal(centavosParaMoeda(null), 'R$ 0,00');
+    assert.equal(centavosParaMoeda(undefined), 'R$ 0,00');
+});
+
+test('centavosParaMoeda: valores negativos com sinal antes do R$', () => {
+    assert.equal(centavosParaMoeda(-100), '-R$ 1,00');
+    assert.equal(centavosParaMoeda(-550), '-R$ 5,50');
+    assert.equal(centavosParaMoeda(-123456), '-R$ 1.234,56');
+    assert.equal(centavosParaMoeda(-100000000), '-R$ 1.000.000,00');
+});
+
+test('centavosParaMoeda: valores inválidos (NaN e Infinity) retornam traço sem texto inválido nem zero', () => {
+    assert.equal(centavosParaMoeda(NaN), '-');
+    assert.equal(centavosParaMoeda(Infinity), '-');
+    assert.equal(centavosParaMoeda(-Infinity), '-');
 });
