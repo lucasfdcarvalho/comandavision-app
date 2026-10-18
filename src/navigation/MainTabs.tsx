@@ -6,6 +6,7 @@ import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
 import { GestaoStack } from "./GestaoStack";
 import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
+import { tabScreenOptions } from "./stackScreenOptions";
 
 const Tab = createBottomTabNavigator();
 
@@ -13,7 +14,7 @@ export function MainTabs() {
     const { usuario } = useAuth();
 
     return (
-        <Tab.Navigator screenOptions={{ headerTintColor: '#1F1F1F', tabBarActiveTintColor: '#EA8B00' }}>
+        <Tab.Navigator screenOptions={tabScreenOptions}>
             <Tab.Screen
                 name="Comandas"
                 component={ComandasStack}
