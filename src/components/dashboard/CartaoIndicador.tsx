@@ -11,7 +11,7 @@ type Props = {
     variacao?: number | null;
 };
 
-// Rótulo curto, valor em destaque e indicador de comparação (variação percentual ou estado explicativo).
+// Rótulo curto, valor em destaque e selo de variação. Falha na comparação não mostra nada.
 export function CartaoIndicador({ rotulo, valor, comparacao, variacao }: Props) {
     const comp: ResultadoComparacao | null = comparacao ?? (
         variacao !== undefined && variacao !== null
@@ -28,28 +28,9 @@ export function CartaoIndicador({ rotulo, valor, comparacao, variacao }: Props) 
                 {comp?.status === 'sucesso' ? (
                     <SeloVariacao variacao={comp.variacao} />
                 ) : comp?.status === 'sem_base' ? (
+                    // Sem frase: um traço neutro basta; o leitor de tela recebe a explicação.
                     <View style={styles.seloNeutro} accessibilityLabel="Sem base para comparação">
-                        <Feather name="minus" size={12} color={colors.textoSecundario} />
-                        <Text
-                            style={styles.textoSeloNeutro}
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.8}
-                        >
-                            Sem base para comparação
-                        </Text>
-                    </View>
-                ) : comp?.status === 'indisponivel' ? (
-                    <View style={styles.seloIndisponivel} accessibilityLabel="Comparação indisponível">
-                        <Feather name="help-circle" size={12} color={colors.textoSecundario} />
-                        <Text
-                            style={styles.textoSeloNeutro}
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.8}
-                        >
-                            Comparação indisponível
-                        </Text>
+                        <Feather name="minus" size={14} color={colors.textoSecundario} />
                     </View>
                 ) : null}
             </View>
@@ -94,24 +75,5 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         borderRadius: 999,
         backgroundColor: colors.statusFundo.fechada,
-    },
-    seloIndisponivel: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        maxWidth: '100%',
-        gap: 4,
-        paddingVertical: 3,
-        paddingHorizontal: 8,
-        borderRadius: 999,
-        backgroundColor: colors.fundoSecundario,
-        borderWidth: 1,
-        borderColor: colors.borda,
-    },
-    textoSeloNeutro: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: colors.textoSecundario,
-        flexShrink: 1,
     },
 });

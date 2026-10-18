@@ -98,17 +98,6 @@ export function DashboardScreen({ navigation }: Props) {
                 />
             }>
             
-            {/* Cabeçalho da tela de Gestão */}
-            <View style={styles.cabecalhoSecao}>
-                <View>
-                    <Text style={styles.subtituloCabecalho}>PAINEL DO GESTOR</Text>
-                    <Text style={styles.tituloCabecalho}>Visão Geral de Hoje</Text>
-                </View>
-                <View style={styles.badgeParceiro}>
-                    <Text style={styles.textoBadgeParceiro}>Supri</Text>
-                </View>
-            </View>
-
             {/* Cartão de Destaque Executivo (Faturamento Hoje) */}
             <Cartao variante="grafite" style={styles.heroCard}>
                 <View style={styles.heroTopo}>
@@ -116,7 +105,7 @@ export function DashboardScreen({ navigation }: Props) {
                         <View style={styles.iconeHero}>
                             <Feather name="trending-up" size={16} color={colors.laranja} />
                         </View>
-                        <Text style={styles.heroRotulo}>FATURAMENTO DO DIA</Text>
+                        <Text style={styles.heroRotulo}>Faturamento hoje</Text>
                     </View>
                 </View>
 
@@ -153,7 +142,7 @@ export function DashboardScreen({ navigation }: Props) {
                     <View style={styles.heroMetrica}>
                         <View style={styles.heroMetricaHeader}>
                             <Feather name="tag" size={14} color={colors.grafiteTextoSecundario} />
-                            <Text style={styles.heroMetricaRotulo}>Ticket Médio</Text>
+                            <Text style={styles.heroMetricaRotulo}>Ticket médio</Text>
                         </View>
                         <Text
                             style={styles.heroMetricaValor}
@@ -172,10 +161,10 @@ export function DashboardScreen({ navigation }: Props) {
                     ]}
                     onPress={() => navigation.getParent()?.navigate('Indicadores')}
                     accessibilityRole="button"
-                    accessibilityLabel="Acessar painel completo de indicadores">
+                    accessibilityLabel="Ver indicadores">
                     <Feather name="bar-chart-2" size={16} color={colors.laranja} />
                     <Text style={styles.heroTextoBotaoIndicadores}>
-                        Ver análise detalhada nos Indicadores
+                        Ver indicadores
                     </Text>
                     <Feather name="chevron-right" size={16} color={colors.grafiteTextoSecundario} />
                 </Pressable>
@@ -184,8 +173,7 @@ export function DashboardScreen({ navigation }: Props) {
             {/* Seção de Comandas Operacionais */}
             <View style={styles.secao}>
                 <View style={styles.secaoTituloLinha}>
-                    <Text style={styles.secaoTitulo}>Comandas em tempo real</Text>
-                    <Text style={styles.secaoSubtitulo}>Estado atual do salão</Text>
+                    <Text style={styles.secaoTitulo}>Comandas agora</Text>
                 </View>
 
                 <View style={styles.linhaCartoesStatus}>
@@ -224,8 +212,7 @@ export function DashboardScreen({ navigation }: Props) {
             {/* Seção de Atalhos Gerenciais */}
             <View style={styles.secao}>
                 <View style={styles.secaoTituloLinha}>
-                    <Text style={styles.secaoTitulo}>Gestão do Estabelecimento</Text>
-                    <Text style={styles.secaoSubtitulo}>Configurações operacionais</Text>
+                    <Text style={styles.secaoTitulo}>Gerenciar</Text>
                 </View>
 
                 <View style={styles.gradeAtalhos}>
@@ -243,7 +230,7 @@ export function DashboardScreen({ navigation }: Props) {
                         <View style={styles.infoAtalho}>
                             <Text style={styles.tituloAtalho}>Cardápio</Text>
                             <Text style={styles.descricaoAtalho}>
-                                Categorias, produtos, preços e disponibilidade
+                                Produtos, categorias e preços
                             </Text>
                         </View>
                         <View style={styles.setaAtalho}>
@@ -265,7 +252,7 @@ export function DashboardScreen({ navigation }: Props) {
                         <View style={styles.infoAtalho}>
                             <Text style={styles.tituloAtalho}>Equipe</Text>
                             <Text style={styles.descricaoAtalho}>
-                                Colaboradores, papéis e permissões de acesso
+                                Contas e permissões
                             </Text>
                         </View>
                         <View style={styles.setaAtalho}>
@@ -287,34 +274,6 @@ const styles = StyleSheet.create({
         padding: espacamento.lg,
         paddingBottom: espacamento.xxxl,
         gap: espacamento.xl,
-    },
-    cabecalhoSecao: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: espacamento.xs,
-    },
-    subtituloCabecalho: {
-        ...tipografia.legenda,
-        color: colors.textoSecundario,
-        letterSpacing: 0.5,
-    },
-    tituloCabecalho: {
-        ...tipografia.titulo,
-        color: colors.textoPrimario,
-    },
-    badgeParceiro: {
-        paddingVertical: 4,
-        paddingHorizontal: espacamento.md,
-        borderRadius: raio.redondo,
-        backgroundColor: colors.laranjaClaro,
-        borderWidth: 1,
-        borderColor: colors.laranjaBorda,
-    },
-    textoBadgeParceiro: {
-        ...tipografia.legenda,
-        fontWeight: '700',
-        color: colors.laranjaTexto,
     },
     heroCard: {
         padding: espacamento.xl,
@@ -340,10 +299,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     heroRotulo: {
-        ...tipografia.legenda,
-        fontWeight: '700',
+        ...tipografia.rotulo,
         color: colors.grafiteTextoSecundario,
-        letterSpacing: 0.8,
     },
     heroValorPrincipal: {
         ...tipografia.destaque,
@@ -422,10 +379,6 @@ const styles = StyleSheet.create({
     secaoTitulo: {
         ...tipografia.subtitulo,
         color: colors.textoPrimario,
-    },
-    secaoSubtitulo: {
-        ...tipografia.legenda,
-        color: colors.textoSecundario,
     },
     linhaCartoesStatus: {
         flexDirection: 'row',
