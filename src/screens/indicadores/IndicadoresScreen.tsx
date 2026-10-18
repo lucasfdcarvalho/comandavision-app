@@ -22,6 +22,8 @@ import {
     formatarDiaCurto,
     formatarPercentual,
     nomeDiaSemanaCurto,
+    obterComparacaoIndicador,
+    ResultadoComparacao,
     preencherDiasSemVenda,
 } from "../../utils/dashboard";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../../types/Dashboard";
@@ -39,6 +41,7 @@ export function IndicadoresScreen() {
 
     const [resumo, setResumo] = useState<ResumoDashboard | null>(null);
     const [resumoAnterior, setResumoAnterior] = useState<ResumoDashboard | null>(null);
+    const [falhaComparacao, setFalhaComparacao] = useState(false);
     const [produtos, setProdutos] = useState<ProdutoMaisVendido[]>([]);
     const [formas, setFormas] = useState<FormaPagamentoResumo[]>([]);
     const [faturamentoDiario, setFaturamentoDiario] = useState<FaturamentoDiario[]>([]);
@@ -51,16 +54,26 @@ export function IndicadoresScreen() {
         const anterior = calcularPeriodoAnterior(chave, atual);
         try {
             setMensagemErro('');
+            setFalhaComparacao(false);
+
+            // A consulta comparativa tem tratamento próprio para distinguir ausência de vendas no
+            // período anterior de falha real de rede/API, mas roda em paralelo com as demais.
+            const consultaAnterior = apiService.buscarResumoDashboard(anterior.inicio, anterior.fim)
+                .then((dados) => (dados && typeof dados.faturamento === 'number' && !Number.isNaN(dados.faturamento) ? dados : null))
+                .catch(() => null);
+
             const [resumoDados, resumoAnteriorDados, produtosDados, formasDados, faturamentoDados] = await Promise.all([
                 apiService.buscarResumoDashboard(atual.inicio, atual.fim),
-                // A comparação é um extra: se falhar, o resto do painel continua.
-                apiService.buscarResumoDashboard(anterior.inicio, anterior.fim).catch(() => null),
+                consultaAnterior,
                 apiService.listarProdutosMaisVendidos(atual.inicio, atual.fim, 5),
                 apiService.listarFormasPagamento(atual.inicio, atual.fim),
                 apiService.listarFaturamentoDiario(atual.inicio, atual.fim),
             ]);
+            const falhouConsultaAnterior = resumoAnteriorDados === null;
+
             setResumo(resumoDados);
             setResumoAnterior(resumoAnteriorDados);
+            setFalhaComparacao(falhouConsultaAnterior);
             setProdutos(produtosDados);
             setFormas([...formasDados].sort((a, b) => b.valorRecebido - a.valorRecebido));
             setFaturamentoDiario(preencherDiasSemVenda(faturamentoDados, atual));
@@ -117,8 +130,8 @@ export function IndicadoresScreen() {
     }
 
     const referencia = PERIODOS.find((opcao) => opcao.chave === periodo)?.referencia ?? '';
-    const variacao = (campo: keyof ResumoDashboard) =>
-        resumoAnterior ? calcularVariacao(resumo?.[campo] ?? 0, resumoAnterior[campo] ?? 0) : null;
+    const comparacao = (campo: keyof ResumoDashboard): ResultadoComparacao =>
+        obterComparacaoIndicador(resumo?.[campo], resumoAnterior?.[campo], falhaComparacao);
 
     const totalPeriodo = faturamentoDiario.reduce((soma, dia) => soma + (dia.faturamento ?? 0), 0);
     const diaAtual = diaSelecionado !== null ? faturamentoDiario[diaSelecionado] : null;
@@ -162,12 +175,12 @@ export function IndicadoresScreen() {
             ) : (
                 <>
                     <View style={styles.grade}>
-                        <CartaoIndicador rotulo="Faturamento" valor={formatarMoeda(resumo?.faturamento ?? 0)} variacao={variacao('faturamento')} />
-                        <CartaoIndicador rotulo="Vendas" valor={String(resumo?.quantidadeVendas ?? 0)} variacao={variacao('quantidadeVendas')} />
+                        <CartaoIndicador rotulo="Faturamento" valor={formatarMoeda(resumo?.faturamento ?? 0)} comparacao={comparacao('faturamento')} />
+                        <CartaoIndicador rotulo="Vendas" valor={String(resumo?.quantidadeVendas ?? 0)} comparacao={comparacao('quantidadeVendas')} />
                     </View>
                     <View style={styles.grade}>
-                        <CartaoIndicador rotulo="Ticket médio" valor={formatarMoeda(resumo?.ticketMedio ?? 0)} variacao={variacao('ticketMedio')} />
-                        <CartaoIndicador rotulo="Itens vendidos" valor={String(resumo?.quantidadeItensVendidos ?? 0)} variacao={variacao('quantidadeItensVendidos')} />
+                        <CartaoIndicador rotulo="Ticket médio" valor={formatarMoeda(resumo?.ticketMedio ?? 0)} comparacao={comparacao('ticketMedio')} />
+                        <CartaoIndicador rotulo="Itens vendidos" valor={String(resumo?.quantidadeItensVendidos ?? 0)} comparacao={comparacao('quantidadeItensVendidos')} />
                     </View>
 
                     {mostrarEvolucao ? (

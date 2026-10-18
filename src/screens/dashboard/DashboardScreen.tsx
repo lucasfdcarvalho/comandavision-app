@@ -1,5 +1,12 @@
-import { useCallback, useState } from "react";
-import { View, Text, RefreshControl, ScrollView, Pressable, StyleSheet } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+    View,
+    Text,
+    RefreshControl,
+    ScrollView,
+    Pressable,
+    StyleSheet,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -8,7 +15,9 @@ import { apiService } from "../../services/apiService";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { SeloVariacao } from "../../components/dashboard/SeloVariacao";
+import { Cartao } from "../../components/ui/Cartao";
 import { colors } from "../../theme/colors";
+import { espacamento, raio, sombras, tipografia } from "../../theme/tokens";
 import { formatarMoeda } from "../../utils/formatadores";
 import { calcularPeriodo, calcularPeriodoAnterior, calcularVariacao } from "../../utils/dashboard";
 import type { ResumoDashboard } from "../../types/Dashboard";
@@ -79,92 +88,192 @@ export function DashboardScreen({ navigation }: Props) {
         <ScrollView
             style={styles.container}
             contentContainerStyle={styles.conteudo}
-            refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}>
-            <View style={styles.secao}>
-                <Text style={styles.rotulo}>Faturamento de hoje</Text>
-                <Text style={styles.valorPrincipal} numberOfLines={1} adjustsFontSizeToFit>
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl
+                    refreshing={atualizando}
+                    onRefresh={atualizar}
+                    colors={[colors.laranja]}
+                    tintColor={colors.laranja}
+                />
+            }>
+            
+            {/* Cabeçalho da tela de Gestão */}
+            <View style={styles.cabecalhoSecao}>
+                <View>
+                    <Text style={styles.subtituloCabecalho}>PAINEL DO GESTOR</Text>
+                    <Text style={styles.tituloCabecalho}>Visão Geral de Hoje</Text>
+                </View>
+                <View style={styles.badgeParceiro}>
+                    <Text style={styles.textoBadgeParceiro}>Supri</Text>
+                </View>
+            </View>
+
+            {/* Cartão de Destaque Executivo (Faturamento Hoje) */}
+            <Cartao variante="grafite" style={styles.heroCard}>
+                <View style={styles.heroTopo}>
+                    <View style={styles.heroEtiqueta}>
+                        <View style={styles.iconeHero}>
+                            <Feather name="trending-up" size={16} color={colors.laranja} />
+                        </View>
+                        <Text style={styles.heroRotulo}>FATURAMENTO DO DIA</Text>
+                    </View>
+                </View>
+
+                <Text
+                    style={styles.heroValorPrincipal}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit>
                     {formatarMoeda(hoje?.faturamento ?? 0)}
                 </Text>
+
                 {variacao('faturamento') !== null ? (
-                    <View style={styles.linhaVariacao}>
-                        <SeloVariacao variacao={variacao('faturamento')} />
-                        <Text style={styles.rotuloPequeno}>em relação a ontem</Text>
+                    <View style={styles.linhaHeroVariacao}>
+                        <SeloVariacao variacao={variacao('faturamento')} variante="escuro" />
+                        <Text style={styles.heroTextoVariacao}>em relação a ontem</Text>
                     </View>
                 ) : null}
 
-                <View style={styles.linhaIndicadores}>
-                    <View style={styles.indicador}>
-                        <Text style={styles.rotuloPequeno}>Vendas</Text>
-                        <Text style={styles.valorIndicador}>{hoje?.quantidadeVendas ?? 0}</Text>
+                {/* Sub-indicadores: Vendas e Ticket Médio */}
+                <View style={styles.heroDivisor} />
+                
+                <View style={styles.heroGradeMetricas}>
+                    <View style={styles.heroMetrica}>
+                        <View style={styles.heroMetricaHeader}>
+                            <Feather name="shopping-bag" size={14} color={colors.grafiteTextoSecundario} />
+                            <Text style={styles.heroMetricaRotulo}>Vendas</Text>
+                        </View>
+                        <Text style={styles.heroMetricaValor}>
+                            {hoje?.quantidadeVendas ?? 0}
+                        </Text>
                     </View>
-                    <View style={styles.indicador}>
-                        <Text style={styles.rotuloPequeno}>Ticket médio</Text>
-                        <Text style={styles.valorIndicador} numberOfLines={1} adjustsFontSizeToFit>
+
+                    <View style={styles.heroSeparadorVertical} />
+
+                    <View style={styles.heroMetrica}>
+                        <View style={styles.heroMetricaHeader}>
+                            <Feather name="tag" size={14} color={colors.grafiteTextoSecundario} />
+                            <Text style={styles.heroMetricaRotulo}>Ticket Médio</Text>
+                        </View>
+                        <Text
+                            style={styles.heroMetricaValor}
+                            numberOfLines={1}
+                            adjustsFontSizeToFit>
                             {formatarMoeda(hoje?.ticketMedio ?? 0)}
                         </Text>
                     </View>
                 </View>
 
+                {/* Atalho para Indicadores completos */}
                 <Pressable
-                    style={({ pressed }) => [styles.linkIndicadores, pressed && styles.pressionado]}
-                    // A aba Indicadores é irmã da Gestão no navegador de abas.
+                    style={({ pressed }) => [
+                        styles.heroBotaoIndicadores,
+                        pressed && styles.pressionado,
+                    ]}
                     onPress={() => navigation.getParent()?.navigate('Indicadores')}
                     accessibilityRole="button"
-                    accessibilityLabel="Ver todos os indicadores">
-                    <Feather name="bar-chart-2" size={16} color={colors.grafico.destaque} />
-                    <Text style={styles.textoLink}>Ver todos os indicadores</Text>
-                    <Feather name="chevron-right" size={16} color={colors.textoSecundario} />
+                    accessibilityLabel="Acessar painel completo de indicadores">
+                    <Feather name="bar-chart-2" size={16} color={colors.laranja} />
+                    <Text style={styles.heroTextoBotaoIndicadores}>
+                        Ver análise detalhada nos Indicadores
+                    </Text>
+                    <Feather name="chevron-right" size={16} color={colors.grafiteTextoSecundario} />
                 </Pressable>
+            </Cartao>
+
+            {/* Seção de Comandas Operacionais */}
+            <View style={styles.secao}>
+                <View style={styles.secaoTituloLinha}>
+                    <Text style={styles.secaoTitulo}>Comandas em tempo real</Text>
+                    <Text style={styles.secaoSubtitulo}>Estado atual do salão</Text>
+                </View>
+
+                <View style={styles.linhaCartoesStatus}>
+                    <Cartao style={styles.cartaoStatus}>
+                        <View style={[styles.iconeStatusCirculo, { backgroundColor: colors.statusFundo.aberta }]}>
+                            <Feather name="unlock" size={18} color={colors.status.aberta} />
+                        </View>
+                        <Text style={[styles.valorStatus, { color: colors.status.aberta }]}>
+                            {contagem.abertas}
+                        </Text>
+                        <Text style={styles.rotuloStatus}>Abertas</Text>
+                    </Cartao>
+
+                    <Cartao style={styles.cartaoStatus}>
+                        <View style={[styles.iconeStatusCirculo, { backgroundColor: colors.statusFundo.fechada }]}>
+                            <Feather name="check-circle" size={18} color={colors.status.fechada} />
+                        </View>
+                        <Text style={[styles.valorStatus, { color: colors.textoPrimario }]}>
+                            {contagem.fechadas}
+                        </Text>
+                        <Text style={styles.rotuloStatus}>Fechadas</Text>
+                    </Cartao>
+
+                    <Cartao style={styles.cartaoStatus}>
+                        <View style={[styles.iconeStatusCirculo, { backgroundColor: colors.statusFundo.cancelada }]}>
+                            <Feather name="x-circle" size={18} color={colors.status.cancelada} />
+                        </View>
+                        <Text style={[styles.valorStatus, { color: colors.status.cancelada }]}>
+                            {contagem.canceladas}
+                        </Text>
+                        <Text style={styles.rotuloStatus}>Canceladas</Text>
+                    </Cartao>
+                </View>
             </View>
 
-            <Text style={styles.titulo}>Comandas agora</Text>
-            <View style={styles.linhaCartoes}>
-                <View style={styles.cartaoStatus}>
-                    <Feather name="unlock" size={18} color={colors.status.aberta} />
-                    <Text style={[styles.valorStatus, { color: colors.status.aberta }]}>{contagem.abertas}</Text>
-                    <Text style={styles.rotuloPequeno}>Abertas</Text>
+            {/* Seção de Atalhos Gerenciais */}
+            <View style={styles.secao}>
+                <View style={styles.secaoTituloLinha}>
+                    <Text style={styles.secaoTitulo}>Gestão do Estabelecimento</Text>
+                    <Text style={styles.secaoSubtitulo}>Configurações operacionais</Text>
                 </View>
-                <View style={styles.cartaoStatus}>
-                    <Feather name="check-circle" size={18} color={colors.status.fechada} />
-                    <Text style={[styles.valorStatus, { color: colors.status.fechada }]}>{contagem.fechadas}</Text>
-                    <Text style={styles.rotuloPequeno}>Fechadas</Text>
-                </View>
-                <View style={styles.cartaoStatus}>
-                    <Feather name="x-circle" size={18} color={colors.status.cancelada} />
-                    <Text style={[styles.valorStatus, { color: colors.status.cancelada }]}>{contagem.canceladas}</Text>
-                    <Text style={styles.rotuloPequeno}>Canceladas</Text>
+
+                <View style={styles.gradeAtalhos}>
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.cartaoAtalho,
+                            pressed && styles.cartaoAtalhoPressionado,
+                        ]}
+                        onPress={() => navigation.navigate('Catalogo')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Gerenciar cardápio, produtos e categorias">
+                        <View style={styles.iconeAtalhoCirculo}>
+                            <Feather name="book-open" size={22} color={colors.laranja} />
+                        </View>
+                        <View style={styles.infoAtalho}>
+                            <Text style={styles.tituloAtalho}>Cardápio</Text>
+                            <Text style={styles.descricaoAtalho}>
+                                Categorias, produtos, preços e disponibilidade
+                            </Text>
+                        </View>
+                        <View style={styles.setaAtalho}>
+                            <Feather name="chevron-right" size={18} color={colors.textoSecundario} />
+                        </View>
+                    </Pressable>
+
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.cartaoAtalho,
+                            pressed && styles.cartaoAtalhoPressionado,
+                        ]}
+                        onPress={() => navigation.navigate('Equipe')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Gerenciar equipe de funcionários">
+                        <View style={styles.iconeAtalhoCirculo}>
+                            <Feather name="users" size={22} color={colors.laranja} />
+                        </View>
+                        <View style={styles.infoAtalho}>
+                            <Text style={styles.tituloAtalho}>Equipe</Text>
+                            <Text style={styles.descricaoAtalho}>
+                                Colaboradores, papéis e permissões de acesso
+                            </Text>
+                        </View>
+                        <View style={styles.setaAtalho}>
+                            <Feather name="chevron-right" size={18} color={colors.textoSecundario} />
+                        </View>
+                    </Pressable>
                 </View>
             </View>
-
-            <Text style={styles.titulo}>Gerenciar</Text>
-            <Pressable
-                style={({ pressed }) => [styles.atalho, pressed && styles.pressionado]}
-                onPress={() => navigation.navigate('Catalogo')}
-                accessibilityRole="button"
-                accessibilityLabel="Gerenciar cardápio">
-                <View style={styles.iconeAtalho}>
-                    <Feather name="book-open" size={22} color={colors.laranja} />
-                </View>
-                <View style={styles.flex}>
-                    <Text style={styles.tituloAtalho}>Cardápio</Text>
-                    <Text style={styles.rotuloPequeno}>Categorias, produtos, preços e disponibilidade</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={colors.textoSecundario} />
-            </Pressable>
-            <Pressable
-                style={({ pressed }) => [styles.atalho, pressed && styles.pressionado]}
-                onPress={() => navigation.navigate('Equipe')}
-                accessibilityRole="button"
-                accessibilityLabel="Gerenciar equipe">
-                <View style={styles.iconeAtalho}>
-                    <Feather name="users" size={22} color={colors.laranja} />
-                </View>
-                <View style={styles.flex}>
-                    <Text style={styles.tituloAtalho}>Equipe</Text>
-                    <Text style={styles.rotuloPequeno}>Contas, papéis e acesso dos funcionários</Text>
-                </View>
-                <Feather name="chevron-right" size={20} color={colors.textoSecundario} />
-            </Pressable>
         </ScrollView>
     );
 }
@@ -175,118 +284,226 @@ const styles = StyleSheet.create({
         backgroundColor: colors.fundo,
     },
     conteudo: {
-        padding: 16,
-        gap: 12,
+        padding: espacamento.lg,
+        paddingBottom: espacamento.xxxl,
+        gap: espacamento.xl,
     },
-    flex: {
-        flex: 1,
-    },
-    titulo: {
-        marginTop: 8,
-        fontSize: 16,
-        fontWeight: '700',
-        color: colors.textoPrimario,
-    },
-    secao: {
-        padding: 16,
-        gap: 8,
-        backgroundColor: colors.superficie,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.borda,
-    },
-    rotulo: {
-        fontSize: 13,
-        color: colors.textoSecundario,
-    },
-    rotuloPequeno: {
-        fontSize: 12,
-        color: colors.textoSecundario,
-    },
-    valorPrincipal: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: colors.textoPrimario,
-    },
-    linhaVariacao: {
+    cabecalhoSecao: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        justifyContent: 'space-between',
+        paddingTop: espacamento.xs,
     },
-    linhaIndicadores: {
-        flexDirection: 'row',
-        gap: 12,
-        marginTop: 4,
-        paddingTop: 10,
-        borderTopWidth: 1,
-        borderTopColor: colors.borda,
+    subtituloCabecalho: {
+        ...tipografia.legenda,
+        color: colors.textoSecundario,
+        letterSpacing: 0.5,
     },
-    indicador: {
-        flex: 1,
-        gap: 2,
-    },
-    valorIndicador: {
-        fontSize: 17,
-        fontWeight: '700',
+    tituloCabecalho: {
+        ...tipografia.titulo,
         color: colors.textoPrimario,
     },
-    linkIndicadores: {
+    badgeParceiro: {
+        paddingVertical: 4,
+        paddingHorizontal: espacamento.md,
+        borderRadius: raio.redondo,
+        backgroundColor: colors.laranjaClaro,
+        borderWidth: 1,
+        borderColor: colors.laranjaBorda,
+    },
+    textoBadgeParceiro: {
+        ...tipografia.legenda,
+        fontWeight: '700',
+        color: colors.laranjaTexto,
+    },
+    heroCard: {
+        padding: espacamento.xl,
+        borderRadius: raio.xl,
+        gap: espacamento.md,
+    },
+    heroTopo: {
         flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    heroEtiqueta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: espacamento.sm,
+    },
+    iconeHero: {
+        width: 28,
+        height: 28,
+        borderRadius: raio.sm,
+        backgroundColor: 'rgba(234, 139, 0, 0.16)',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
-        marginTop: 4,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: colors.grafico.trilho,
     },
-    textoLink: {
-        fontSize: 14,
+    heroRotulo: {
+        ...tipografia.legenda,
         fontWeight: '700',
+        color: colors.grafiteTextoSecundario,
+        letterSpacing: 0.8,
+    },
+    heroValorPrincipal: {
+        ...tipografia.destaque,
+        color: colors.textoBranco,
+        fontSize: 34,
+        lineHeight: 40,
+    },
+    linhaHeroVariacao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: espacamento.sm,
+    },
+    heroTextoVariacao: {
+        ...tipografia.rotulo,
+        color: colors.grafiteTextoSecundario,
+    },
+    heroDivisor: {
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.10)',
+        marginVertical: espacamento.xs,
+    },
+    heroGradeMetricas: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: espacamento.xs,
+    },
+    heroMetrica: {
+        flex: 1,
+        gap: 3,
+    },
+    heroMetricaHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+    heroMetricaRotulo: {
+        ...tipografia.rotulo,
+        color: colors.grafiteTextoSecundario,
+    },
+    heroMetricaValor: {
+        ...tipografia.subtitulo,
+        ...tipografia.tabular,
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.textoBranco,
+    },
+    heroSeparadorVertical: {
+        width: 1,
+        height: 36,
+        backgroundColor: 'rgba(255, 255, 255, 0.10)',
+        marginHorizontal: espacamento.md,
+    },
+    heroBotaoIndicadores: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        paddingVertical: espacamento.md,
+        paddingHorizontal: espacamento.lg,
+        borderRadius: raio.md,
+        marginTop: espacamento.xs,
+    },
+    heroTextoBotaoIndicadores: {
+        flex: 1,
+        ...tipografia.rotuloForte,
+        color: colors.textoBranco,
+        marginHorizontal: espacamento.sm,
+    },
+    secao: {
+        gap: espacamento.md,
+    },
+    secaoTituloLinha: {
+        gap: 2,
+    },
+    secaoTitulo: {
+        ...tipografia.subtitulo,
         color: colors.textoPrimario,
     },
-    pressionado: {
-        opacity: 0.8,
+    secaoSubtitulo: {
+        ...tipografia.legenda,
+        color: colors.textoSecundario,
     },
-    linhaCartoes: {
+    linhaCartoesStatus: {
         flexDirection: 'row',
-        gap: 10,
+        gap: espacamento.md,
     },
     cartaoStatus: {
         flex: 1,
+        padding: espacamento.md,
         alignItems: 'center',
-        gap: 4,
-        paddingVertical: 12,
-        backgroundColor: colors.superficie,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.borda,
+        gap: espacamento.xs,
+        borderRadius: raio.lg,
     },
-    valorStatus: {
-        fontSize: 20,
-        fontWeight: '700',
-    },
-    atalho: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        padding: 14,
-        backgroundColor: colors.superficie,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: colors.borda,
-    },
-    iconeAtalho: {
-        width: 44,
-        height: 44,
+    iconeStatusCirculo: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.fundo,
-        borderRadius: 10,
+        marginBottom: 2,
+    },
+    valorStatus: {
+        ...tipografia.subtitulo,
+        ...tipografia.tabular,
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    rotuloStatus: {
+        ...tipografia.legenda,
+        color: colors.textoSecundario,
+    },
+    gradeAtalhos: {
+        gap: espacamento.md,
+    },
+    cartaoAtalho: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: espacamento.lg,
+        padding: espacamento.lg,
+        backgroundColor: colors.superficie,
+        borderRadius: raio.lg,
+        borderWidth: 1,
+        borderColor: colors.borda,
+        ...sombras.suave,
+    },
+    cartaoAtalhoPressionado: {
+        opacity: 0.88,
+        transform: [{ scale: 0.995 }],
+    },
+    iconeAtalhoCirculo: {
+        width: 46,
+        height: 46,
+        borderRadius: raio.md,
+        backgroundColor: colors.laranjaClaro,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    infoAtalho: {
+        flex: 1,
+        gap: 2,
     },
     tituloAtalho: {
-        fontSize: 15,
-        fontWeight: '700',
+        ...tipografia.corpoForte,
+        fontSize: 16,
         color: colors.textoPrimario,
+    },
+    descricaoAtalho: {
+        ...tipografia.rotulo,
+        color: colors.textoSecundario,
+    },
+    setaAtalho: {
+        width: 32,
+        height: 32,
+        borderRadius: raio.sm,
+        backgroundColor: colors.fundoSecundario,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    pressionado: {
+        opacity: 0.82,
     },
 });
