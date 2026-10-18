@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "comandavision-app",
+    "name": "Supri Comandas",
     "slug": "comandavision-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,9 +11,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
@@ -30,6 +29,15 @@
           "photosPermission": "O app precisa acessar suas fotos para cadastrar imagens dos produtos.",
           "cameraPermission": false,
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
         }
       ]
     ]
