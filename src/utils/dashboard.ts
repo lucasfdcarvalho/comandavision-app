@@ -1,5 +1,24 @@
 import type { FaturamentoDiario } from "../types/Dashboard";
-import { paraDataISOBrasil, subtrairDiasData } from "./formatadores";
+// Cópia de paraDataISOBrasil (formatadores.ts) mantida aqui porque os testes carregam este
+// arquivo direto no Node, que não resolve imports .ts sem extensão.
+// NÃO usar toLocaleString/Intl com timeZone + new Date(texto): no Hermes o texto não é
+// entendido, a data vira "NaN-NaN-NaN" e a API responde 500 nas abas Gestão e Indicadores.
+// O backend agrega em America/Sao_Paulo, que é -03:00 fixo (sem horário de verão desde 2019).
+const OFFSET_BRASIL_MS = -3 * 60 * 60 * 1000;
+
+export function paraDataISOBrasil(data: Date): string {
+    const horario = new Date(data.getTime() + OFFSET_BRASIL_MS);
+    const ano = horario.getUTCFullYear();
+    const mes = String(horario.getUTCMonth() + 1).padStart(2, '0');
+    const dia = String(horario.getUTCDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+export function subtrairDiasData(dataISO: string, dias: number): string {
+    const [ano, mes, dia] = dataISO.split('-').map(Number);
+    const data = new Date(Date.UTC(ano, mes - 1, dia - dias));
+    return `${data.getUTCFullYear()}-${String(data.getUTCMonth() + 1).padStart(2, '0')}-${String(data.getUTCDate()).padStart(2, '0')}`;
+}
 
 export type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
@@ -93,6 +112,37 @@ export function calcularVariacao(atual: number, anterior: number): number | null
         return null;
     }
     return ((atual - anterior) / anterior) * 100;
+}
+
+export type ResultadoComparacao =
+    | { status: 'sucesso'; variacao: number }
+    | { status: 'sem_base' }
+    | { status: 'indisponivel' };
+
+// Avalia a comparação de uma métrica distinguindo explicitamente três cenários:
+// 1. Falha de comunicação/API: status 'indisponivel' ("Comparação indisponível")
+// 2. Consulta bem-sucedida com valor anterior zero: status 'sem_base' ("Sem base para comparação")
+// 3. Consulta bem-sucedida com valor anterior diferente de zero: status 'sucesso' com variação percentual
+export function obterComparacaoIndicador(
+    atual: number | undefined,
+    anterior: number | undefined,
+    falhaConsultaAnterior: boolean
+): ResultadoComparacao {
+    if (
+        falhaConsultaAnterior ||
+        anterior === undefined ||
+        anterior === null ||
+        typeof anterior !== 'number' ||
+        Number.isNaN(anterior)
+    ) {
+        return { status: 'indisponivel' };
+    }
+    if (anterior === 0) {
+        return { status: 'sem_base' };
+    }
+    const valorAtual = typeof atual === 'number' && !Number.isNaN(atual) ? atual : 0;
+    const variacao = ((valorAtual - anterior) / anterior) * 100;
+    return { status: 'sucesso', variacao };
 }
 
 export function diaDaSemana(dataISO: string): number {
