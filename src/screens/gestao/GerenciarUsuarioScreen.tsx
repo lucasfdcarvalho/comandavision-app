@@ -9,6 +9,7 @@ import { apiService } from "../../services/apiService";
 import { useAuth } from "../../hooks/useAuth";
 import type { PapelUsuario, Usuario } from "../../types/Usuario";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { formatarDataHora } from "../../utils/formatadores";
 import { MensagemErro } from "../../components/MensagemErro";
 import { MensagemSucesso } from "../../components/MensagemSucesso";
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     textoAviso: {
         flex: 1,

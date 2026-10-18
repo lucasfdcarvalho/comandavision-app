@@ -11,6 +11,7 @@ import { ComandaCard } from "../../components/ComandaCard";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { formatarTempoDecorrido } from "../../utils/formatadores";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'Lista'>;
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     busca: {
         flex: 1,

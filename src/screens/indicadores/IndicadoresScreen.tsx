@@ -10,6 +10,7 @@ import { GraficoColunas } from "../../components/dashboard/GraficoColunas";
 import { CartaoIndicador } from "../../components/dashboard/CartaoIndicador";
 import { BarraProporcional } from "../../components/dashboard/BarraProporcional";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { AparecerSuave } from "../../components/ui/AparecerSuave";
 import { feedbackTatil } from "../../utils/feedbackTatil";
 import { formatarMoeda } from "../../utils/formatadores";
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoBotaoPeriodoSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
     referencia: {
         marginTop: -4,
@@ -342,10 +343,11 @@ const styles = StyleSheet.create({
     secao: {
         padding: 16,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         gap: 10,
+        ...sombras.suave,
     },
     secaoTitulo: {
         fontSize: 15,

@@ -9,6 +9,7 @@ import { apiService } from "../../services/apiService";
 import { imagemProdutoService } from "../../services/imagemProdutoService";
 import { Categoria } from "../../types/Categoria";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SeletorImagemProduto, type ImagemSelecionada } from "../../components/SeletorImagemProduto";
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     botaoContainer: {
         marginTop: 24,

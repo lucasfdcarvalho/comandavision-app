@@ -3,6 +3,7 @@ import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import type { Comanda } from "../types/Comanda";
 import { colors } from "../theme/colors";
+import { raio, sombras } from "../theme/tokens";
 import { StatusBadge } from "./StatusBadge";
 import { AparecerSuave } from "./ui/AparecerSuave";
 
@@ -44,12 +45,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
+        ...sombras.suave,
     },
     icone: {
         width: 40,

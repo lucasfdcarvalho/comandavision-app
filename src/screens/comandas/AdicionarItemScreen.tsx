@@ -8,6 +8,7 @@ import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { formatarMoeda } from "../../utils/formatadores";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     busca: {
         flex: 1,
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         backgroundColor: colors.superficie,
         borderWidth: 1,
-        borderColor: '#D9D9D9',
+        borderColor: colors.bordaForte,
         borderRadius: 999,
     },
     chipSelecionado: {
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoChipSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
     avisoVazio: {
         fontSize: 13,
@@ -281,12 +282,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
+        ...sombras.suave,
     },
     infoProduto: {
         flex: 1,
@@ -308,6 +310,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: colors.laranja,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
 });

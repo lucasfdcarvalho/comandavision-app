@@ -9,6 +9,7 @@ import { apiService } from "../../services/apiService";
 import { useAuth } from "../../hooks/useAuth";
 import type { Usuario } from "../../types/Usuario";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { EmptyState } from "../../components/EmptyState";
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     busca: {
         flex: 1,
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: colors.laranja,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     lista: {
         flex: 1,
@@ -189,7 +190,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 12,
+        borderRadius: raio.lg,
+        ...sombras.suave,
     },
     cartaoInativo: {
         opacity: 0.7,
@@ -226,7 +228,7 @@ const styles = StyleSheet.create({
     badge: {
         paddingVertical: 2,
         paddingHorizontal: 8,
-        borderRadius: 10,
+        borderRadius: raio.md,
     },
     badgePapel: {
         backgroundColor: colors.fundo,

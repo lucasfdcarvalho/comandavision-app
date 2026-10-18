@@ -9,6 +9,7 @@ import { ComandaCard } from "../../components/ComandaCard";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { formatarDataHora } from "../../utils/formatadores";
 
 // Limitação conhecida: /api/comandas (usado aqui) retorna apenas o tipo `Comanda`,
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     busca: {
         flex: 1,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoBotaoPeriodoSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
     avisoVazio: {
         fontSize: 13,

@@ -3,6 +3,7 @@ import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import type { PapelUsuario } from "../types/Usuario";
 import { colors } from "../theme/colors";
+import { raio } from "../theme/tokens";
 
 const OPCOES: { papel: PapelUsuario; titulo: string; descricao: string; icone: keyof typeof Feather.glyphMap }[] = [
     { papel: 'FUNCIONARIO', titulo: 'Funcionário', descricao: 'Comandas e pagamentos', icone: 'user' },
@@ -29,7 +30,7 @@ export function SeletorPapel({ papelSelecionado, onSelecionar, desabilitado }: P
                         accessibilityRole="radio"
                         accessibilityState={{ selected: selecionado, disabled: desabilitado }}
                         accessibilityLabel={`${opcao.titulo}: ${opcao.descricao}`}>
-                        <Feather name={opcao.icone} size={18} color={selecionado ? colors.superficie : colors.laranja} />
+                        <Feather name={opcao.icone} size={18} color={selecionado ? colors.grafite : colors.laranja} />
                         <Text style={[styles.titulo, selecionado && styles.textoSelecionado]}>{opcao.titulo}</Text>
                         <Text style={[styles.descricao, selecionado && styles.textoSelecionado]}>{opcao.descricao}</Text>
                     </Pressable>
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 10,
+        borderRadius: raio.md,
     },
     opcaoSelecionada: {
         backgroundColor: colors.laranja,
@@ -71,6 +72,6 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
 });

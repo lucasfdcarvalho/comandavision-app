@@ -9,6 +9,7 @@ import { apiService } from "../../services/apiService";
 import { Produto } from "../../types/Produto";
 import { Categoria } from "../../types/Categoria";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { formatarMoeda } from "../../utils/formatadores";
 import { ProdutoImagem } from "../../components/ProdutoImagem";
 import { LoadingState } from "../../components/LoadingState";
@@ -303,14 +304,14 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 10,
+        borderRadius: raio.md,
         gap: 4,
     },
     botaoSegmento: {
         flex: 1,
         alignItems: 'center',
         paddingVertical: 8,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     botaoSegmentoSelecionado: {
         backgroundColor: colors.laranja,
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoSegmentoSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
     linhaBusca: {
         flexDirection: 'row',
@@ -340,7 +341,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     busca: {
         flex: 1,
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: colors.laranja,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     filtros: {
         flexDirection: 'row',
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoChipSelecionado: {
-        color: colors.superficie,
+        color: colors.grafite,
     },
     avisoVazio: {
         fontSize: 13,
@@ -424,11 +425,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         paddingVertical: 12,
         paddingHorizontal: 14,
+        ...sombras.suave,
     },
     cartaoInativo: {
         opacity: 0.6,
@@ -485,11 +487,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         paddingVertical: 14,
         paddingHorizontal: 16,
+        ...sombras.suave,
     },
     infoCategoria: {
         flex: 1,

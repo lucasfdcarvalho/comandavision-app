@@ -3,6 +3,7 @@ import { Text } from "./ui/Texto";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import { raio } from "../theme/tokens";
 
 type Props = {
     titulo: string;
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.erro,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     botaoInativo: {
         opacity: 0.6,

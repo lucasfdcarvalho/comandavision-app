@@ -3,6 +3,7 @@ import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import type { Categoria } from "../types/Categoria";
 import { colors } from "../theme/colors";
+import { raio } from "../theme/tokens";
 
 type Props = {
     categorias: Categoria[];
@@ -50,11 +51,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 10,
+        borderRadius: raio.md,
     },
     linhaSelecionada: {
         borderColor: colors.laranja,
-        backgroundColor: '#FDF1E0',
+        backgroundColor: colors.laranjaClaro,
     },
     texto: {
         fontSize: 15,

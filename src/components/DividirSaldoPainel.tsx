@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from "react-native";
 import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import { raio } from "../theme/tokens";
 import { centavosParaMoeda } from "../utils/saldoPagamento";
 import { dividirCentavosEntrePessoas } from "../utils/divisaoConta";
 
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 8,
+        borderRadius: raio.md,
         borderWidth: 1,
         borderColor: colors.borda,
     },
@@ -169,6 +170,6 @@ const styles = StyleSheet.create({
     textoBotaoUsar: {
         fontSize: 13,
         fontWeight: '700',
-        color: colors.superficie,
+        color: colors.grafite,
     },
 });

@@ -8,6 +8,7 @@ import type { GestaoStackParamList } from "../../navigation/GestaoStack";
 import { apiService } from "../../services/apiService";
 import type { PapelUsuario } from "../../types/Usuario";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SeletorPapel } from "../../components/SeletorPapel";
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     campoSenha: {
         flexDirection: 'row',
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     inputSenha: {
         flex: 1,

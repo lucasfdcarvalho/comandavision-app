@@ -7,6 +7,7 @@ import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { colors } from "../../theme/colors";
+import { raio } from "../../theme/tokens";
 import { formatarMoeda } from "../../utils/formatadores";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     valorStepper: {
         fontSize: 18,
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     botaoSalvarContainer: {
         marginTop: 24,

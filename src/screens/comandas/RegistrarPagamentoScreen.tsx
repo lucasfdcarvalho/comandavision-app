@@ -8,6 +8,7 @@ import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
 import { FormaPagamento, ResumoPagamentos } from "../../types/Pagamento";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { centavosParaMoeda, avaliarSaldoPagamento, SaldoPagamento } from "../../utils/saldoPagamento";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { MensagemErro } from "../../components/MensagemErro";
@@ -297,8 +298,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         gap: 6,
+        ...sombras.suave,
     },
     resumoLinha: {
         flexDirection: 'row',
@@ -356,11 +358,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 10,
+        borderRadius: raio.md,
     },
     botaoFormaSelecionada: {
         borderColor: colors.laranja,
-        backgroundColor: '#FDF1E0',
+        backgroundColor: colors.laranjaClaro,
     },
     textoBotaoForma: {
         flex: 1,
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     botaoRegistrarContainer: {
         marginTop: 24,

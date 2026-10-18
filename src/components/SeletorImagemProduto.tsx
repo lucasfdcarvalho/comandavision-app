@@ -4,6 +4,7 @@ import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { colors } from "../theme/colors";
+import { raio } from "../theme/tokens";
 import { ProdutoImagem } from "./ProdutoImagem";
 
 export type ImagemSelecionada = {
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.superficie,
         borderWidth: 1,
         borderColor: colors.borda,
-        borderRadius: 8,
+        borderRadius: raio.md,
     },
     textoBotao: {
         fontSize: 14,

@@ -11,6 +11,7 @@ import { apiService } from "../../services/apiService";
 import { ComandaDetalhada } from "../../types/Comanda";
 import { Pagamento, ResumoPagamentos } from "../../types/Pagamento";
 import { colors } from "../../theme/colors";
+import { raio, sombras } from "../../theme/tokens";
 import { formatarMoeda, formatarDataHora } from "../../utils/formatadores";
 import { avaliarSaldoPagamento, centavosParaMoeda } from "../../utils/saldoPagamento";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
@@ -454,12 +455,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
+        ...sombras.suave,
     },
     itemInfo: {
         flex: 1,
@@ -523,10 +525,11 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         padding: 16,
         backgroundColor: colors.superficie,
-        borderRadius: 12,
+        borderRadius: raio.lg,
         borderWidth: 1,
         borderColor: colors.borda,
         gap: 10,
+        ...sombras.suave,
     },
     secaoTitulo: {
         fontSize: 15,
