@@ -4,6 +4,7 @@ import { Text } from "../ui/Texto";
 import type { LayoutChangeEvent } from "react-native";
 import Svg, { Line, Path, Text as SvgText } from "react-native-svg";
 import { colors } from "../../theme/colors";
+import { feedbackTatil } from "../../utils/feedbackTatil";
 import { arredondarTetoEixo, formatarMoedaCompacta } from "../../utils/dashboard";
 
 export type ItemColuna = {
@@ -148,7 +149,10 @@ export function GraficoColunas({ itens, indiceSelecionado, onSelecionar, maximoR
                     <Pressable
                         key={item.chave}
                         style={{ width: larguraFaixa, height: alturaGrafico }}
-                        onPress={() => onSelecionar(indice)}
+                        onPress={() => {
+                            feedbackTatil.selecao();
+                            onSelecionar(indice);
+                        }}
                         accessibilityRole="button"
                         accessibilityState={{ selected: indice === indiceSelecionado }}
                         accessibilityLabel={item.descricaoAcessivel}

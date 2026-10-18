@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import type { Comanda } from "../types/Comanda";
 import { colors } from "../theme/colors";
 import { StatusBadge } from "./StatusBadge";
+import { AparecerSuave } from "./ui/AparecerSuave";
 
 type Props = {
     comanda: Comanda;
@@ -13,22 +14,31 @@ type Props = {
 
 export function ComandaCard({ comanda, subtitulo, onPress }: Props) {
     return (
-        <Pressable style={styles.cartao} onPress={onPress} accessibilityRole="button">
-            <View style={styles.icone}>
-                <Feather name="file-text" size={20} color={colors.laranja} />
-            </View>
-            <View style={styles.info}>
-                <View style={styles.linhaCabecalho}>
-                    <Text style={styles.identificacao}>{comanda.identificacao}</Text>
-                    <StatusBadge status={comanda.status} />
+        <AparecerSuave>
+            <Pressable
+                style={({ pressed }) => [styles.cartao, pressed && styles.cartaoPressionado]}
+                onPress={onPress}
+                accessibilityRole="button">
+                <View style={styles.icone}>
+                    <Feather name="file-text" size={20} color={colors.laranja} />
                 </View>
-                <Text style={styles.subtitulo}>{subtitulo}</Text>
-            </View>
-        </Pressable>
+                <View style={styles.info}>
+                    <View style={styles.linhaCabecalho}>
+                        <Text style={styles.identificacao}>{comanda.identificacao}</Text>
+                        <StatusBadge status={comanda.status} />
+                    </View>
+                    <Text style={styles.subtitulo}>{subtitulo}</Text>
+                </View>
+            </Pressable>
+        </AparecerSuave>
     );
 }
 
 const styles = StyleSheet.create({
+    cartaoPressionado: {
+        opacity: 0.85,
+        transform: [{ scale: 0.99 }],
+    },
     cartao: {
         flexDirection: 'row',
         alignItems: 'center',

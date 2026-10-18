@@ -10,6 +10,8 @@ import { GraficoColunas } from "../../components/dashboard/GraficoColunas";
 import { CartaoIndicador } from "../../components/dashboard/CartaoIndicador";
 import { BarraProporcional } from "../../components/dashboard/BarraProporcional";
 import { colors } from "../../theme/colors";
+import { AparecerSuave } from "../../components/ui/AparecerSuave";
+import { feedbackTatil } from "../../utils/feedbackTatil";
 import { formatarMoeda } from "../../utils/formatadores";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import {
@@ -103,6 +105,7 @@ export function IndicadoresScreen() {
     );
 
     async function selecionarPeriodo(chave: ChavePeriodo) {
+        feedbackTatil.selecao();
         setPeriodo(chave);
         setCarregandoPeriodo(true);
         await carregarPeriodo(chave);
@@ -174,7 +177,8 @@ export function IndicadoresScreen() {
             ) : mensagemErro ? (
                 <MensagemErro texto={mensagemErro} />
             ) : (
-                <>
+                // Cada troca de período remonta o bloco e repete a entrada suave.
+                <AparecerSuave style={styles.blocoConteudo}>
                     <View style={styles.grade}>
                         <CartaoIndicador rotulo="Faturamento" valor={formatarMoeda(resumo?.faturamento ?? 0)} comparacao={comparacao('faturamento')} />
                         <CartaoIndicador rotulo="Vendas" valor={String(resumo?.quantidadeVendas ?? 0)} comparacao={comparacao('quantidadeVendas')} />
@@ -276,7 +280,7 @@ export function IndicadoresScreen() {
                             ))
                         )}
                     </View>
-                </>
+                </AparecerSuave>
             )}
         </ScrollView>
     );
@@ -327,6 +331,9 @@ const styles = StyleSheet.create({
     },
     carregandoPeriodo: {
         marginVertical: 24,
+    },
+    blocoConteudo: {
+        gap: 12,
     },
     grade: {
         flexDirection: 'row',

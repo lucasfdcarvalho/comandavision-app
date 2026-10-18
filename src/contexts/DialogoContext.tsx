@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useRef, useSt
 import { Keyboard, View } from 'react-native';
 import { Dialogo } from '../components/Dialogo';
 import { DialogoController, type BotaoDialogo, type TipoDialogo } from '../utils/dialogoController';
+import { feedbackTatil } from '../utils/feedbackTatil';
 
 const DialogoContext = createContext<DialogoController | null>(null);
 
@@ -42,6 +43,10 @@ export function useDialogo() {
     const alertar = useCallback((titulo: string, mensagem: string, botoes?: BotaoDialogo[], tipo?: TipoDialogo, aoFechar?: () => void) => {
         if (!montado.current) return;
         Keyboard.dismiss();
+        // Todo aviso de sucesso, erro ou alerta do app passa por aqui: a vibração vem junto.
+        if (tipo === 'sucesso') feedbackTatil.sucesso();
+        else if (tipo === 'erro') feedbackTatil.erro();
+        else if (tipo === 'aviso') feedbackTatil.aviso();
         controller.abrir(origem, titulo, mensagem, botoes, tipo, aoFechar);
     }, [controller, origem]);
 

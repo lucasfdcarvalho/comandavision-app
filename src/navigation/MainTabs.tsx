@@ -7,6 +7,7 @@ import { GestaoStack } from "./GestaoStack";
 import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
 import { tabScreenOptions } from "./stackScreenOptions";
+import { feedbackTatil } from "../utils/feedbackTatil";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,7 +15,7 @@ export function MainTabs() {
     const { usuario } = useAuth();
 
     return (
-        <Tab.Navigator screenOptions={tabScreenOptions}>
+        <Tab.Navigator screenOptions={tabScreenOptions} screenListeners={{ tabPress: () => feedbackTatil.selecao() }}>
             <Tab.Screen
                 name="Comandas"
                 component={ComandasStack}

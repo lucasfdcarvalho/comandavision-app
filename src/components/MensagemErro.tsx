@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import { feedbackTatil } from "../utils/feedbackTatil";
 
 type Props = {
     texto: string;
 };
 
 export function MensagemErro({ texto }: Props) {
+    // Vibra quando um erro novo aparece (validação ou falha da API).
+    useEffect(() => {
+        if (texto) feedbackTatil.erro();
+    }, [texto]);
+
     return (
         <View style={styles.container} accessible accessibilityRole="alert" accessibilityLabel={texto} accessibilityLiveRegion="polite">
             <Feather name="alert-circle" size={16} color={colors.erro} />
