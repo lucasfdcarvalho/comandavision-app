@@ -112,7 +112,7 @@ export function CatalogoScreen({ navigation }: Props) {
     }, [aba, produtosFiltrados.length, produtos.length, categoriasFiltradas.length, categorias.length]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="lista" />;
     }
 
     if (mensagemErro) {

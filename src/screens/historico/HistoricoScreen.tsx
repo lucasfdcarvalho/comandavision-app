@@ -111,7 +111,7 @@ export function HistoricoScreen() {
     }, [comandasFiltradas.length, busca, periodo]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="lista" />;
     }
 
     if (mensagemErro) {

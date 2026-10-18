@@ -121,7 +121,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
     }
 
     if (carregandoCategorias) {
-        return <LoadingState />;
+        return <LoadingState variante="formulario" />;
     }
 
     return (

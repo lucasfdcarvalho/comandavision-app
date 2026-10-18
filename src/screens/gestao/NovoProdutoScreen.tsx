@@ -94,7 +94,7 @@ export function NovoProdutoScreen({ navigation }: Props) {
     }
 
     if (carregandoCategorias) {
-        return <LoadingState />;
+        return <LoadingState variante="formulario" />;
     }
 
     return (

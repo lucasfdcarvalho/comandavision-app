@@ -72,7 +72,7 @@ export function ComandasScreen({ navigation }: Props) {
     const buscaSemResultados = Boolean(busca.trim()) && comandasFiltradas.length === 0;
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="lista" />;
     }
 
     if (mensagemErro) {

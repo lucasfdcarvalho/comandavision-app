@@ -129,7 +129,7 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     }
 
     if (carregandoResumo) {
-        return <LoadingState />;
+        return <LoadingState variante="formulario" />;
     }
 
     if (pagamentoConcluido) {

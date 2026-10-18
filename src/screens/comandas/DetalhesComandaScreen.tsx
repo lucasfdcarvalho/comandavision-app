@@ -204,7 +204,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     }, [navigation, comandaId, comandaAberta]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="detalhe" />;
     }
 
     if (!comanda) {

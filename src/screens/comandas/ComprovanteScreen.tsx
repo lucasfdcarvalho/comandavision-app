@@ -67,7 +67,7 @@ export function ComprovanteScreen({ route, navigation }: Props) {
     );
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="detalhe" />;
     }
 
     if (mensagemErro || !comanda) {

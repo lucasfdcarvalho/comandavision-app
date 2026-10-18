@@ -127,7 +127,7 @@ export function IndicadoresScreen() {
     }, [mediasSemana]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="painel" />;
     }
 
     const referencia = PERIODOS.find((opcao) => opcao.chave === periodo)?.referencia ?? '';

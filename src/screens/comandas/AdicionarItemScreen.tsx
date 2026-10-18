@@ -80,7 +80,7 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
     }, [produtosFiltrados.length, produtos.length]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="lista" />;
     }
 
     if (mensagemErro) {

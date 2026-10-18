@@ -60,7 +60,7 @@ export function EquipeScreen({ navigation }: Props) {
     }, [usuarios, busca]);
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="lista" />;
     }
 
     if (mensagemErro) {

@@ -68,7 +68,7 @@ export function DashboardScreen({ navigation }: Props) {
     }
 
     if (carregando) {
-        return <LoadingState />;
+        return <LoadingState variante="painel" />;
     }
 
     if (mensagemErro) {
