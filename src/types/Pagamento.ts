@@ -29,3 +29,16 @@ export interface ResumoPagamentos {
     saldoRestante: number;
     situacao: SituacaoPagamento;
 }
+
+// Pix gerado pelo Mercado Pago. Fica PENDENTE até o cliente pagar (ou CANCELADO se expirar).
+export interface CobrancaPix {
+    pagamentoId: number;
+    comandaId: number;
+    valor: number;
+    status: StatusPagamento;
+    // Código "copia e cola".
+    qrCode: string;
+    // Imagem PNG do QR Code em Base64.
+    qrCodeBase64: string;
+    expiraEm: string;
+}

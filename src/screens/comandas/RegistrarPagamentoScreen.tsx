@@ -51,7 +51,17 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
             (async () => {
                 setCarregandoResumo(true);
                 try {
-                    await buscarResumo();
+                    const dados = await buscarResumo();
+                    // Ao voltar da tela do Pix, o saldo mudou: sugere o novo restante.
+                    const saldoAtual = avaliarSaldoPagamento(dados.totalComanda, dados);
+                    if (saldoAtual.disponivel) {
+                        setValor((anterior) => {
+                            const anteriorCentavos = Math.round(Number(anterior.replace(',', '.')) * 100);
+                            return anteriorCentavos > saldoAtual.restanteCentavos
+                                ? centavosParaValorEditavel(saldoAtual.restanteCentavos)
+                                : anterior;
+                        });
+                    }
                 } catch {
                     // O resumo é só informativo aqui; a validação de saldo real acontece no backend e na tela de detalhes.
                 } finally {
@@ -74,13 +84,14 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         setMensagemSucesso('');
     }
 
-    async function registrar() {
+    // Valida o campo Valor e devolve os centavos, ou null (com a mensagem de erro já exibida).
+    function validarValor(): number | null {
         const valorNumerico = Number(valor.replace(',', '.'));
 
         if (!valor.trim() || Number.isNaN(valorNumerico) || valorNumerico <= 0) {
             setMensagemSucesso('');
             setMensagemErro('Informe um valor válido, maior que zero');
-            return;
+            return null;
         }
 
         const valorCentavos = Math.round(valorNumerico * 100);
@@ -90,11 +101,42 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         if (saldo.disponivel && valorCentavos > saldo.restanteCentavos) {
             setMensagemSucesso('');
             setMensagemErro(`O valor não pode ultrapassar o saldo restante de ${centavosParaMoeda(saldo.restanteCentavos)}`);
-            return;
+            return null;
         }
 
         setMensagemErro('');
         setMensagemSucesso('');
+        return valorCentavos;
+    }
+
+    // Pix pelo Mercado Pago: gera o QR Code e abre a tela que acompanha o pagamento.
+    async function gerarQrCodePix() {
+        const valorCentavos = validarValor();
+        if (valorCentavos === null) {
+            return;
+        }
+
+        try {
+            setCarregando(true);
+            const cobranca = await apiService.gerarPix(comandaId, valorCentavos / 100);
+            navigation.navigate('PagamentoPix', {
+                comandaId,
+                comandaIdentificacao,
+                pagamentoId: cobranca.pagamentoId,
+                cobranca,
+            });
+        } catch (error: unknown) {
+            setMensagemErro(error instanceof Error ? error.message : 'Não foi possível gerar o Pix');
+        } finally {
+            setCarregando(false);
+        }
+    }
+
+    async function registrar() {
+        const valorCentavos = validarValor();
+        if (valorCentavos === null) {
+            return;
+        }
 
         try {
             setCarregando(true);
@@ -219,7 +261,7 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
                     editable={!carregando}
                 />
 
-                {forma !== 'DINHEIRO' ? (
+                {forma !== 'DINHEIRO' && forma !== 'PIX' ? (
                     <>
                         <Text style={styles.rotulo}>Referência externa (opcional)</Text>
                         <TextInput
@@ -237,7 +279,21 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
                 {!mensagemErro && mensagemSucesso ? <MensagemSucesso texto={mensagemSucesso} /> : null}
 
                 <View style={styles.botaoRegistrarContainer}>
-                    <PrimaryButton titulo="Registrar pagamento" onPress={registrar} carregando={carregando} />
+                    {forma === 'PIX' ? (
+                        <>
+                            <PrimaryButton titulo="Gerar QR Code Pix" icone="maximize" onPress={gerarQrCodePix} carregando={carregando} />
+                            {/* Alternativa para Pix pago direto na chave do estabelecimento, sem QR Code do app. */}
+                            <Pressable
+                                onPress={registrar}
+                                disabled={carregando}
+                                style={styles.linkPixManual}
+                                accessibilityRole="button">
+                                <Text style={styles.textoLinkPixManual}>Registrar Pix recebido por fora</Text>
+                            </Pressable>
+                        </>
+                    ) : (
+                        <PrimaryButton titulo="Registrar pagamento" onPress={registrar} carregando={carregando} />
+                    )}
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -282,6 +338,16 @@ function PagamentoConcluido({
 }
 
 const styles = StyleSheet.create({
+    linkPixManual: {
+        alignItems: 'center',
+        paddingVertical: 14,
+    },
+    textoLinkPixManual: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+        textDecorationLine: 'underline',
+    },
     flex: {
         flex: 1,
         backgroundColor: colors.fundo,

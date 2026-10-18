@@ -3,7 +3,7 @@ import { Comanda, ComandaDetalhada, DadosNovaComanda } from "../types/Comanda";
 import { ItemComanda, DadosNovoItem, DadosAtualizarItem } from "../types/ItemComanda";
 import { Produto, DadosNovoProduto, DadosAtualizarProduto } from "../types/Produto";
 import { Categoria, DadosNovaCategoria, DadosAtualizarCategoria } from "../types/Categoria";
-import { Pagamento, DadosNovoPagamento, ResumoPagamentos } from "../types/Pagamento";
+import { Pagamento, DadosNovoPagamento, ResumoPagamentos, CobrancaPix } from "../types/Pagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../types/Dashboard";
 import { Usuario, DadosNovoUsuario, PapelUsuario } from "../types/Usuario";
 import { apiClient } from "./apiClient";
@@ -160,6 +160,24 @@ async function reativarUsuario(id: string): Promise<Usuario> {
     return apiClient.requisitar<Usuario>(`/api/usuarios/${id}/reativar`, { method: 'PATCH' });
 }
 
+async function gerarPix(comandaId: number, valor: number): Promise<CobrancaPix> {
+    return apiClient.requisitar<CobrancaPix>(`/api/comandas/${comandaId}/pagamentos/pix`, {
+        method: 'POST',
+        body: JSON.stringify({ valor }),
+    });
+}
+
+// O backend confere no Mercado Pago a cada consulta enquanto o Pix estiver pendente.
+async function consultarPix(comandaId: number, pagamentoId: number): Promise<CobrancaPix> {
+    return apiClient.requisitar<CobrancaPix>(`/api/comandas/${comandaId}/pagamentos/${pagamentoId}/pix`);
+}
+
+async function cancelarPix(comandaId: number, pagamentoId: number): Promise<CobrancaPix> {
+    return apiClient.requisitar<CobrancaPix>(`/api/comandas/${comandaId}/pagamentos/${pagamentoId}/pix/cancelar`, {
+        method: 'PATCH',
+    });
+}
+
 export const apiService = {
     buscarUsuarioAutenticado,
     listarComandas,
@@ -180,6 +198,9 @@ export const apiService = {
     listarPagamentos,
     buscarResumoPagamentos,
     estornarPagamento,
+    gerarPix,
+    consultarPix,
+    cancelarPix,
     buscarResumoDashboard,
     listarProdutosMaisVendidos,
     listarFormasPagamento,

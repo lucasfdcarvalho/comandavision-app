@@ -322,7 +322,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                     color={confirmado ? colors.laranja : colors.textoSecundario}
                                                 />
                                                 <View style={styles.pagamentoInfo}>
-                                                    <Text style={[styles.pagamentoValor, !confirmado && styles.textoEstornado]}>
+                                                    <Text style={[styles.pagamentoValor, (pagamento.status === 'ESTORNADO' || pagamento.status === 'CANCELADO') && styles.textoEstornado]}>
                                                         {ROTULO_FORMA[pagamento.forma]} · {formatarMoeda(pagamento.valor)}
                                                     </Text>
                                                     <Text style={styles.pagamentoData}>
@@ -339,6 +339,21 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                         ) : (
                                                             <Feather name="rotate-ccw" size={16} color={colors.erro} />
                                                         )}
+                                                    </Pressable>
+                                                ) : pagamento.status === 'PENDENTE' && pagamento.forma === 'PIX' ? (
+                                                    // Pix aguardando pagamento: reabre a tela do QR Code.
+                                                    <Pressable
+                                                        onPress={() => navigation.navigate('PagamentoPix', {
+                                                            comandaId,
+                                                            comandaIdentificacao: comanda.identificacao,
+                                                            pagamentoId: pagamento.id,
+                                                        })}
+                                                        style={styles.seloPixPendente}
+                                                        hitSlop={8}
+                                                        accessibilityRole="button"
+                                                        accessibilityLabel="Ver Pix aguardando pagamento">
+                                                        <Text style={styles.textoPixPendente}>Ver Pix</Text>
+                                                        <Feather name="chevron-right" size={14} color={colors.laranjaTexto} />
                                                     </Pressable>
                                                 ) : !confirmado ? (
                                                     <Text style={styles.badgeEstornado}>
@@ -406,6 +421,20 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+    seloPixPendente: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        backgroundColor: colors.laranjaClaro,
+        borderRadius: 999,
+    },
+    textoPixPendente: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: colors.laranjaTexto,
+    },
     botaoHeaderComIcone: {
         flexDirection: 'row',
         alignItems: 'center',

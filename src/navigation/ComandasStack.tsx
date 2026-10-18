@@ -10,6 +10,8 @@ import { ConfirmarItemScreen } from "../screens/comandas/ConfirmarItemScreen";
 import { EditarItemScreen } from "../screens/comandas/EditarItemScreen";
 import { RegistrarPagamentoScreen } from "../screens/comandas/RegistrarPagamentoScreen";
 import { ComprovanteScreen } from "../screens/comandas/ComprovanteScreen";
+import { PagamentoPixScreen } from "../screens/comandas/PagamentoPixScreen";
+import type { CobrancaPix } from "../types/Pagamento";
 import { colors } from "../theme/colors";
 
 export type ComandasStackParamList = {
@@ -34,6 +36,8 @@ export type ComandasStackParamList = {
     };
     RegistrarPagamento: { comandaId: number; comandaIdentificacao: string; valorSugerido: number };
     Comprovante: { comandaId: number };
+    // `cobranca` vem preenchida logo após gerar o Pix; ao retomar um Pix pendente, só o pagamentoId.
+    PagamentoPix: { comandaId: number; comandaIdentificacao: string; pagamentoId: number; cobranca?: CobrancaPix };
 };
 
 const Stack = createNativeStackNavigator<ComandasStackParamList>();
@@ -87,6 +91,11 @@ export function ComandasStack() {
                 name="RegistrarPagamento"
                 component={RegistrarPagamentoScreen}
                 options={{ title: 'Registrar pagamento' }}
+            />
+            <Stack.Screen
+                name="PagamentoPix"
+                component={PagamentoPixScreen}
+                options={{ title: 'Pagamento Pix' }}
             />
             <Stack.Screen
                 name="Comprovante"
