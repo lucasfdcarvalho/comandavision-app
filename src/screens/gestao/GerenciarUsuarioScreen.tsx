@@ -1,6 +1,7 @@
 import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { Text } from "../../components/ui/Texto";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";

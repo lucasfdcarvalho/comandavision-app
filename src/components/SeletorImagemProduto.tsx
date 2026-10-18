@@ -1,5 +1,6 @@
 import { useDialogo } from "../contexts/DialogoContext";
-import { View, Pressable, Text, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { colors } from "../theme/colors";

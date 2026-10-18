@@ -1,6 +1,7 @@
 import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useLayoutEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { View, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Text } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";

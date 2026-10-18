@@ -1,6 +1,7 @@
 import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useState } from "react";
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { GestaoStackParamList } from "../../navigation/GestaoStack";

@@ -1,14 +1,6 @@
 import React, { useState } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TextInputProps,
-    StyleSheet,
-    Pressable,
-    StyleProp,
-    ViewStyle,
-} from "react-native";
+import { View, TextInputProps, StyleSheet, Pressable, StyleProp, ViewStyle } from "react-native";
+import { Text, TextInput } from "./Texto";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../../theme/colors";
 import { espacamento, raio, tipografia } from "../../theme/tokens";

@@ -1,6 +1,7 @@
 import { useDialogo } from "../../contexts/DialogoContext";
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { Text, TextInput } from "../../components/ui/Texto";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";

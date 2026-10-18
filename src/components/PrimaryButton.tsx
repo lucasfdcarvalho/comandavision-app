@@ -1,4 +1,5 @@
-import { Pressable, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { Text } from "./ui/Texto";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";

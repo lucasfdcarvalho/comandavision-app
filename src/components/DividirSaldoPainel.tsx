@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import { centavosParaMoeda } from "../utils/saldoPagamento";

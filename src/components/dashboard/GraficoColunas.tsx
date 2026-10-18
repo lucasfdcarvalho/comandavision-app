@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { Text } from "../ui/Texto";
 import type { LayoutChangeEvent } from "react-native";
 import Svg, { Line, Path, Text as SvgText } from "react-native-svg";
 import { colors } from "../../theme/colors";
@@ -117,6 +118,7 @@ export function GraficoColunas({ itens, indiceSelecionado, onSelecionar, maximoR
                         x={LARGURA_EIXO_Y - 8}
                         y={base - (marca / teto) * alturaPlot + 3.5}
                         fontSize={10}
+                        fontFamily="Inter_500Medium"
                         fill={colors.textoSecundario}
                         textAnchor="end">
                         {formatarMoedaCompacta(marca)}

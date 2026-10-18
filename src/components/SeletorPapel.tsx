@@ -1,4 +1,5 @@
-import { View, Pressable, Text, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
+import { Text } from "./ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import type { PapelUsuario } from "../types/Usuario";
 import { colors } from "../theme/colors";

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, ActivityIndicator, RefreshControl, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, ActivityIndicator, RefreshControl, ScrollView, Pressable, StyleSheet } from "react-native";
+import { Text } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";

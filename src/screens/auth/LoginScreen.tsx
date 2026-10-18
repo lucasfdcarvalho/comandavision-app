@@ -1,17 +1,6 @@
 import React, { useRef, useState } from "react";
-import {
-    View,
-    Text,
-    Pressable,
-    ActivityIndicator,
-    Image,
-    StyleSheet,
-    useWindowDimensions,
-    KeyboardAvoidingView,
-    ScrollView,
-    Platform,
-    TextInput,
-} from "react-native";
+import { View, Pressable, ActivityIndicator, Image, StyleSheet, useWindowDimensions, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
+import { Text, TextInput } from "../../components/ui/Texto";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
 import { CampoTexto } from "../../components/ui/CampoTexto";

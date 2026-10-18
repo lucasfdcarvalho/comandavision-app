@@ -1,5 +1,6 @@
 import { stackScreenOptions } from './stackScreenOptions';
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Text } from "../components/ui/Texto";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";

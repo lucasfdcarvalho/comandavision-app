@@ -1,15 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    FlatList,
-    RefreshControl,
-    Pressable,
-    Image,
-    StyleSheet,
-    useWindowDimensions,
-} from "react-native";
+import { View, FlatList, RefreshControl, Pressable, Image, StyleSheet, useWindowDimensions } from "react-native";
+import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
