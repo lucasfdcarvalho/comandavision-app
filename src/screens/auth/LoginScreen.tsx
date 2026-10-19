@@ -70,20 +70,12 @@ export function LoginScreen() {
                         resizeMode="contain"
                         accessibilityLabel="Logo Supri Conveniência"
                     />
-                    
-                    <View style={styles.badgeApp}>
-                        <View style={styles.pontoAtivo} />
-                        <Text style={styles.textoBadgeApp}>ComandaVision</Text>
-                    </View>
                 </View>
 
                 {/* Card de Autenticação */}
                 <Cartao variante="elevado" style={styles.cartaoLogin}>
                     <View style={styles.cabecalhoForm}>
                         <Text style={styles.tituloForm}>Acesse sua conta</Text>
-                        <Text style={styles.subtituloForm}>
-                            Gerenciamento digital de comandas e salão
-                        </Text>
                     </View>
 
                     <View style={styles.formulario}>
@@ -187,28 +179,6 @@ const styles = StyleSheet.create({
     logo: {
         alignSelf: 'center',
     },
-    badgeApp: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: espacamento.xs + 2,
-        backgroundColor: colors.laranjaClaro,
-        paddingVertical: 5,
-        paddingHorizontal: espacamento.md,
-        borderRadius: raio.redondo,
-        borderWidth: 1,
-        borderColor: colors.laranjaBorda,
-    },
-    pontoAtivo: {
-        width: 7,
-        height: 7,
-        borderRadius: 4,
-        backgroundColor: colors.laranja,
-    },
-    textoBadgeApp: {
-        ...tipografia.rotuloForte,
-        color: colors.laranjaTexto,
-        letterSpacing: 0.3,
-    },
     cartaoLogin: {
         padding: espacamento.xxl,
         borderRadius: raio.xl,
@@ -220,10 +190,6 @@ const styles = StyleSheet.create({
     tituloForm: {
         ...tipografia.titulo,
         color: colors.textoPrimario,
-    },
-    subtituloForm: {
-        ...tipografia.rotulo,
-        color: colors.textoSecundario,
     },
     formulario: {
         gap: espacamento.lg,
