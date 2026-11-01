@@ -1,8 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
-import { ComandasStack } from "./ComandasStack";
-import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
+import { ComandasStack, HistoricoStack } from "./ComandasStack";
 import { GestaoStack } from "./GestaoStack";
 import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
@@ -26,9 +25,10 @@ export function MainTabs() {
             />
             <Tab.Screen
                 name="Historico"
-                component={HistoricoScreen}
+                component={HistoricoStack}
                 options={{
                     title: 'Histórico',
+                    headerShown: false,
                     tabBarIcon: ({ color, size }) => <Feather name="clock" size={size} color={color} />,
                 }}
             />

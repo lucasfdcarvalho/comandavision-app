@@ -494,13 +494,21 @@ const styles = StyleSheet.create({
     },
     itemInfo: {
         flex: 1,
+        minWidth: 0,
     },
     itemLinha: {
         flexDirection: 'row',
-        alignItems: 'center',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
+        gap: 8,
     },
     itemNome: {
+        // Reserva espaço legível para o nome; o subtotal desce se não couber.
+        flexBasis: 140,
+        flexGrow: 1,
+        flexShrink: 1,
+        minWidth: 0,
         fontSize: 15,
         fontWeight: '600',
         color: colors.textoPrimario,
@@ -509,8 +517,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
+        maxWidth: '100%',
+        flexShrink: 1,
+        marginLeft: 'auto',
     },
     itemSubtotal: {
+        flexShrink: 1,
         fontSize: 15,
         fontWeight: '600',
         color: colors.textoPrimario,

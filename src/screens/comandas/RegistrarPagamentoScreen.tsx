@@ -330,7 +330,7 @@ function PagamentoConcluido({
                 <PrimaryButton titulo="Ver comprovante" icone="file-text" onPress={onVerComprovante} />
                 <SecondaryButton titulo="Ver detalhes" onPress={onVerDetalhes} />
                 <Pressable onPress={onVoltarComandas} style={styles.linkVoltarComandas} accessibilityRole="button">
-                    <Text style={styles.textoLinkVoltarComandas}>Voltar para comandas</Text>
+                    <Text style={styles.textoLinkVoltarComandas}>Voltar à lista</Text>
                 </Pressable>
             </View>
         </View>

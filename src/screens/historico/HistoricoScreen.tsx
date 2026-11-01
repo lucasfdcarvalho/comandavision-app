@@ -2,6 +2,8 @@ import { useCallback, useMemo, useState } from "react";
 import { View, FlatList, RefreshControl, Pressable, Image, StyleSheet, useWindowDimensions } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { Feather } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
@@ -44,7 +46,7 @@ function estaDentroDoPeriodo(dataIso: string, chave: ChavePeriodo): boolean {
 }
 
 export function HistoricoScreen() {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<ComandasStackParamList, 'Lista'>>();
     const { width: larguraTela } = useWindowDimensions();
     const larguraMarca = Math.min(larguraTela * 0.72, 320);
     const alturaMarca = larguraMarca / PROPORCAO_LOGO;
@@ -193,10 +195,7 @@ export function HistoricoScreen() {
                                     ? `Fechada em ${formatarDataHora(item.fechadaEm)}`
                                     : `Atualizada em ${formatarDataHora(item.atualizadoEm)}`
                             }
-                            onPress={() => (navigation as any).navigate('Comandas', {
-                                screen: 'DetalhesComanda',
-                                params: { comandaId: item.id },
-                            })}
+                            onPress={() => navigation.navigate('DetalhesComanda', { comandaId: item.id })}
                         />
                     )}
                 />

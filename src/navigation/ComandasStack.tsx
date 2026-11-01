@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { ComandasScreen } from "../screens/comandas/ComandasScreen";
+import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
 import { NovaComandaScreen } from "../screens/comandas/NovaComandaScreen";
 import { DetalhesComandaScreen } from "../screens/comandas/DetalhesComandaScreen";
 import { AdicionarItemScreen } from "../screens/comandas/AdicionarItemScreen";
@@ -43,14 +44,23 @@ export type ComandasStackParamList = {
 const Stack = createNativeStackNavigator<ComandasStackParamList>();
 
 export function ComandasStack() {
+    return <FluxoComandasStack historico={false} />;
+}
+
+// Cada aba mantém a própria pilha: voltar dos detalhes preserva a lista de origem.
+export function HistoricoStack() {
+    return <FluxoComandasStack historico />;
+}
+
+function FluxoComandasStack({ historico }: { historico: boolean }) {
     return (
-        <Stack.Navigator screenOptions={stackScreenOptions}>
+        <Stack.Navigator initialRouteName="Lista" screenOptions={stackScreenOptions}>
             <Stack.Screen
                 name="Lista"
-                component={ComandasScreen}
+                component={historico ? HistoricoScreen : ComandasScreen}
                 options={({ navigation }) => ({
-                    title: 'Comandas',
-                    headerRight: () => (
+                    title: historico ? 'Histórico' : 'Comandas',
+                    headerRight: historico ? undefined : () => (
                         <Pressable
                             style={({ pressed }) => [styles.botaoHeaderIcone, pressed && styles.botaoHeaderIconePressionado]}
                             onPress={() => navigation.navigate('NovaComanda')}
