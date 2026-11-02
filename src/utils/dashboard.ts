@@ -23,13 +23,13 @@ export function subtrairDiasData(dataISO: string, dias: number): string {
 export type ChavePeriodo = 'hoje' | '7dias' | '30dias' | 'mes';
 
 export type Periodo = { inicio: string; fim: string };
+export type IntervalosComparacao = { atual: Periodo; comparacao: Periodo };
 
-// `referencia` aparece uma única vez, abaixo do seletor, explicando com o que os selos comparam.
-export const PERIODOS: { chave: ChavePeriodo; rotulo: string; referencia: string }[] = [
-    { chave: 'hoje', rotulo: 'Hoje', referencia: 'Em relação a ontem' },
-    { chave: '7dias', rotulo: '7 dias', referencia: 'Em relação aos 7 dias anteriores' },
-    { chave: '30dias', rotulo: '30 dias', referencia: 'Em relação aos 30 dias anteriores' },
-    { chave: 'mes', rotulo: 'Este mês', referencia: 'Em relação ao mesmo período do mês passado' },
+export const PERIODOS: { chave: ChavePeriodo; rotulo: string }[] = [
+    { chave: 'hoje', rotulo: 'Hoje' },
+    { chave: '7dias', rotulo: '7 dias' },
+    { chave: '30dias', rotulo: '30 dias' },
+    { chave: 'mes', rotulo: 'Este mês' },
 ]
 
 const NOMES_DIA_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -53,8 +53,8 @@ function ultimoDiaDoMes(ano: number, mes: number): number {
 // O backend calcula o período em America/Sao_Paulo. Se calculássemos "hoje" com o
 // relógio/fuso do próprio dispositivo, um emulador ou celular configurado em outro
 // fuso mandaria a data errada e o filtro "Hoje" voltaria vazio mesmo havendo vendas.
-export function calcularPeriodo(chave: ChavePeriodo): Periodo {
-    const fim = paraDataISOBrasil(new Date());
+export function calcularPeriodo(chave: ChavePeriodo, agora = new Date()): Periodo {
+    const fim = paraDataISOBrasil(agora);
 
     if (chave === 'hoje') {
         return { inicio: fim, fim };
@@ -83,6 +83,19 @@ export function calcularPeriodoAnterior(chave: ChavePeriodo, periodo: Periodo): 
     const quantidadeDias = listarDias(periodo.inicio, periodo.fim).length;
     const fim = subtrairDiasData(periodo.inicio, 1);
     return { inicio: subtrairDiasData(fim, quantidadeDias - 1), fim };
+}
+
+// Calcula os dois intervalos a partir do mesmo instante, evitando que a virada
+// do dia entre uma conta e outra produza datas que não correspondam às chamadas.
+export function calcularIntervalosComparacao(
+    chave: ChavePeriodo,
+    agora = new Date(),
+): IntervalosComparacao {
+    const atual = calcularPeriodo(chave, agora);
+    return {
+        atual,
+        comparacao: calcularPeriodoAnterior(chave, atual),
+    };
 }
 
 export function listarDias(inicio: string, fim: string): string[] {

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const {
+    calcularIntervalosComparacao,
     calcularPercentuaisFechandoCem,
     calcularVariacao,
     obterComparacaoIndicador,
@@ -26,14 +27,51 @@ test('percentuais divididos igualmente continuam fechando em 100,0%', () => {
     assert.deepEqual(calcularPercentuaisFechandoCem([0, 0]), [0, 0]);
 });
 
-test('Indicadores exibe o intervalo real abaixo dos filtros de periodo', () => {
+test('Indicadores exibe os intervalos efetivamente usados e os anuncia na acessibilidade', () => {
     const fonte = readFileSync(
         resolve(__dirname, '../src/screens/indicadores/IndicadoresScreen.tsx'),
         'utf8'
     );
 
-    assert.match(fonte, /formatarData\(periodoAtual\.inicio\).*formatarData\(periodoAtual\.fim\)/s);
-    assert.match(fonte, /styles\.intervalo/);
+    assert.match(fonte, /setIntervalos\(intervalosConsulta\)/);
+    assert.match(fonte, /formatarIntervalo\(intervalos\.atual\)/);
+    assert.match(fonte, /formatarIntervalo\(intervalos\.comparacao\)/);
+    assert.match(fonte, /accessibilityLiveRegion="polite"/);
+    assert.match(fonte, /Período atual:.*Comparado com:/s);
+    assert.doesNotMatch(fonte, /Em relação aos 30 dias anteriores/);
+});
+
+test('intervalos de comparacao usam as datas exatas enviadas para cada filtro', () => {
+    // 02:59:59 UTC ainda é 01/11/2026 em America/Sao_Paulo.
+    const agora = new Date('2026-11-02T02:59:59Z');
+
+    assert.deepEqual(calcularIntervalosComparacao('hoje', agora), {
+        atual: { inicio: '2026-11-01', fim: '2026-11-01' },
+        comparacao: { inicio: '2026-10-31', fim: '2026-10-31' },
+    });
+    assert.deepEqual(calcularIntervalosComparacao('7dias', agora), {
+        atual: { inicio: '2026-10-26', fim: '2026-11-01' },
+        comparacao: { inicio: '2026-10-19', fim: '2026-10-25' },
+    });
+    assert.deepEqual(calcularIntervalosComparacao('30dias', agora), {
+        atual: { inicio: '2026-10-03', fim: '2026-11-01' },
+        comparacao: { inicio: '2026-09-03', fim: '2026-10-02' },
+    });
+    assert.deepEqual(calcularIntervalosComparacao('mes', agora), {
+        atual: { inicio: '2026-11-01', fim: '2026-11-01' },
+        comparacao: { inicio: '2026-10-01', fim: '2026-10-01' },
+    });
+});
+
+test('comparacao mensal respeita ano anterior e ultimo dia do mes anterior', () => {
+    assert.deepEqual(
+        calcularIntervalosComparacao('mes', new Date('2027-01-15T15:00:00Z')).comparacao,
+        { inicio: '2026-12-01', fim: '2026-12-15' },
+    );
+    assert.deepEqual(
+        calcularIntervalosComparacao('mes', new Date('2028-03-31T15:00:00Z')).comparacao,
+        { inicio: '2028-02-01', fim: '2028-02-29' },
+    );
 });
 
 test('calcularVariacao: aumento percentual', () => {

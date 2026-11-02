@@ -18,23 +18,30 @@ import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import {
     ChavePeriodo,
     PERIODOS,
+    calcularIntervalosComparacao,
     calcularPercentuaisFechandoCem,
     calcularMediaPorDiaSemana,
-    calcularPeriodo,
-    calcularPeriodoAnterior,
-    calcularVariacao,
     formatarDiaComSemana,
     formatarDiaCurto,
     formatarPercentualParticipacao,
     nomeDiaSemanaCurto,
     obterComparacaoIndicador,
     ResultadoComparacao,
+    type IntervalosComparacao,
+    type Periodo,
     preencherDiasSemVenda,
 } from "../../utils/dashboard";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../../types/Dashboard";
 
 // Com menos dias que isso, a média por dia da semana teria uma ocorrência só e enganaria.
 const DIAS_MINIMOS_ANALISE_SEMANA = 14;
+
+function formatarIntervalo(periodo: Periodo): string {
+    if (periodo.inicio === periodo.fim) {
+        return formatarData(periodo.inicio);
+    }
+    return `${formatarData(periodo.inicio)} a ${formatarData(periodo.fim)}`;
+}
 
 // Aba exclusiva do DONO com a análise completa do período. O resumo rápido fica na aba Gestão.
 export function IndicadoresScreen() {
@@ -43,6 +50,7 @@ export function IndicadoresScreen() {
     const [carregandoPeriodo, setCarregandoPeriodo] = useState(false);
     const [atualizando, setAtualizando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
+    const [intervalos, setIntervalos] = useState<IntervalosComparacao | null>(null);
 
     const [resumo, setResumo] = useState<ResumoDashboard | null>(null);
     const [resumoAnterior, setResumoAnterior] = useState<ResumoDashboard | null>(null);
@@ -55,8 +63,9 @@ export function IndicadoresScreen() {
     const [diaSemanaSelecionado, setDiaSemanaSelecionado] = useState<number | null>(null);
 
     const carregarPeriodo = useCallback(async (chave: ChavePeriodo) => {
-        const atual = calcularPeriodo(chave);
-        const anterior = calcularPeriodoAnterior(chave, atual);
+        const intervalosConsulta = calcularIntervalosComparacao(chave);
+        const { atual, comparacao: anterior } = intervalosConsulta;
+        setIntervalos(intervalosConsulta);
         try {
             setMensagemErro('');
             setFalhaComparacao(false);
@@ -135,12 +144,12 @@ export function IndicadoresScreen() {
         return melhor;
     }, [mediasSemana]);
 
-    if (carregando) {
+    if (carregando || !intervalos) {
         return <LoadingState variante="painel" />;
     }
 
-    const referencia = PERIODOS.find((opcao) => opcao.chave === periodo)?.referencia ?? '';
-    const periodoAtual = calcularPeriodo(periodo);
+    const intervaloAtualTexto = formatarIntervalo(intervalos.atual);
+    const intervaloComparacaoTexto = formatarIntervalo(intervalos.comparacao);
     const comparacao = (campo: keyof ResumoDashboard): ResultadoComparacao =>
         obterComparacaoIndicador(resumo?.[campo], resumoAnterior?.[campo], falhaComparacao);
 
@@ -177,11 +186,15 @@ export function IndicadoresScreen() {
                     );
                 })}
             </View>
-            <View style={styles.contextoPeriodo}>
-                <Text style={styles.intervalo}>
-                    {formatarData(periodoAtual.inicio)} a {formatarData(periodoAtual.fim)}
+            <View
+                style={styles.contextoPeriodo}
+                accessible
+                accessibilityLiveRegion="polite"
+                accessibilityLabel={`Período atual: ${intervaloAtualTexto}. Comparado com: ${intervaloComparacaoTexto}.`}>
+                <Text style={styles.intervalo}>{intervaloAtualTexto}</Text>
+                <Text style={styles.comparacaoPeriodo}>
+                    {`Comparado com ${intervaloComparacaoTexto}`}
                 </Text>
-                <Text style={styles.referencia}>{referencia}</Text>
             </View>
 
             {carregandoPeriodo ? (
@@ -348,7 +361,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
         textAlign: 'center',
     },
-    referencia: {
+    comparacaoPeriodo: {
         fontSize: 12,
         color: colors.textoSecundario,
         textAlign: 'center',
