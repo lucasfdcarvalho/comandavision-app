@@ -215,6 +215,28 @@ export function DashboardScreen({ navigation }: Props) {
                             styles.cartaoAtalho,
                             pressed && styles.cartaoAtalhoPressionado,
                         ]}
+                        onPress={() => navigation.navigate('Relatorios')}
+                        accessibilityRole="button"
+                        accessibilityLabel={'Gerar relat\u00f3rio gerencial de comandas e indicadores'}>
+                        <View style={styles.iconeAtalhoCirculo}>
+                            <Feather name="file-text" size={22} color={colors.laranja} />
+                        </View>
+                        <View style={styles.infoAtalho}>
+                            <Text style={styles.tituloAtalho}>{'Relat\u00f3rios'}</Text>
+                            <Text style={styles.descricaoAtalho}>
+                                {'Hist\u00f3rico, indicadores e PDF'}
+                            </Text>
+                        </View>
+                        <View style={styles.setaAtalho}>
+                            <Feather name="chevron-right" size={18} color={colors.textoSecundario} />
+                        </View>
+                    </Pressable>
+
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.cartaoAtalho,
+                            pressed && styles.cartaoAtalhoPressionado,
+                        ]}
                         onPress={() => navigation.navigate('Catalogo')}
                         accessibilityRole="button"
                         accessibilityLabel="Gerenciar cardápio, produtos e categorias">

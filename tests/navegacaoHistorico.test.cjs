@@ -16,7 +16,8 @@ function carregarNavegador(arquivo) {
         exports,
         require(nome) {
             if (nome === 'react/jsx-runtime') return require(nome);
-            if (nome === 'react-native') return { StyleSheet: { create: (s) => s } };
+            if (nome === 'react-native') return { Platform: { OS: 'android' }, StyleSheet: { create: (s) => s } };
+            if (nome === 'react-native-safe-area-context') return { useSafeAreaInsets: () => ({ bottom: 48 }) };
             if (nome === '@react-navigation/native-stack') {
                 return { createNativeStackNavigator: () => ({ Navigator: 'Stack', Screen: 'Screen' }) };
             }
@@ -24,6 +25,9 @@ function carregarNavegador(arquivo) {
                 return { createBottomTabNavigator: () => ({ Navigator: 'Tabs', Screen: 'Screen' }) };
             }
             if (nome.endsWith('/useAuth')) return { useAuth: () => ({ usuario: { papel: 'DONO' } }) };
+            if (nome.endsWith('/tabBarLayout')) {
+                return { calcularLayoutBarraInferior: (bottom) => ({ height: 56 + bottom, paddingBottom: bottom }) };
+            }
             // Identidades estáveis permitem verificar o componente associado a cada rota.
             return new Proxy({}, { get: (_, chave) => chave });
         },

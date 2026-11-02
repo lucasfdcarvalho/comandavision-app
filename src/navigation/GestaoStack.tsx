@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
 import { DashboardScreen } from "../screens/dashboard/DashboardScreen";
+import { RelatoriosScreen } from "../screens/relatorios/RelatoriosScreen";
 import { CatalogoScreen } from "../screens/gestao/CatalogoScreen";
 import { NovoProdutoScreen } from "../screens/gestao/NovoProdutoScreen";
 import { EditarProdutoScreen } from "../screens/gestao/EditarProdutoScreen";
@@ -20,6 +21,7 @@ import { colors } from "../theme/colors";
 
 export type GestaoStackParamList = {
     Dashboard: undefined;
+    Relatorios: undefined;
     Catalogo: undefined;
     NovoProduto: undefined;
     EditarProduto: { produto: Produto };
@@ -51,7 +53,8 @@ export function GestaoStack() {
     }
 
     return (
-        <Stack.Navigator screenOptions={stackScreenOptions}>
+        <Stack.Navigator initialRouteName="Dashboard" screenOptions={stackScreenOptions}>
+            <Stack.Screen name="Relatorios" component={RelatoriosScreen} options={{ title: 'Relat\u00f3rios' }} />
             <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Gestão' }} />
             <Stack.Screen name="Catalogo" component={CatalogoScreen} options={{ title: 'Cardápio' }} />
             <Stack.Screen name="NovoProduto" component={NovoProdutoScreen} options={{ title: 'Novo produto' }} />

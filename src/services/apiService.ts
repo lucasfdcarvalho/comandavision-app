@@ -6,6 +6,7 @@ import { Categoria, DadosNovaCategoria, DadosAtualizarCategoria } from "../types
 import { Pagamento, DadosNovoPagamento, ResumoPagamentos, CobrancaPix } from "../types/Pagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../types/Dashboard";
 import { Usuario, DadosNovoUsuario, PapelUsuario } from "../types/Usuario";
+import { ComandaEncerradaRelatorio } from "../types/Relatorio";
 import { apiClient } from "./apiClient";
 
 async function buscarUsuarioAutenticado(): Promise<UsuarioAutenticado> {
@@ -134,6 +135,10 @@ async function listarFaturamentoDiario(inicio: string, fim: string): Promise<Fat
     return apiClient.requisitar<FaturamentoDiario[]>(`/api/dashboard/faturamento-diario?inicio=${inicio}&fim=${fim}`);
 }
 
+async function listarComandasEncerradasRelatorio(inicio: string, fim: string): Promise<ComandaEncerradaRelatorio[]> {
+    return apiClient.requisitar<ComandaEncerradaRelatorio[]>(`/api/dashboard/comandas?inicio=${inicio}&fim=${fim}`);
+}
+
 async function listarUsuarios(): Promise<Usuario[]> {
     return apiClient.requisitar<Usuario[]>('/api/usuarios');
 }
@@ -205,6 +210,7 @@ export const apiService = {
     listarProdutosMaisVendidos,
     listarFormasPagamento,
     listarFaturamentoDiario,
+    listarComandasEncerradasRelatorio,
     listarUsuarios,
     criarUsuario,
     alterarPapelUsuario,

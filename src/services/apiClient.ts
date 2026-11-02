@@ -8,6 +8,20 @@ if (!urlBase) {
 
 const MENSAGEM_SESSAO_EXPIRADA = 'Sua sessão expirou. Entre novamente.';
 
+export class ErroApi extends Error {
+    readonly status: number;
+
+    constructor(status: number, mensagem: string) {
+        super(mensagem);
+        this.name = 'ErroApi';
+        this.status = status;
+    }
+}
+
+export function ehErroApiStatus(error: unknown, status: number): error is ErroApi {
+    return error instanceof ErroApi && error.status === status;
+}
+
 // Registrado pelo AuthProvider: desloga o usuário quando a API recusa o token (401).
 let aoExpirarSessao: (() => void) | null = null;
 
@@ -62,7 +76,7 @@ async function requisitar<T>(caminho: string, opcoes: RequestInit = {}): Promise
     }
 
     if (!response.ok) {
-        throw new Error(await extrairMensagemErro(response));
+        throw new ErroApi(response.status, await extrairMensagemErro(response));
     }
 
     if (response.status === 204) {

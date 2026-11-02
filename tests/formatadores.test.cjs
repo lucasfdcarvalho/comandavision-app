@@ -5,10 +5,18 @@ const { execFileSync } = require('node:child_process');
 const {
     formatarMoeda,
     formatarDataHora,
+    formatarData,
+    formatarDataHoraCompleta,
     paraDataISOBrasil,
     subtrairDiasData,
     formatarTempoDecorrido,
 } = require('../src/utils/formatadores.ts');
+
+test('formatarData e formatarDataHoraCompleta: periodo e geracao do relatorio', () => {
+    assert.equal(formatarData('2026-11-01'), '01/11/2026');
+    assert.equal(formatarDataHoraCompleta('2026-11-01T15:30:00Z'), '01/11/2026 12:30');
+    assert.equal(formatarDataHoraCompleta('2027-01-01T02:30:00Z'), '31/12/2026 23:30');
+});
 
 // São Paulo é UTC-03:00 o ano todo (sem horário de verão desde 2019).
 // Portanto 03:00Z é meia-noite em São Paulo e 02:59:59Z ainda é o dia anterior.

@@ -34,6 +34,21 @@ export function formatarDataHora(data: string): string {
     return `${dia}/${mes} ${hora}:${minuto}`;
 }
 
+export function formatarData(dataISO: string): string {
+    const [ano, mes, dia] = dataISO.slice(0, 10).split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+export function formatarDataHoraCompleta(data: string): string {
+    const horario = paraHorarioBrasil(new Date(data));
+    const dia = String(horario.getUTCDate()).padStart(2, '0');
+    const mes = String(horario.getUTCMonth() + 1).padStart(2, '0');
+    const ano = horario.getUTCFullYear();
+    const hora = String(horario.getUTCHours()).padStart(2, '0');
+    const minuto = String(horario.getUTCMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} ${hora}:${minuto}`;
+}
+
 export function paraDataISOBrasil(data: Date): string {
     const horario = paraHorarioBrasil(data);
     const ano = horario.getUTCFullYear();

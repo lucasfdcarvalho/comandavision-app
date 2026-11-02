@@ -32,5 +32,5 @@ export const tabScreenOptions: BottomTabNavigationOptions = {
         shadowOpacity: 0,
     },
     tabBarItemStyle: { paddingTop: 4 },
-    tabBarLabelStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 11 },
+    tabBarLabelStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 14 },
 };

@@ -1,20 +1,33 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
+import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
 import { ComandasStack, HistoricoStack } from "./ComandasStack";
 import { GestaoStack } from "./GestaoStack";
 import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
 import { PerfilScreen } from "../screens/perfil/PerfilScreen";
 import { tabScreenOptions } from "./stackScreenOptions";
+import { calcularLayoutBarraInferior } from "./tabBarLayout";
 import { feedbackTatil } from "../utils/feedbackTatil";
 
 const Tab = createBottomTabNavigator();
 
 export function MainTabs() {
     const { usuario } = useAuth();
+    const insets = useSafeAreaInsets();
+    const layoutBarraInferior = calcularLayoutBarraInferior(
+        insets.bottom,
+        Platform.OS === 'android' || Platform.OS === 'ios' ? Platform.OS : 'web',
+    );
 
     return (
-        <Tab.Navigator screenOptions={tabScreenOptions} screenListeners={{ tabPress: () => feedbackTatil.selecao() }}>
+        <Tab.Navigator
+            screenOptions={{
+                ...tabScreenOptions,
+                tabBarStyle: [tabScreenOptions.tabBarStyle, layoutBarraInferior],
+            }}
+            screenListeners={{ tabPress: () => feedbackTatil.selecao() }}>
             <Tab.Screen
                 name="Comandas"
                 component={ComandasStack}
