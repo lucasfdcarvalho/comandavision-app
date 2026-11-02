@@ -4,6 +4,7 @@ const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
+const dashboard = require('../src/utils/dashboard.ts');
 
 function carregarGerador() {
     const codigo = ts.transpileModule(
@@ -22,7 +23,7 @@ function carregarGerador() {
                 };
             }
             if (nome === './dashboard') {
-                return { formatarPercentual: (valor) => `${valor}%` };
+                return dashboard;
             }
             if (nome === './formaPagamento') {
                 return {
@@ -107,6 +108,22 @@ test('relatorio preserva totais recebidos e escapa textos vindos da API', () => 
     assert.doesNotMatch(html, /<td>Combo <Especial><\/td>/);
 });
 
+test('relatorio distribui arredondamento e exibe pagamentos somando 100,0%', () => {
+    const { gerarRelatorioHtml } = carregarGerador();
+    const dados = dadosBase();
+    dados.formasPagamento = [
+        { forma: 'CARTAO_DEBITO', quantidadePagamentos: 1, valorRecebido: 37, percentual: 37.37 },
+        { forma: 'CARTAO_CREDITO', quantidadePagamentos: 1, valorRecebido: 35, percentual: 35.35 },
+        { forma: 'DINHEIRO', quantidadePagamentos: 1, valorRecebido: 27, percentual: 27.27 },
+    ];
+
+    const html = gerarRelatorioHtml(dados);
+
+    assert.match(html, /37,4%/);
+    assert.match(html, /35,3%/);
+    assert.match(html, /27,3%/);
+});
+
 test('relatorio distingue historico indisponivel de periodo sem comandas', () => {
     const { gerarRelatorioHtml, NOTA_DADOS_DEMONSTRACAO } = carregarGerador();
     const dados = dadosBase();
@@ -121,7 +138,7 @@ test('relatorio distingue historico indisponivel de periodo sem comandas', () =>
     assert.doesNotMatch(html, /Nenhuma comanda encerrada no período/);
 });
 
-test('tela nao contem as quatro mensagens removidas', () => {
+test('tela nao contem as mensagens removidas nem o aviso inferior', () => {
     const fonte = readFileSync(resolve(__dirname, '../src/screens/relatorios/RelatoriosScreen.tsx'), 'utf8')
         .replace(/\\u([0-9a-fA-F]{4})/g, (_, codigo) => String.fromCharCode(Number.parseInt(codigo, 16)));
 
@@ -129,5 +146,7 @@ test('tela nao contem as quatro mensagens removidas', () => {
     assert.doesNotMatch(fonte, /Como os números são calculados/);
     assert.doesNotMatch(fonte, /O histórico ainda não está disponível no servidor/);
     assert.doesNotMatch(fonte, /Histórico de comandas e indicadores reunidos em um PDF/);
-    assert.match(fonte, /NOTA_DADOS_DEMONSTRACAO/);
+    assert.doesNotMatch(fonte, /NOTA_DADOS_DEMONSTRACAO/);
+    assert.doesNotMatch(fonte, /Dados acad\u00eamicos de demonstra\u00e7\u00e3o/);
+    assert.doesNotMatch(fonte, /O PDF n\u00e3o possui valor fiscal ou cont\u00e1bil/);
 });

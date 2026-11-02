@@ -1,6 +1,6 @@
 import type { DadosRelatorioGerencial } from "../types/Relatorio";
 import { formatarData, formatarDataHoraCompleta, formatarMoeda } from "./formatadores";
-import { formatarPercentual } from "./dashboard";
+import { calcularPercentuaisFechandoCem, formatarPercentualParticipacao } from "./dashboard";
 import { ROTULO_FORMA } from "./formaPagamento";
 
 export const NOTA_DADOS_DEMONSTRACAO =
@@ -31,13 +31,16 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
             </tr>`).join('')
         : linhaVazia('Nenhum produto vendido no per\u00edodo.', 4);
 
+    const percentuaisFormas = calcularPercentuaisFechandoCem(
+        dados.formasPagamento.map((forma) => forma.valorRecebido)
+    );
     const linhasFormas = dados.formasPagamento.length > 0
-        ? dados.formasPagamento.map((forma) => `
+        ? dados.formasPagamento.map((forma, indice) => `
             <tr>
                 <td>${escaparHtml(ROTULO_FORMA[forma.forma])}</td>
                 <td class="numero">${forma.quantidadePagamentos}</td>
                 <td class="numero">${formatarMoeda(forma.valorRecebido)}</td>
-                <td class="numero">${formatarPercentual(forma.percentual)}</td>
+                <td class="numero">${formatarPercentualParticipacao(percentuaisFormas[indice])}</td>
             </tr>`).join('')
         : linhaVazia('Nenhum pagamento confirmado no per\u00edodo.', 4);
 

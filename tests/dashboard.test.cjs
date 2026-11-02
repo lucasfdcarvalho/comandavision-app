@@ -1,12 +1,40 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const { resolve } = require('node:path');
 const {
+    calcularPercentuaisFechandoCem,
     calcularVariacao,
     obterComparacaoIndicador,
     calcularPeriodo,
     calcularPeriodoAnterior,
     listarDias,
 } = require('../src/utils/dashboard.ts');
+
+test('percentuais de pagamento fecham em 100,0% pelos maiores restos', () => {
+    const percentuais = calcularPercentuaisFechandoCem([37, 35, 27]);
+
+    assert.deepEqual(percentuais, [37.4, 35.3, 27.3]);
+    assert.equal(
+        percentuais.reduce((soma, valor) => soma + Math.round(valor * 10), 0),
+        1000,
+    );
+});
+
+test('percentuais divididos igualmente continuam fechando em 100,0%', () => {
+    assert.deepEqual(calcularPercentuaisFechandoCem([1, 1, 1]), [33.4, 33.3, 33.3]);
+    assert.deepEqual(calcularPercentuaisFechandoCem([0, 0]), [0, 0]);
+});
+
+test('Indicadores exibe o intervalo real abaixo dos filtros de periodo', () => {
+    const fonte = readFileSync(
+        resolve(__dirname, '../src/screens/indicadores/IndicadoresScreen.tsx'),
+        'utf8'
+    );
+
+    assert.match(fonte, /formatarData\(periodoAtual\.inicio\).*formatarData\(periodoAtual\.fim\)/s);
+    assert.match(fonte, /styles\.intervalo/);
+});
 
 test('calcularVariacao: aumento percentual', () => {
     assert.equal(calcularVariacao(150, 100), 50);

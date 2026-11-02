@@ -16,10 +16,15 @@ import { relatorioService } from "../../services/relatorioService";
 import type { DadosRelatorioGerencial } from "../../types/Relatorio";
 import { colors } from "../../theme/colors";
 import { espacamento, raio, tipografia } from "../../theme/tokens";
-import { ChavePeriodo, PERIODOS, calcularPeriodo, formatarPercentual } from "../../utils/dashboard";
+import {
+    ChavePeriodo,
+    PERIODOS,
+    calcularPercentuaisFechandoCem,
+    calcularPeriodo,
+    formatarPercentualParticipacao,
+} from "../../utils/dashboard";
 import { formatarData, formatarDataHoraCompleta, formatarMoeda } from "../../utils/formatadores";
 import { ROTULO_FORMA } from "../../utils/formaPagamento";
-import { NOTA_DADOS_DEMONSTRACAO } from "../../utils/gerarRelatorioHtml";
 import { feedbackTatil } from "../../utils/feedbackTatil";
 
 const LIMITE_PREVIA_COMANDAS = 5;
@@ -138,6 +143,13 @@ export function RelatoriosScreen() {
             canceladas: comandas.filter((comanda) => comanda.status === 'CANCELADA').length,
         };
     }, [dados?.comandas]);
+
+    const percentuaisFormas = useMemo(
+        () => calcularPercentuaisFechandoCem(
+            (dados?.formasPagamento ?? []).map((forma) => forma.valorRecebido)
+        ),
+        [dados?.formasPagamento]
+    );
 
     if (carregando) {
         return <LoadingState variante="painel" />;
@@ -270,19 +282,18 @@ export function RelatoriosScreen() {
                             <Text style={styles.secaoTitulo}>Pagamentos</Text>
                             {dados.formasPagamento.length === 0 ? (
                                 <Text style={styles.textoVazio}>{'Nenhum pagamento no per\u00edodo.'}</Text>
-                            ) : dados.formasPagamento.map((forma) => (
+                            ) : dados.formasPagamento.map((forma, indice) => (
                                 <View key={forma.forma} style={styles.linhaCompacta}>
                                     <Text style={styles.nomeCompacto}>{ROTULO_FORMA[forma.forma]}</Text>
-                                    <Text style={styles.valorCompacto}>{formatarPercentual(forma.percentual)}</Text>
+                                    <Text style={styles.valorCompacto}>
+                                        {formatarPercentualParticipacao(percentuaisFormas[indice])}
+                                    </Text>
                                 </View>
                             ))}
                         </Cartao>
                     </View>
 
                     <PrimaryButton titulo="Gerar e compartilhar PDF" icone="share-2" onPress={exportarPdf} carregando={exportando} />
-                    <Text style={styles.rodape}>
-                        {`${NOTA_DADOS_DEMONSTRACAO} O PDF n\u00e3o possui valor fiscal ou cont\u00e1bil.`}
-                    </Text>
                 </AparecerSuave>
             )}
         </ScrollView>
@@ -331,5 +342,4 @@ const styles = StyleSheet.create({
     posicao: { width: 20, ...tipografia.legenda, color: colors.textoSecundario, textAlign: 'center' },
     nomeCompacto: { flex: 1, ...tipografia.rotulo, color: colors.textoPrimario },
     valorCompacto: { ...tipografia.rotuloForte, ...tipografia.tabular, color: colors.textoPrimario },
-    rodape: { ...tipografia.legenda, color: colors.textoSecundario, textAlign: 'center' },
 });

@@ -180,6 +180,49 @@ export function formatarPercentual(valor: number): string {
     return `${valor.toFixed(valor !== 0 && Math.abs(valor) < 10 ? 1 : 0).replace('.', ',')}%`;
 }
 
+export function formatarPercentualParticipacao(valor: number): string {
+    return `${valor.toFixed(1).replace('.', ',')}%`;
+}
+
+// Distribui os décimos de ponto percentual pelo método dos maiores restos.
+// Assim a exibição continua proporcional aos valores recebidos e fecha em
+// exatamente 100,0%, sem esconder uma diferença de arredondamento em um item.
+export function calcularPercentuaisFechandoCem(valores: number[]): number[] {
+    const valoresEmCentavos = valores.map((valor) =>
+        Number.isFinite(valor) && valor > 0 ? Math.round(valor * 100) : 0
+    );
+    const totalEmCentavos = valoresEmCentavos.reduce((soma, valor) => soma + valor, 0);
+
+    if (totalEmCentavos === 0) {
+        return valores.map(() => 0);
+    }
+
+    const UNIDADES_PERCENTUAIS = 1000; // 100,0% em décimos de ponto percentual.
+    const distribuicao = valoresEmCentavos.map((valor, indice) => {
+        const unidadesExatas = (valor * UNIDADES_PERCENTUAIS) / totalEmCentavos;
+        const unidadesInteiras = Math.floor(unidadesExatas);
+        return {
+            indice,
+            unidadesInteiras,
+            resto: unidadesExatas - unidadesInteiras,
+        };
+    });
+
+    let unidadesRestantes = UNIDADES_PERCENTUAIS
+        - distribuicao.reduce((soma, item) => soma + item.unidadesInteiras, 0);
+
+    [...distribuicao]
+        .sort((a, b) => b.resto - a.resto || a.indice - b.indice)
+        .forEach((item) => {
+            if (unidadesRestantes > 0) {
+                distribuicao[item.indice].unidadesInteiras += 1;
+                unidadesRestantes -= 1;
+            }
+        });
+
+    return distribuicao.map((item) => item.unidadesInteiras / 10);
+}
+
 export type MediaDiaSemana = {
     diaSemana: number;
     rotulo: string;

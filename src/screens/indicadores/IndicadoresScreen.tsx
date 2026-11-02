@@ -13,18 +13,19 @@ import { colors } from "../../theme/colors";
 import { raio, sombras } from "../../theme/tokens";
 import { AparecerSuave } from "../../components/ui/AparecerSuave";
 import { feedbackTatil } from "../../utils/feedbackTatil";
-import { formatarMoeda } from "../../utils/formatadores";
+import { formatarData, formatarMoeda } from "../../utils/formatadores";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import {
     ChavePeriodo,
     PERIODOS,
+    calcularPercentuaisFechandoCem,
     calcularMediaPorDiaSemana,
     calcularPeriodo,
     calcularPeriodoAnterior,
     calcularVariacao,
     formatarDiaComSemana,
     formatarDiaCurto,
-    formatarPercentual,
+    formatarPercentualParticipacao,
     nomeDiaSemanaCurto,
     obterComparacaoIndicador,
     ResultadoComparacao,
@@ -120,6 +121,10 @@ export function IndicadoresScreen() {
     }
 
     const mediasSemana = useMemo(() => calcularMediaPorDiaSemana(faturamentoDiario), [faturamentoDiario]);
+    const percentuaisFormas = useMemo(
+        () => calcularPercentuaisFechandoCem(formas.map((forma) => forma.valorRecebido)),
+        [formas]
+    );
     const indiceMelhorDiaSemana = useMemo(() => {
         let melhor = 0;
         mediasSemana.forEach((dia, indice) => {
@@ -135,6 +140,7 @@ export function IndicadoresScreen() {
     }
 
     const referencia = PERIODOS.find((opcao) => opcao.chave === periodo)?.referencia ?? '';
+    const periodoAtual = calcularPeriodo(periodo);
     const comparacao = (campo: keyof ResumoDashboard): ResultadoComparacao =>
         obterComparacaoIndicador(resumo?.[campo], resumoAnterior?.[campo], falhaComparacao);
 
@@ -171,7 +177,12 @@ export function IndicadoresScreen() {
                     );
                 })}
             </View>
-            <Text style={styles.referencia}>{referencia}</Text>
+            <View style={styles.contextoPeriodo}>
+                <Text style={styles.intervalo}>
+                    {formatarData(periodoAtual.inicio)} a {formatarData(periodoAtual.fim)}
+                </Text>
+                <Text style={styles.referencia}>{referencia}</Text>
+            </View>
 
             {carregandoPeriodo ? (
                 <ActivityIndicator color={colors.laranja} style={styles.carregandoPeriodo} />
@@ -264,16 +275,18 @@ export function IndicadoresScreen() {
                         {formas.length === 0 ? (
                             <Text style={styles.textoVazio}>Nenhum pagamento no período</Text>
                         ) : (
-                            formas.map((forma) => (
+                            formas.map((forma, indice) => (
                                 <View key={forma.forma} style={styles.itemRanking}>
                                     <View style={styles.linhaRanking}>
                                         <MaterialCommunityIcons name={ICONE_FORMA[forma.forma]} size={18} color={colors.textoSecundario} />
                                         <Text style={styles.nomeRanking}>{ROTULO_FORMA[forma.forma]}</Text>
-                                        <Text style={styles.valorRanking}>{formatarPercentual(forma.percentual)}</Text>
+                                        <Text style={styles.valorRanking}>
+                                            {formatarPercentualParticipacao(percentuaisFormas[indice])}
+                                        </Text>
                                     </View>
                                     <View style={styles.linhaBarra}>
                                         <View style={styles.flex}>
-                                            <BarraProporcional proporcao={forma.percentual / 100} />
+                                            <BarraProporcional proporcao={percentuaisFormas[indice] / 100} />
                                         </View>
                                         <Text style={styles.complementoRanking}>{formatarMoeda(forma.valorRecebido)}</Text>
                                     </View>
@@ -324,8 +337,18 @@ const styles = StyleSheet.create({
     textoBotaoPeriodoSelecionado: {
         color: colors.grafite,
     },
-    referencia: {
+    contextoPeriodo: {
         marginTop: -4,
+        gap: 2,
+        alignItems: 'center',
+    },
+    intervalo: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+        textAlign: 'center',
+    },
+    referencia: {
         fontSize: 12,
         color: colors.textoSecundario,
         textAlign: 'center',
