@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { View, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
@@ -17,6 +17,10 @@ import { LoadingState } from "../../components/LoadingState";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SecondaryButton } from "../../components/SecondaryButton";
 import { DividirSaldoPainel } from "../../components/DividirSaldoPainel";
+import {
+    limparChaveIdempotenciaPersistida,
+    obterChaveIdempotenciaPersistida,
+} from "../../utils/idempotencia";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'RegistrarPagamento'>;
 
@@ -39,6 +43,15 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     const [mensagemErro, setMensagemErro] = useState('');
     const [mensagemSucesso, setMensagemSucesso] = useState('');
     const [mostrarDivisao, setMostrarDivisao] = useState(false);
+    const tentativaIdempotente = useRef<{ assinatura: string; chave: string } | null>(null);
+
+    async function obterChaveDaTentativa(assinatura: string): Promise<string> {
+        if (tentativaIdempotente.current?.assinatura !== assinatura) {
+            const chave = await obterChaveIdempotenciaPersistida(assinatura);
+            tentativaIdempotente.current = { assinatura, chave };
+        }
+        return tentativaIdempotente.current.chave;
+    }
 
     const buscarResumo = useCallback(async () => {
         const dados = await apiService.buscarResumoPagamentos(comandaId);
@@ -118,7 +131,11 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
 
         try {
             setCarregando(true);
-            const cobranca = await apiService.gerarPix(comandaId, valorCentavos / 100);
+            const assinatura = `PIX_INTEGRADO:${comandaId}:${valorCentavos}`;
+            const chave = await obterChaveDaTentativa(assinatura);
+            const cobranca = await apiService.gerarPix(comandaId, valorCentavos / 100, chave);
+            await limparChaveIdempotenciaPersistida(chave);
+            tentativaIdempotente.current = null;
             navigation.navigate('PagamentoPix', {
                 comandaId,
                 comandaIdentificacao,
@@ -141,11 +158,17 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         try {
             setCarregando(true);
 
+            const referencia = forma === 'DINHEIRO' ? undefined : (referenciaExterna.trim() || undefined);
+            const assinatura = JSON.stringify({ tipo: 'PAGAMENTO_LOCAL', comandaId, forma, valorCentavos, referencia });
+            const chave = await obterChaveDaTentativa(assinatura);
+
             await apiService.registrarPagamento(comandaId, {
                 forma,
                 valor: valorCentavos / 100,
-                referenciaExterna: forma === 'DINHEIRO' ? undefined : (referenciaExterna.trim() || undefined),
-            });
+                referenciaExterna: referencia,
+            }, chave);
+            await limparChaveIdempotenciaPersistida(chave);
+            tentativaIdempotente.current = null;
 
             // Usamos o resumo recém-buscado diretamente (em vez do `saldo` derivado do
             // estado anterior) porque `setResumo` é assíncrono: ler `saldo` aqui ainda

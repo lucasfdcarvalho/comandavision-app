@@ -11,6 +11,9 @@ export interface Pagamento {
     status: StatusPagamento;
     valor: number;
     referenciaExterna?: string;
+    pixIntegrado: boolean;
+    motivoCorrecao?: string;
+    corrigidoEm?: string;
     pagoEm?: string;
     criadoEm: string;
     atualizadoEm: string;
@@ -20,6 +23,10 @@ export interface DadosNovoPagamento {
     forma: FormaPagamento;
     valor: number;
     referenciaExterna?: string;
+}
+
+export interface DadosCorrecaoPagamento {
+    motivo: string;
 }
 
 export interface ResumoPagamentos {

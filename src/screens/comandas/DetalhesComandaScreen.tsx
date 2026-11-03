@@ -1,6 +1,6 @@
 import { useDialogo } from "../../contexts/DialogoContext";
 import { useCallback, useLayoutEffect, useState } from "react";
-import { View, FlatList, ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { View, FlatList, ActivityIndicator, Pressable, StyleSheet, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { Text } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -48,7 +48,10 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     const [mensagemErroAcao, setMensagemErroAcao] = useState('');
     const [mensagemErroPagamentos, setMensagemErroPagamentos] = useState('');
     const [acaoEmAndamento, setAcaoEmAndamento] = useState<AcaoComanda>(null);
-    const [estornandoId, setEstornandoId] = useState<number | null>(null);
+    const [corrigindoId, setCorrigindoId] = useState<number | null>(null);
+    const [pagamentoEmCorrecao, setPagamentoEmCorrecao] = useState<Pagamento | null>(null);
+    const [motivoCorrecao, setMotivoCorrecao] = useState('');
+    const [erroMotivoCorrecao, setErroMotivoCorrecao] = useState('');
 
     const carregarComanda = useCallback(async (): Promise<ComandaDetalhada | null> => {
         try {
@@ -164,28 +167,48 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
         }
     }
 
-    function confirmarEstorno(pagamento: Pagamento) {
+    function abrirCorrecao(pagamento: Pagamento) {
+        setPagamentoEmCorrecao(pagamento);
+        setMotivoCorrecao('');
+        setErroMotivoCorrecao('');
+    }
+
+    function fecharCorrecao() {
+        if (corrigindoId !== null) return;
+        setPagamentoEmCorrecao(null);
+        setMotivoCorrecao('');
+        setErroMotivoCorrecao('');
+    }
+
+    function orientarDevolucaoPix() {
         alertar(
-            'Estornar pagamento',
-            `Deseja estornar o pagamento de ${formatarMoeda(pagamento.valor)} (${ROTULO_FORMA[pagamento.forma]})?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Estornar pagamento', style: 'destructive', onPress: () => estornar(pagamento.id) },
-            ]
+            'Devolução de Pix integrado',
+            'A correção local não devolve dinheiro ao cliente. Realize e confira a devolução no Mercado Pago; o ComandaVision só atualizará o estado após a confirmação do provedor.',
+            [{ text: 'Entendi' }]
         );
     }
 
-    async function estornar(pagamentoId: number) {
+    async function corrigirRegistro() {
+        if (!pagamentoEmCorrecao) return;
+        const motivo = motivoCorrecao.trim();
+        if (motivo.length < 5) {
+            setErroMotivoCorrecao('Explique o motivo em pelo menos 5 caracteres.');
+            return;
+        }
+
         setMensagemErroPagamentos('');
+        setErroMotivoCorrecao('');
         try {
-            setEstornandoId(pagamentoId);
-            await apiService.estornarPagamento(comandaId, pagamentoId);
+            setCorrigindoId(pagamentoEmCorrecao.id);
+            await apiService.corrigirPagamento(comandaId, pagamentoEmCorrecao.id, { motivo });
+            setPagamentoEmCorrecao(null);
+            setMotivoCorrecao('');
             await carregarPagamentos();
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível estornar o pagamento';
-            setMensagemErroPagamentos(mensagem);
+            setErroMotivoCorrecao(mensagem);
         } finally {
-            setEstornandoId(null);
+            setCorrigindoId(null);
         }
     }
 
@@ -328,17 +351,33 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                     <Text style={styles.pagamentoData}>
                                                         {formatarDataHora(pagamento.pagoEm ?? pagamento.criadoEm)}
                                                     </Text>
+                                                    {pagamento.motivoCorrecao ? (
+                                                        <Text style={styles.pagamentoCorrecao}>
+                                                            Correção: {pagamento.motivoCorrecao}
+                                                            {pagamento.corrigidoEm ? ` • ${formatarDataHora(pagamento.corrigidoEm)}` : ''}
+                                                        </Text>
+                                                    ) : null}
                                                 </View>
-                                                {confirmado && ehDono ? (
+                                                {confirmado && !pagamento.pixIntegrado ? (
                                                     <Pressable
-                                                        onPress={() => confirmarEstorno(pagamento)}
-                                                        disabled={estornandoId === pagamento.id}
-                                                        hitSlop={8}>
-                                                        {estornandoId === pagamento.id ? (
+                                                        onPress={() => abrirCorrecao(pagamento)}
+                                                        disabled={corrigindoId === pagamento.id}
+                                                        hitSlop={8}
+                                                        accessibilityRole="button"
+                                                        accessibilityLabel="Estornar pagamento">
+                                                        {corrigindoId === pagamento.id ? (
                                                             <ActivityIndicator size="small" color={colors.erro} />
                                                         ) : (
                                                             <Feather name="rotate-ccw" size={16} color={colors.erro} />
                                                         )}
+                                                    </Pressable>
+                                                ) : confirmado && pagamento.pixIntegrado ? (
+                                                    <Pressable
+                                                        onPress={orientarDevolucaoPix}
+                                                        hitSlop={8}
+                                                        accessibilityRole="button"
+                                                        accessibilityLabel="Orientações para devolução do Pix integrado">
+                                                        <Feather name="info" size={17} color={colors.textoSecundario} />
                                                     </Pressable>
                                                 ) : pagamento.status === 'PENDENTE' && pagamento.forma === 'PIX' ? (
                                                     // Pix aguardando pagamento: reabre a tela do QR Code.
@@ -357,7 +396,9 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                                     </Pressable>
                                                 ) : !confirmado ? (
                                                     <Text style={styles.badgeEstornado}>
-                                                        {ROTULO_STATUS_PAGAMENTO[pagamento.status]}
+                                                        {pagamento.status === 'ESTORNADO'
+                                                            ? pagamento.motivoCorrecao ? 'Estornado' : pagamento.pixIntegrado ? 'Devolvido' : 'Anulado'
+                                                            : ROTULO_STATUS_PAGAMENTO[pagamento.status]}
                                                     </Text>
                                                 ) : null}
                                             </View>
@@ -416,6 +457,64 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                     </View>
                 }
             />
+            <Modal
+                transparent
+                animationType="fade"
+                visible={pagamentoEmCorrecao !== null}
+                onRequestClose={fecharCorrecao}>
+                <KeyboardAvoidingView
+                    style={styles.modalFundo}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                    <Pressable
+                        style={StyleSheet.absoluteFill}
+                        onPress={fecharCorrecao}
+                        disabled={corrigindoId !== null}
+                        accessible={false}
+                    />
+                    <View style={styles.modalCartao} accessibilityViewIsModal>
+                        <Text accessibilityRole="header" style={styles.modalTitulo}>Estornar pagamento</Text>
+                        <Text style={styles.modalAviso}>
+                            Informe o motivo do estorno
+                        </Text>
+                        {pagamentoEmCorrecao ? (
+                            <Text style={styles.modalPagamento}>
+                                {ROTULO_FORMA[pagamentoEmCorrecao.forma]} • {formatarMoeda(pagamentoEmCorrecao.valor)}
+                            </Text>
+                        ) : null}
+                        <TextInput
+                            value={motivoCorrecao}
+                            onChangeText={(texto) => {
+                                setMotivoCorrecao(texto);
+                                if (erroMotivoCorrecao) setErroMotivoCorrecao('');
+                            }}
+                            placeholder="Ex.: valor registrado na forma errada"
+                            placeholderTextColor={colors.textoSecundario}
+                            multiline
+                            maxLength={500}
+                            editable={corrigindoId === null}
+                            autoFocus
+                            accessibilityLabel="Motivo da correção"
+                            style={styles.campoMotivo}
+                        />
+                        <Text style={styles.contadorMotivo}>{motivoCorrecao.length}/500</Text>
+                        {erroMotivoCorrecao ? <MensagemErro texto={erroMotivoCorrecao} /> : null}
+                        <View style={styles.modalAcoes}>
+                            <SecondaryButton
+                                titulo="Voltar"
+                                onPress={fecharCorrecao}
+                                disabled={corrigindoId !== null}
+                            />
+                            <PrimaryButton
+                                titulo="Estornar pagamento"
+                                icone="rotate-ccw"
+                                onPress={() => { void corrigirRegistro(); }}
+                                disabled={motivoCorrecao.trim().length < 5 || corrigindoId !== null}
+                                carregando={corrigindoId !== null}
+                            />
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
         </View>
     );
 }
@@ -639,6 +738,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: colors.textoSecundario,
     },
+    pagamentoCorrecao: {
+        marginTop: 3,
+        fontSize: 12,
+        lineHeight: 17,
+        color: colors.textoSecundario,
+    },
     textoEstornado: {
         textDecorationLine: 'line-through',
         color: colors.textoSecundario,
@@ -647,6 +752,59 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '700',
         color: colors.textoSecundario,
+    },
+    modalFundo: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        backgroundColor: 'rgba(31, 31, 31, 0.5)',
+    },
+    modalCartao: {
+        width: '100%',
+        maxWidth: 420,
+        padding: 20,
+        gap: 12,
+        borderRadius: raio.lg,
+        borderTopWidth: 4,
+        borderTopColor: colors.laranja,
+        backgroundColor: colors.superficie,
+        ...sombras.media,
+    },
+    modalTitulo: {
+        fontSize: 22,
+        fontWeight: '700',
+        color: colors.textoPrimario,
+    },
+    modalAviso: {
+        fontSize: 14,
+        lineHeight: 21,
+        color: colors.textoSecundario,
+    },
+    modalPagamento: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.textoPrimario,
+    },
+    campoMotivo: {
+        minHeight: 100,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: colors.borda,
+        borderRadius: raio.md,
+        color: colors.textoPrimario,
+        backgroundColor: colors.fundo,
+        textAlignVertical: 'top',
+    },
+    contadorMotivo: {
+        marginTop: -8,
+        fontSize: 12,
+        textAlign: 'right',
+        color: colors.textoSecundario,
+    },
+    modalAcoes: {
+        gap: 10,
     },
     botaoRegistrarPagamentoContainer: {
         marginTop: 4,

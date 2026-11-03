@@ -3,7 +3,7 @@ import { Comanda, ComandaDetalhada, DadosNovaComanda } from "../types/Comanda";
 import { ItemComanda, DadosNovoItem, DadosAtualizarItem } from "../types/ItemComanda";
 import { Produto, DadosNovoProduto, DadosAtualizarProduto } from "../types/Produto";
 import { Categoria, DadosNovaCategoria, DadosAtualizarCategoria } from "../types/Categoria";
-import { Pagamento, DadosNovoPagamento, ResumoPagamentos, CobrancaPix } from "../types/Pagamento";
+import { Pagamento, DadosNovoPagamento, DadosCorrecaoPagamento, ResumoPagamentos, CobrancaPix } from "../types/Pagamento";
 import { ResumoDashboard, ProdutoMaisVendido, FormaPagamentoResumo, FaturamentoDiario } from "../types/Dashboard";
 import { Usuario, DadosNovoUsuario, PapelUsuario } from "../types/Usuario";
 import { ComandaEncerradaRelatorio } from "../types/Relatorio";
@@ -96,9 +96,14 @@ async function cancelarComanda(id: number): Promise<ComandaDetalhada> {
     });
 }
 
-async function registrarPagamento(comandaId: number, dados: DadosNovoPagamento): Promise<Pagamento> {
+async function registrarPagamento(
+    comandaId: number,
+    dados: DadosNovoPagamento,
+    chaveIdempotencia: string
+): Promise<Pagamento> {
     return apiClient.requisitar<Pagamento>(`/api/comandas/${comandaId}/pagamentos`, {
         method: 'POST',
+        headers: { 'Idempotency-Key': chaveIdempotencia },
         body: JSON.stringify(dados),
     });
 }
@@ -111,9 +116,14 @@ async function buscarResumoPagamentos(comandaId: number): Promise<ResumoPagament
     return apiClient.requisitar<ResumoPagamentos>(`/api/comandas/${comandaId}/pagamentos/resumo`);
 }
 
-async function estornarPagamento(comandaId: number, pagamentoId: number): Promise<Pagamento> {
-    return apiClient.requisitar<Pagamento>(`/api/comandas/${comandaId}/pagamentos/${pagamentoId}/estornar`, {
+async function corrigirPagamento(
+    comandaId: number,
+    pagamentoId: number,
+    dados: DadosCorrecaoPagamento
+): Promise<Pagamento> {
+    return apiClient.requisitar<Pagamento>(`/api/comandas/${comandaId}/pagamentos/${pagamentoId}/corrigir`, {
         method: 'PATCH',
+        body: JSON.stringify(dados),
     });
 }
 
@@ -165,9 +175,10 @@ async function reativarUsuario(id: string): Promise<Usuario> {
     return apiClient.requisitar<Usuario>(`/api/usuarios/${id}/reativar`, { method: 'PATCH' });
 }
 
-async function gerarPix(comandaId: number, valor: number): Promise<CobrancaPix> {
+async function gerarPix(comandaId: number, valor: number, chaveIdempotencia: string): Promise<CobrancaPix> {
     return apiClient.requisitar<CobrancaPix>(`/api/comandas/${comandaId}/pagamentos/pix`, {
         method: 'POST',
+        headers: { 'Idempotency-Key': chaveIdempotencia },
         body: JSON.stringify({ valor }),
     });
 }
@@ -202,7 +213,7 @@ export const apiService = {
     registrarPagamento,
     listarPagamentos,
     buscarResumoPagamentos,
-    estornarPagamento,
+    corrigirPagamento,
     gerarPix,
     consultarPix,
     cancelarPix,
