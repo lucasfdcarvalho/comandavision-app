@@ -132,4 +132,3 @@ Não execute testes de pagamento usando credenciais ou contas reais.
 ## Distribuição
 
 O repositório ainda não possui `eas.json` nem configuração de atualização EAS. O fluxo atual usa Expo CLI/Expo Go. Antes de distribuir um binário em loja, configure identificadores, assinatura, perfis de build, política de atualização e testes específicos de cada plataforma.
-
