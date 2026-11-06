@@ -81,7 +81,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
         if (produto.ativo && !ativo) {
             alertar(
                 'Desativar produto',
-                'Este produto deixará de aparecer para adição em novas comandas.',
+                'Este produto deixará de aparecer para adição em novas comandas',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Desativar', style: 'destructive', onPress: () => salvar(precoNumerico) },
@@ -112,7 +112,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
                 imagemUrl,
             });
 
-            mostrarSucesso('Produto atualizado', 'As alterações foram salvas com sucesso.', () => navigation.popTo('Catalogo'));
+            mostrarSucesso('Produto atualizado', 'As alterações foram salvas com sucesso', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível salvar as alterações';
             setMensagemErro(mensagem);

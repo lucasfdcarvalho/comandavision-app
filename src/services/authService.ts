@@ -10,7 +10,7 @@ export const authService = {
 
         // Conta desativada pelo dono na tela Equipe.
         if (error?.code === 'user_banned') {
-            throw new Error('Seu acesso foi desativado. Fale com o responsável pelo estabelecimento.');
+            throw new Error('Seu acesso foi desativado. Fale com o responsável pelo estabelecimento');
         }
 
         if (error) {

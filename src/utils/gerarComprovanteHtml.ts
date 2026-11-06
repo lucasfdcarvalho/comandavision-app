@@ -148,7 +148,7 @@ export function gerarComprovanteHtml(dados: DadosComprovante): string {
 
         <div class="rodape">
             <div>Comprovante gerado em ${formatarDataHora(dados.geradoEm)}</div>
-            <div class="aviso">Este documento não possui valor fiscal.</div>
+            <div class="aviso">Este documento não possui valor fiscal</div>
         </div>
     </div>
 </body>

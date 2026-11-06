@@ -24,7 +24,7 @@ async function exportar(dados: DadosRelatorioGerencial): Promise<ResultadoExport
         // grava-lo no cache oficial cria uma URI autorizada para compartilhar.
         const { base64 } = await Print.printToFileAsync({ html, base64: true });
         if (!base64) {
-            throw new Error('O PDF foi gerado sem conteudo para compartilhamento.');
+            throw new Error('O PDF foi gerado sem conteudo para compartilhamento');
         }
 
         const arquivoCompartilhavel = new File(

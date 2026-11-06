@@ -119,7 +119,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     function confirmarFechamento() {
         alertar(
             'Fechar comanda',
-            'Deseja fechar esta comanda? Os itens deixarão de ser editáveis e você poderá registrar o pagamento em seguida.',
+            'Deseja fechar esta comanda? Os itens deixarão de ser editáveis e você poderá registrar o pagamento em seguida',
             [
                 { text: 'Cancelar', style: 'cancel' },
                 { text: 'Fechar comanda', onPress: fechar },
@@ -145,7 +145,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     function confirmarCancelamento() {
         alertar(
             'Cancelar comanda',
-            'Deseja cancelar esta comanda? Essa ação não pode ser desfeita.',
+            'Deseja cancelar esta comanda? Essa ação não pode ser desfeita',
             [
                 { text: 'Manter comanda', style: 'cancel' },
                 { text: 'Cancelar comanda', style: 'destructive', onPress: cancelar },
@@ -183,7 +183,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     function orientarDevolucaoPix() {
         alertar(
             'Devolução de Pix integrado',
-            'A correção local não devolve dinheiro ao cliente. Realize e confira a devolução no Mercado Pago; o ComandaVision só atualizará o estado após a confirmação do provedor.',
+            'A correção local não devolve dinheiro ao cliente. Realize e confira a devolução no Mercado Pago; o ComandaVision só atualizará o estado após a confirmação do provedor',
             [{ text: 'Entendi' }]
         );
     }
@@ -192,7 +192,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
         if (!pagamentoEmCorrecao) return;
         const motivo = motivoCorrecao.trim();
         if (motivo.length < 5) {
-            setErroMotivoCorrecao('Explique o motivo em pelo menos 5 caracteres.');
+            setErroMotivoCorrecao('Explique o motivo em pelo menos 5 caracteres');
             return;
         }
 
@@ -307,7 +307,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 
                                 {comandaAberta ? (
                                     <Text style={styles.textoInfoPagamento}>
-                                        Feche a comanda para poder registrar pagamentos.
+                                        Feche a comanda para poder registrar pagamentos
                                     </Text>
                                 ) : saldo.disponivel ? (
                                     <View style={styles.resumoPagamentos}>
@@ -438,7 +438,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 
                                 {comandaSemItens ? (
                                     <Text style={styles.avisoFechamento}>
-                                        Adicione ao menos um item antes de fechar a comanda.
+                                        Adicione ao menos um item antes de fechar a comanda
                                     </Text>
                                 ) : null}
 

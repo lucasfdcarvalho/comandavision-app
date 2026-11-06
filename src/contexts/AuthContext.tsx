@@ -48,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 .catch(() => undefined)
                 .finally(() => {
                     if (estavaLogado) {
-                        alertar('Sessão expirada', 'Sua sessão expirou. Entre novamente para continuar.', undefined, 'aviso');
+                        alertar('Sessão expirada', 'Sua sessão expirou. Entre novamente para continuar', undefined, 'aviso');
                     }
                     setUsuario(null);
                     encerrandoSessao.current = false;

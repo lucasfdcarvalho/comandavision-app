@@ -85,7 +85,7 @@ export function NovoProdutoScreen({ navigation }: Props) {
                 imagemUrl,
             });
 
-            mostrarSucesso('Produto criado', 'O produto foi criado com sucesso.', () => navigation.popTo('Catalogo'));
+            mostrarSucesso('Produto criado', 'O produto foi criado com sucesso', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível criar o produto';
             setMensagemErro(mensagem);

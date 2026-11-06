@@ -380,7 +380,7 @@ function PagamentoConcluido({
         <View style={styles.telaConcluida}>
             <Feather name="check-circle" size={72} color={colors.sucesso} />
             <Text style={styles.tituloConcluido}>Comanda quitada</Text>
-            <Text style={styles.descricaoConcluida}>O saldo da comanda foi pago integralmente.</Text>
+            <Text style={styles.descricaoConcluida}>O saldo da comanda foi pago integralmente</Text>
             <Text style={styles.identificacaoConcluida}>{comandaIdentificacao}</Text>
 
             <View style={styles.totalPagoCard}>
