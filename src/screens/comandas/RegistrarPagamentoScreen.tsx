@@ -6,10 +6,12 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
 import { apiService } from "../../services/apiService";
+import type { ComandaDetalhada } from "../../types/Comanda";
 import { FormaPagamento, ResumoPagamentos } from "../../types/Pagamento";
 import { colors } from "../../theme/colors";
 import { raio, sombras } from "../../theme/tokens";
 import { centavosParaMoeda, avaliarSaldoPagamento, SaldoPagamento } from "../../utils/saldoPagamento";
+import { formatarDataHoraCompleta } from "../../utils/formatadores";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { MensagemErro } from "../../components/MensagemErro";
 import { MensagemSucesso } from "../../components/MensagemSucesso";
@@ -31,9 +33,10 @@ function centavosParaValorEditavel(centavos: number): string {
 }
 
 export function RegistrarPagamentoScreen({ route, navigation }: Props) {
-    const { comandaId, comandaIdentificacao, valorSugerido } = route.params;
+    const { comandaId, comandaIdentificacao, comandaFechadaEm, valorSugerido } = route.params;
 
     const [resumo, setResumo] = useState<ResumoPagamentos | null>(null);
+    const [comandaAtual, setComandaAtual] = useState<ComandaDetalhada | null>(null);
     const [carregandoResumo, setCarregandoResumo] = useState(true);
 
     const [forma, setForma] = useState<FormaPagamento>('PIX');
@@ -59,12 +62,27 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         return dados;
     }, [comandaId]);
 
+    const buscarContexto = useCallback(async () => {
+        const [resultadoResumo, resultadoComanda] = await Promise.allSettled([
+            apiService.buscarResumoPagamentos(comandaId),
+            apiService.buscarComanda(comandaId),
+        ]);
+        if (resultadoComanda.status === 'fulfilled') {
+            setComandaAtual(resultadoComanda.value);
+        }
+        if (resultadoResumo.status === 'rejected') {
+            throw resultadoResumo.reason;
+        }
+        setResumo(resultadoResumo.value);
+        return resultadoResumo.value;
+    }, [comandaId]);
+
     useFocusEffect(
         useCallback(() => {
             (async () => {
                 setCarregandoResumo(true);
                 try {
-                    const dados = await buscarResumo();
+                    const dados = await buscarContexto();
                     // Ao voltar da tela do Pix, o saldo mudou: sugere o novo restante.
                     const saldoAtual = avaliarSaldoPagamento(dados.totalComanda, dados);
                     if (saldoAtual.disponivel) {
@@ -81,7 +99,7 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
                     setCarregandoResumo(false);
                 }
             })();
-        }, [buscarResumo])
+        }, [buscarContexto])
     );
 
     // Deriva os valores de totalComanda/totalPago em vez de confiar cegamente em
@@ -89,6 +107,8 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     // não mostramos o cartão em vez de arriscar exibir R$ 0,00 incorreto.
     const saldo = resumo ? avaliarSaldoPagamento(resumo.totalComanda, resumo) : { disponivel: false as const };
     const pagamentoConcluido = saldo.disponivel && saldo.quitado;
+    const identificacaoAtual = comandaAtual?.identificacao ?? comandaIdentificacao;
+    const fechamentoAtual = comandaAtual?.fechadaEm ?? comandaFechadaEm;
 
     function usarValorDivisao(centavos: number) {
         setValor(centavosParaValorEditavel(centavos));
@@ -144,6 +164,7 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
             });
         } catch (error: unknown) {
             setMensagemErro(error instanceof Error ? error.message : 'Não foi possível gerar o Pix');
+            try { await buscarResumo(); } catch { /* mantém o erro original */ }
         } finally {
             setCarregando(false);
         }
@@ -185,10 +206,15 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
             setValor(saldoAtualizado.disponivel ? centavosParaValorEditavel(saldoAtualizado.restanteCentavos) : '');
             setReferenciaExterna('');
             setMostrarDivisao(false);
-            setMensagemSucesso('Pagamento registrado com sucesso.');
+            setMensagemSucesso(
+                saldoAtualizado.disponivel
+                    ? `Pagamento de ${centavosParaMoeda(valorCentavos)} registrado. Saldo restante: ${centavosParaMoeda(saldoAtualizado.restanteCentavos)}.`
+                    : `Pagamento de ${centavosParaMoeda(valorCentavos)} registrado.`
+            );
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível registrar o pagamento';
             setMensagemErro(mensagem);
+            try { await buscarResumo(); } catch { /* mantém o erro original */ }
         } finally {
             setCarregando(false);
         }
@@ -201,7 +227,7 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     if (pagamentoConcluido) {
         return (
             <PagamentoConcluido
-                comandaIdentificacao={comandaIdentificacao}
+                comandaIdentificacao={identificacaoAtual}
                 totalPagoCentavos={saldo.totalPagoCentavos}
                 onVerComprovante={() => navigation.navigate('Comprovante', { comandaId })}
                 onVerDetalhes={() => navigation.popTo('DetalhesComanda', { comandaId })}
@@ -216,6 +242,18 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
                 contentContainerStyle={styles.container}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}>
+                <View
+                    style={styles.contextoComanda}
+                    accessible
+                    accessibilityLabel={`${identificacaoAtual}, comanda número ${comandaId}${fechamentoAtual ? `, fechada em ${formatarDataHoraCompleta(fechamentoAtual)}` : ''}`}>
+                    <View style={styles.contextoTituloLinha}>
+                        <Text style={styles.contextoTitulo}>{identificacaoAtual}</Text>
+                        <Text style={styles.contextoNumero}>#{comandaId}</Text>
+                    </View>
+                    {fechamentoAtual ? (
+                        <Text style={styles.contextoData}>Fechada em {formatarDataHoraCompleta(fechamentoAtual)}</Text>
+                    ) : null}
+                </View>
                 {saldo.disponivel ? (
                     <View style={styles.resumo}>
                         <View style={styles.resumoLinha}>
@@ -341,7 +379,8 @@ function PagamentoConcluido({
     return (
         <View style={styles.telaConcluida}>
             <Feather name="check-circle" size={72} color={colors.sucesso} />
-            <Text style={styles.tituloConcluido}>Pagamento concluído</Text>
+            <Text style={styles.tituloConcluido}>Comanda quitada</Text>
+            <Text style={styles.descricaoConcluida}>O saldo da comanda foi pago integralmente.</Text>
             <Text style={styles.identificacaoConcluida}>{comandaIdentificacao}</Text>
 
             <View style={styles.totalPagoCard}>
@@ -361,6 +400,36 @@ function PagamentoConcluido({
 }
 
 const styles = StyleSheet.create({
+    contextoComanda: {
+        gap: 4,
+        marginBottom: 8,
+        padding: 16,
+        backgroundColor: colors.laranjaClaro,
+        borderWidth: 1,
+        borderColor: colors.laranjaBorda,
+        borderRadius: raio.lg,
+    },
+    contextoTituloLinha: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    contextoTitulo: {
+        flex: 1,
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.textoPrimario,
+    },
+    contextoNumero: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.laranjaEscuro,
+    },
+    contextoData: {
+        fontSize: 13,
+        color: colors.textoSecundario,
+    },
     linkPixManual: {
         alignItems: 'center',
         paddingVertical: 14,
@@ -496,6 +565,11 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: '700',
         color: colors.textoPrimario,
+    },
+    descricaoConcluida: {
+        fontSize: 14,
+        color: colors.textoSecundario,
+        textAlign: 'center',
     },
     identificacaoConcluida: {
         fontSize: 15,

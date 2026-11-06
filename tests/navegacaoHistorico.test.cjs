@@ -54,7 +54,7 @@ function voltar(pilha) {
 
 test('Histórico usa pilha própria com lista correta e sem cabeçalho duplicado', () => {
     const historico = pilha('HistoricoStack');
-    assert.equal(historico.telas[0].props.component, 'HistoricoScreen');
+    assert.equal(historico.telas[0].props.component, 'HistoricoHubScreen');
     assert.equal(historico.telas[0].props.options({}).title, 'Histórico');
     assert.equal(historico.telas[0].props.options({}).headerRight, undefined);
     const abas = carregarNavegador('src/navigation/MainTabs.tsx').MainTabs();
