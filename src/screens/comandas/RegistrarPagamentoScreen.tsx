@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import type { ComandasStackParamList } from "../../navigation/ComandasStack";
+import { useDialogo } from "../../contexts/DialogoContext";
 import { apiService } from "../../services/apiService";
 import type { ComandaDetalhada } from "../../types/Comanda";
 import { FormaPagamento, ResumoPagamentos } from "../../types/Pagamento";
@@ -14,7 +15,6 @@ import { centavosParaMoeda, avaliarSaldoPagamento, SaldoPagamento } from "../../
 import { formatarDataHoraCompleta } from "../../utils/formatadores";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { MensagemErro } from "../../components/MensagemErro";
-import { MensagemSucesso } from "../../components/MensagemSucesso";
 import { LoadingState } from "../../components/LoadingState";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SecondaryButton } from "../../components/SecondaryButton";
@@ -34,6 +34,7 @@ function centavosParaValorEditavel(centavos: number): string {
 
 export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     const { comandaId, comandaIdentificacao, comandaFechadaEm, valorSugerido } = route.params;
+    const { mostrarSucesso } = useDialogo();
 
     const [resumo, setResumo] = useState<ResumoPagamentos | null>(null);
     const [comandaAtual, setComandaAtual] = useState<ComandaDetalhada | null>(null);
@@ -44,7 +45,6 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
     const [referenciaExterna, setReferenciaExterna] = useState('');
     const [carregando, setCarregando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
-    const [mensagemSucesso, setMensagemSucesso] = useState('');
     const [mostrarDivisao, setMostrarDivisao] = useState(false);
     const tentativaIdempotente = useRef<{ assinatura: string; chave: string } | null>(null);
 
@@ -114,7 +114,6 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         setValor(centavosParaValorEditavel(centavos));
         setMostrarDivisao(false);
         setMensagemErro('');
-        setMensagemSucesso('');
     }
 
     // Valida o campo Valor e devolve os centavos, ou null (com a mensagem de erro já exibida).
@@ -122,7 +121,6 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         const valorNumerico = Number(valor.replace(',', '.'));
 
         if (!valor.trim() || Number.isNaN(valorNumerico) || valorNumerico <= 0) {
-            setMensagemSucesso('');
             setMensagemErro('Informe um valor válido, maior que zero');
             return null;
         }
@@ -132,13 +130,11 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
         // O backend rejeita (409) um valor que ultrapasse o saldo restante — não há
         // suporte a "troco". Avisamos antes de disparar uma requisição fadada a falhar.
         if (saldo.disponivel && valorCentavos > saldo.restanteCentavos) {
-            setMensagemSucesso('');
             setMensagemErro(`O valor não pode ultrapassar o saldo restante de ${centavosParaMoeda(saldo.restanteCentavos)}`);
             return null;
         }
 
         setMensagemErro('');
-        setMensagemSucesso('');
         return valorCentavos;
     }
 
@@ -206,11 +202,16 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
             setValor(saldoAtualizado.disponivel ? centavosParaValorEditavel(saldoAtualizado.restanteCentavos) : '');
             setReferenciaExterna('');
             setMostrarDivisao(false);
-            setMensagemSucesso(
-                saldoAtualizado.disponivel
-                    ? `Pagamento de ${centavosParaMoeda(valorCentavos)} registrado. Saldo restante: ${centavosParaMoeda(saldoAtualizado.restanteCentavos)}.`
-                    : `Pagamento de ${centavosParaMoeda(valorCentavos)} registrado.`
-            );
+            // Quando a comanda é quitada, a própria tela já muda para "Comanda quitada".
+            if (!saldoAtualizado.disponivel || !saldoAtualizado.quitado) {
+                const valorRecebido = `Valor recebido: ${centavosParaMoeda(valorCentavos)}`;
+                mostrarSucesso(
+                    'Pagamento registrado',
+                    saldoAtualizado.disponivel
+                        ? `${valorRecebido}\nSaldo restante: ${centavosParaMoeda(saldoAtualizado.restanteCentavos)}`
+                        : valorRecebido
+                );
+            }
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível registrar o pagamento';
             setMensagemErro(mensagem);
@@ -337,7 +338,6 @@ export function RegistrarPagamentoScreen({ route, navigation }: Props) {
                 ) : null}
 
                 {mensagemErro ? <MensagemErro texto={mensagemErro} /> : null}
-                {!mensagemErro && mensagemSucesso ? <MensagemSucesso texto={mensagemSucesso} /> : null}
 
                 <View style={styles.botaoRegistrarContainer}>
                     {forma === 'PIX' ? (

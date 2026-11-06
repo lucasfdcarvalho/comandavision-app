@@ -62,10 +62,6 @@ export function AReceberScreen() {
         return <ErrorState texto={mensagemErro} aoTentarNovamente={carregar} />;
     }
 
-    const mensagemVazia = busca.trim()
-        ? 'Nenhuma comanda encontrada para esta busca'
-        : 'Nenhuma comanda com saldo pendente';
-
     return (
         <View style={styles.container}>
             <View style={styles.campoBusca}>
@@ -87,7 +83,9 @@ export function AReceberScreen() {
                     keyExtractor={(item) => String(item.id)}
                     contentContainerStyle={comandasFiltradas.length === 0 ? styles.listaVazia : styles.listaConteudo}
                     refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
-                    ListEmptyComponent={<Text style={styles.avisoVazio}>{mensagemVazia}</Text>}
+                    ListEmptyComponent={busca.trim()
+                        ? <Text style={styles.avisoVazio}>Nenhuma comanda encontrada para esta busca</Text>
+                        : null}
                     accessibilityLabel={`${comandasFiltradas.length} ${comandasFiltradas.length === 1 ? 'comanda a receber' : 'comandas a receber'}`}
                     renderItem={({ item }) => (
                         <ComandaAReceberCard

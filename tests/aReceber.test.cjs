@@ -29,6 +29,8 @@ test('Histórico abre em A receber e preserva o histórico completo', () => {
     assert.match(api, /'\/api\/comandas\/a-receber'/);
     assert.doesNotMatch(hub, /ROTULO_AMBIENTE_DEMONSTRACAO|avisoDemonstracao/);
     assert.match(aReceber, /MarcaDaguaLista/);
+    assert.doesNotMatch(aReceber, /Nenhuma comanda com saldo pendente/);
+    assert.match(aReceber, /Nenhuma comanda encontrada para esta busca/);
     assert.match(historico, /MarcaDaguaLista/);
 });
 
@@ -52,6 +54,9 @@ test('cartão e pagamento mostram número, data, total e saldo', () => {
     assert.match(pagamento, /titulo="Registrar pagamento"/);
     assert.match(pagamento, /titulo="Gerar QR Code Pix"/);
     assert.doesNotMatch(pagamento, /Pagamento registrado em/);
+    assert.match(pagamento, /mostrarSucesso\(\s*'Pagamento registrado'/);
+    assert.match(pagamento, /!saldoAtualizado\.disponivel \|\| !saldoAtualizado\.quitado/);
+    assert.doesNotMatch(pagamento, /MensagemSucesso/);
     assert.match(pagamento, /Comanda quitada/);
     assert.match(pagamento, /apiService\.buscarComanda\(comandaId\)/);
 });
