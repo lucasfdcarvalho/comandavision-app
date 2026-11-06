@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, FlatList, RefreshControl, Pressable, Image, StyleSheet, useWindowDimensions } from "react-native";
+import { View, FlatList, RefreshControl, Pressable, StyleSheet } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,11 +8,13 @@ import { Feather } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
 import { ComandaCard } from "../../components/ComandaCard";
+import { MarcaDaguaLista } from "../../components/MarcaDaguaLista";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
 import { raio } from "../../theme/tokens";
 import { formatarDataHora } from "../../utils/formatadores";
+import { correspondeBuscaComanda } from "../../utils/filtroComandas";
 
 // Limitação conhecida: /api/comandas (usado aqui) retorna apenas o tipo `Comanda`,
 // sem total nem formas de pagamento — esses dados só existem em ComandaDetalhada
@@ -30,8 +32,6 @@ const PERIODOS: { chave: ChavePeriodo; rotulo: string }[] = [
     { chave: '30dias', rotulo: '30 dias' },
 ];
 
-const PROPORCAO_LOGO = 1591 / 845;
-
 function dataDeReferencia(comanda: Comanda): string {
     return comanda.status === 'FECHADA' && comanda.fechadaEm ? comanda.fechadaEm : comanda.atualizadoEm;
 }
@@ -47,10 +47,6 @@ function estaDentroDoPeriodo(dataIso: string, chave: ChavePeriodo): boolean {
 
 export function HistoricoScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<ComandasStackParamList, 'Lista'>>();
-    const { width: larguraTela } = useWindowDimensions();
-    const larguraMarca = Math.min(larguraTela * 0.72, 320);
-    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
-
     const [comandas, setComandas] = useState<Comanda[]>([]);
     const [busca, setBusca] = useState('');
     const [periodo, setPeriodo] = useState<ChavePeriodo>('todos');
@@ -92,9 +88,8 @@ export function HistoricoScreen() {
     // Busca e período são filtros locais sobre os dados já carregados
     // (a API de listagem não aceita parâmetros de busca ou intervalo de data).
     const comandasFiltradas = useMemo(() => {
-        const termo = busca.trim().toLowerCase();
         return comandas.filter((comanda) => {
-            const combinaBusca = !termo || comanda.identificacao.toLowerCase().includes(termo);
+            const combinaBusca = correspondeBuscaComanda(comanda, busca);
             const combinaPeriodo = estaDentroDoPeriodo(dataDeReferencia(comanda), periodo);
             return combinaBusca && combinaPeriodo;
         });
@@ -129,7 +124,8 @@ export function HistoricoScreen() {
                     style={styles.busca}
                     value={busca}
                     onChangeText={setBusca}
-                    placeholder="Buscar comanda..."
+                    placeholder="Buscar por nome ou número..."
+                    accessibilityLabel="Buscar no histórico por nome ou número"
                 />
             </View>
 
@@ -156,28 +152,7 @@ export function HistoricoScreen() {
             ) : null}
 
             <View style={styles.areaLista}>
-                <View
-                    style={styles.marcaDaguaContainer}
-                    pointerEvents="none"
-                    accessible={false}
-                    aria-hidden={true}
-                    importantForAccessibility="no-hide-descendants"
-                >
-                    <Image
-                        source={require('../../../assets/images/supri-logo-v2.png')}
-                        style={[
-                            styles.marcaDaguaLogo,
-                            {
-                                width: larguraMarca,
-                                height: alturaMarca,
-                            },
-                        ]}
-                        resizeMode="contain"
-                        accessible={false}
-                        aria-hidden={true}
-                        importantForAccessibility="no"
-                    />
-                </View>
+                <MarcaDaguaLista />
 
                 <FlatList
                     style={styles.lista}
@@ -190,6 +165,7 @@ export function HistoricoScreen() {
                     renderItem={({ item }) => (
                         <ComandaCard
                             comanda={item}
+                            mostrarNumero
                             subtitulo={
                                 item.status === 'FECHADA' && item.fechadaEm
                                     ? `Fechada em ${formatarDataHora(item.fechadaEm)}`
@@ -267,18 +243,6 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 8,
         position: 'relative',
-    },
-    marcaDaguaContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    marcaDaguaLogo: {
-        opacity: 0.06,
     },
     lista: {
         flex: 1,

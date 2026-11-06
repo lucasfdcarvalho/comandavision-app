@@ -3,9 +3,6 @@ import { formatarData, formatarDataHoraCompleta, formatarMoeda } from "./formata
 import { calcularPercentuaisFechandoCem, formatarPercentualParticipacao } from "./dashboard";
 import { ROTULO_FORMA } from "./formaPagamento";
 
-export const NOTA_DADOS_DEMONSTRACAO =
-    'Dados acad\u00eamicos de demonstra\u00e7\u00e3o; n\u00e3o representam vendas reais verificadas.';
-
 function escaparHtml(valor: string): string {
     return valor
         .replace(/&/g, '&amp;')
@@ -171,7 +168,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
     ${secaoHistoricoHtml}
 
     <footer class="rodape">
-        ${escaparHtml(NOTA_DADOS_DEMONSTRACAO)} Documento gerencial gerado pelo ComandaVision. N\u00e3o possui valor fiscal ou cont\u00e1bil.
+        Documento gerencial gerado pelo ComandaVision. N\u00e3o possui valor fiscal ou cont\u00e1bil.
     </footer>
 </body>
 </html>`;

@@ -17,6 +17,18 @@ export interface ComandaDetalhada extends Comanda {
     total: number;
 }
 
+export type SituacaoPagamentoComanda = 'NAO_PAGO' | 'PARCIAL';
+
+export interface ComandaAReceber {
+    id: number;
+    identificacao: string;
+    fechadaEm: string | null;
+    total: number;
+    totalPago: number;
+    saldoRestante: number;
+    situacaoPagamento: SituacaoPagamentoComanda;
+}
+
 export interface DadosNovaComanda {
     identificacao: string;
     observacao?: string;

@@ -60,12 +60,13 @@ function dadosBase() {
     };
 }
 
-test('relatorio mantem nota curta de demonstracao e listas vazias', () => {
-    const { gerarRelatorioHtml, NOTA_DADOS_DEMONSTRACAO } = carregarGerador();
+test('relatorio mantem aviso fiscal e listas vazias', () => {
+    const { gerarRelatorioHtml } = carregarGerador();
     const html = gerarRelatorioHtml(dadosBase());
 
     assert.match(html, /Relat\u00f3rio gerencial/);
-    assert.ok(html.includes(NOTA_DADOS_DEMONSTRACAO));
+    assert.match(html, /N\u00e3o possui valor fiscal ou cont\u00e1bil/);
+    assert.doesNotMatch(html, /Dados acad\u00eamicos de demonstra\u00e7\u00e3o/);
     assert.doesNotMatch(html, /Este ambiente acad\u00eamico pode conter comandas simuladas/);
     assert.doesNotMatch(html, /Crit\u00e9rios dos indicadores/);
     assert.doesNotMatch(html, /Como os n\u00fameros s\u00e3o calculados/);
@@ -125,13 +126,14 @@ test('relatorio distribui arredondamento e exibe pagamentos somando 100,0%', () 
 });
 
 test('relatorio distingue historico indisponivel de periodo sem comandas', () => {
-    const { gerarRelatorioHtml, NOTA_DADOS_DEMONSTRACAO } = carregarGerador();
+    const { gerarRelatorioHtml } = carregarGerador();
     const dados = dadosBase();
     dados.historicoDisponivel = false;
 
     const html = gerarRelatorioHtml(dados);
 
-    assert.ok(html.includes(NOTA_DADOS_DEMONSTRACAO));
+    assert.match(html, /N\u00e3o possui valor fiscal ou cont\u00e1bil/);
+    assert.doesNotMatch(html, /Dados acad\u00eamicos de demonstra\u00e7\u00e3o/);
     assert.doesNotMatch(html, /Histórico de comandas encerradas/);
     assert.doesNotMatch(html, /Histórico indisponível/);
     assert.doesNotMatch(html, /disponível no servidor/);

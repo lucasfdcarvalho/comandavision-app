@@ -11,9 +11,10 @@ type Props = {
     comanda: Comanda;
     subtitulo: string;
     onPress: () => void;
+    mostrarNumero?: boolean;
 };
 
-export function ComandaCard({ comanda, subtitulo, onPress }: Props) {
+export function ComandaCard({ comanda, subtitulo, onPress, mostrarNumero = false }: Props) {
     return (
         <AparecerSuave>
             <Pressable
@@ -25,7 +26,10 @@ export function ComandaCard({ comanda, subtitulo, onPress }: Props) {
                 </View>
                 <View style={styles.info}>
                     <View style={styles.linhaCabecalho}>
-                        <Text style={styles.identificacao}>{comanda.identificacao}</Text>
+                        <View style={styles.identificacaoContainer}>
+                            <Text style={styles.identificacao}>{comanda.identificacao}</Text>
+                            {mostrarNumero ? <Text style={styles.numero}>#{comanda.id}</Text> : null}
+                        </View>
                         <StatusBadge status={comanda.status} />
                     </View>
                     <Text style={styles.subtitulo}>{subtitulo}</Text>
@@ -74,6 +78,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: colors.textoPrimario,
+    },
+    identificacaoContainer: {
+        flex: 1,
+        gap: 2,
+    },
+    numero: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: colors.textoSecundario,
     },
     subtitulo: {
         fontSize: 13,

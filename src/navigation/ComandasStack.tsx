@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { ComandasScreen } from "../screens/comandas/ComandasScreen";
-import { HistoricoScreen } from "../screens/historico/HistoricoScreen";
+import { HistoricoHubScreen } from "../screens/historico/HistoricoHubScreen";
 import { NovaComandaScreen } from "../screens/comandas/NovaComandaScreen";
 import { DetalhesComandaScreen } from "../screens/comandas/DetalhesComandaScreen";
 import { AdicionarItemScreen } from "../screens/comandas/AdicionarItemScreen";
@@ -35,7 +35,7 @@ export type ComandasStackParamList = {
         quantidadeAtual: number;
         observacaoAtual?: string;
     };
-    RegistrarPagamento: { comandaId: number; comandaIdentificacao: string; valorSugerido: number };
+    RegistrarPagamento: { comandaId: number; comandaIdentificacao: string; comandaFechadaEm?: string; valorSugerido: number };
     Comprovante: { comandaId: number };
     // `cobranca` vem preenchida logo após gerar o Pix; ao retomar um Pix pendente, só o pagamentoId.
     PagamentoPix: { comandaId: number; comandaIdentificacao: string; pagamentoId: number; cobranca?: CobrancaPix };
@@ -57,7 +57,7 @@ function FluxoComandasStack({ historico }: { historico: boolean }) {
         <Stack.Navigator initialRouteName="Lista" screenOptions={stackScreenOptions}>
             <Stack.Screen
                 name="Lista"
-                component={historico ? HistoricoScreen : ComandasScreen}
+                component={historico ? HistoricoHubScreen : ComandasScreen}
                 options={({ navigation }) => ({
                     title: historico ? 'Histórico' : 'Comandas',
                     headerRight: historico ? undefined : () => (

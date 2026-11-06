@@ -238,7 +238,14 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     return (
         <View style={styles.container}>
             <View style={styles.cabecalho}>
-                <Text style={styles.identificacao}>{comanda.identificacao}</Text>
+                <View style={styles.blocoIdentificacao}>
+                    <Text style={styles.identificacao}>{comanda.identificacao}</Text>
+                    <Text
+                        style={styles.numeroComanda}
+                        accessibilityLabel={`Comanda número ${comanda.id}`}>
+                        #{comanda.id}
+                    </Text>
+                </View>
                 <StatusBadge status={comanda.status} />
             </View>
 
@@ -414,6 +421,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                             onPress={() => navigation.navigate('RegistrarPagamento', {
                                                 comandaId,
                                                 comandaIdentificacao: comanda.identificacao,
+                                                comandaFechadaEm: comanda.fechadaEm,
                                                 valorSugerido: saldo.disponivel ? saldo.restanteCentavos / 100 : 0,
                                             })}
                                         />
@@ -555,10 +563,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 16,
     },
+    blocoIdentificacao: {
+        flexShrink: 1,
+        gap: 2,
+    },
     identificacao: {
         fontSize: 20,
         fontWeight: '700',
         color: colors.textoPrimario,
+    },
+    numeroComanda: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colors.textoSecundario,
     },
     observacao: {
         marginTop: 4,
