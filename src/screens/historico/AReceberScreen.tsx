@@ -85,7 +85,7 @@ export function AReceberScreen() {
                     refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
                     ListEmptyComponent={busca.trim()
                         ? <Text style={styles.avisoVazio}>Nenhuma comanda encontrada para esta busca</Text>
-                        : null}
+                        : undefined}
                     accessibilityLabel={`${comandasFiltradas.length} ${comandasFiltradas.length === 1 ? 'comanda a receber' : 'comandas a receber'}`}
                     renderItem={({ item }) => (
                         <ComandaAReceberCard

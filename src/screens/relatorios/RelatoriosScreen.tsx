@@ -212,56 +212,55 @@ export function RelatoriosScreen() {
                     </View>
 
                     {dados.historicoDisponivel ? (
-                    <Cartao style={styles.secao}>
-                        <View style={styles.secaoCabecalho}>
-                            <View style={styles.flex}>
-                                <Text style={styles.secaoTitulo}>{'Hist\u00f3rico encerrado'}</Text>
-                                <Text style={styles.secaoDescricao}>{`A pr\u00e9via mostra at\u00e9 ${LIMITE_PREVIA_COMANDAS}; o PDF inclui todas.`}</Text>
-                            </View>
-                            <View style={styles.contador}>
-                                <Text style={styles.contadorTexto}>{resumoHistorico.encerradas}</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.resumoHistorico}>
-                            <View style={styles.resumoItem}>
-                                <Text style={styles.resumoValor}>{resumoHistorico.computadas}</Text>
-                                <Text style={styles.resumoRotulo}>nos indicadores</Text>
-                            </View>
-                            <View style={styles.divisorVertical} />
-                            <View style={styles.resumoItem}>
-                                <Text style={styles.resumoValor}>{resumoHistorico.canceladas}</Text>
-                                <Text style={styles.resumoRotulo}>canceladas</Text>
-                            </View>
-                        </View>
-
-                        {dados.comandas.length === 0 ? (
-                            <View style={styles.estadoVazio}>
-                                <Feather name="inbox" size={24} color={colors.textoTerciario} />
-                                <Text style={styles.textoVazio}>{'Nenhuma comanda encerrada neste per\u00edodo'}</Text>
-                            </View>
-                        ) : (
-                            dados.comandas.slice(0, LIMITE_PREVIA_COMANDAS).map((comanda) => (
-                                <View key={comanda.id} style={styles.linhaComanda}>
-                                    <View style={styles.flex}>
-                                        <Text style={styles.comandaNome} numberOfLines={1}>{comanda.identificacao}</Text>
-                                        <Text style={styles.comandaMeta}>#{comanda.id} {'\u2022'} {formatarDataHoraCompleta(comanda.encerradaEm)}</Text>
-                                        <Text style={[styles.comandaCriterio, comanda.status === 'CANCELADA' && styles.textoCancelada]}>
-                                            {comanda.status === 'CANCELADA'
-                                                ? 'Cancelada \u2014 fora do faturamento'
-                                                : comanda.computadaNosIndicadores
-                                                    ? 'Computada nos indicadores'
-                                                    : 'Fora dos indicadores'}
-                                        </Text>
-                                    </View>
-                                    <Text style={styles.comandaTotal}>{formatarMoeda(comanda.total)}</Text>
+                        <Cartao style={styles.secao}>
+                            <View style={styles.secaoCabecalho}>
+                                <View style={styles.flex}>
+                                    <Text style={styles.secaoTitulo}>{'Hist\u00f3rico encerrado'}</Text>
                                 </View>
-                            ))
-                        )}
-                        {dados.comandas.length > LIMITE_PREVIA_COMANDAS ? (
-                            <Text style={styles.maisItens}>+ {dados.comandas.length - LIMITE_PREVIA_COMANDAS} comandas no PDF</Text>
-                        ) : null}
-                    </Cartao>
+                                <View style={styles.contador}>
+                                    <Text style={styles.contadorTexto}>{resumoHistorico.encerradas}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.resumoHistorico}>
+                                <View style={styles.resumoItem}>
+                                    <Text style={styles.resumoValor}>{resumoHistorico.computadas}</Text>
+                                    <Text style={styles.resumoRotulo}>nos indicadores</Text>
+                                </View>
+                                <View style={styles.divisorVertical} />
+                                <View style={styles.resumoItem}>
+                                    <Text style={styles.resumoValor}>{resumoHistorico.canceladas}</Text>
+                                    <Text style={styles.resumoRotulo}>canceladas</Text>
+                                </View>
+                            </View>
+
+                            {dados.comandas.length === 0 ? (
+                                <View style={styles.estadoVazio}>
+                                    <Feather name="inbox" size={24} color={colors.textoTerciario} />
+                                    <Text style={styles.textoVazio}>{'Nenhuma comanda encerrada neste per\u00edodo'}</Text>
+                                </View>
+                            ) : (
+                                dados.comandas.slice(0, LIMITE_PREVIA_COMANDAS).map((comanda) => (
+                                    <View key={comanda.id} style={styles.linhaComanda}>
+                                        <View style={styles.flex}>
+                                            <Text style={styles.comandaNome} numberOfLines={1}>{comanda.identificacao}</Text>
+                                            <Text style={styles.comandaMeta}>#{comanda.id} {'\u2022'} {formatarDataHoraCompleta(comanda.encerradaEm)}</Text>
+                                            <Text style={[styles.comandaCriterio, comanda.status === 'CANCELADA' && styles.textoCancelada]}>
+                                                {comanda.status === 'CANCELADA'
+                                                    ? 'Cancelada \u2014 fora do faturamento'
+                                                    : comanda.computadaNosIndicadores
+                                                        ? 'Computada nos indicadores'
+                                                        : 'Fora dos indicadores'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.comandaTotal}>{formatarMoeda(comanda.total)}</Text>
+                                    </View>
+                                ))
+                            )}
+                            {dados.comandas.length > LIMITE_PREVIA_COMANDAS ? (
+                                <Text style={styles.maisItens}>+ {dados.comandas.length - LIMITE_PREVIA_COMANDAS} comandas no PDF</Text>
+                            ) : null}
+                        </Cartao>
                     ) : null}
 
                     <View style={styles.duasSecoes}>
