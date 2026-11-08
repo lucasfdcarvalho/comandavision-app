@@ -113,15 +113,12 @@ const styles = StyleSheet.create({
     },
     valores: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
         gap: 12,
         marginTop: 4,
     },
     valorGrupo: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        gap: 4,
+        flex: 1,
+        gap: 2,
     },
     valorRotulo: {
         fontSize: 12,
@@ -133,15 +130,17 @@ const styles = StyleSheet.create({
         color: colors.textoPrimario,
     },
     saldoContainer: {
-        justifyContent: 'flex-end',
+        alignItems: 'flex-end',
     },
     saldoRotulo: {
         fontSize: 12,
         color: colors.textoSecundario,
+        textAlign: 'right',
     },
     saldo: {
         fontSize: 14,
         fontWeight: '700',
         color: colors.laranjaEscuro,
+        textAlign: 'right',
     },
 });

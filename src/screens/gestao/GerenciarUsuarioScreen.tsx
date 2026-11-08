@@ -57,7 +57,7 @@ export function GerenciarUsuarioScreen({ route }: Props) {
 
         alertar(
             'Alterar papel',
-            `${nomeExibido} passará a ser ${NOME_PAPEL[papel]}. A mudança passa a valer em até 1 hora, quando o login da pessoa for renovado.`,
+            `${nomeExibido} passará a ser ${NOME_PAPEL[papel]}. A mudança passa a valer em até 1 hora, quando o login da pessoa for renovado`,
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -73,7 +73,7 @@ export function GerenciarUsuarioScreen({ route }: Props) {
     function confirmarDesativar() {
         alertar(
             'Desativar usuário',
-            `${nomeExibido} não conseguirá mais entrar no app. O histórico de comandas é mantido e você pode reativar depois.`,
+            `${nomeExibido} não conseguirá mais entrar no app. O histórico de comandas é mantido e você pode reativar depois`,
             [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -102,13 +102,13 @@ export function GerenciarUsuarioScreen({ route }: Props) {
             {ehVoce ? (
                 <View style={styles.aviso}>
                     <Feather name="info" size={16} color={colors.textoSecundario} />
-                    <Text style={styles.textoAviso}>Você não pode alterar o papel nem desativar a sua própria conta.</Text>
+                    <Text style={styles.textoAviso}>Você não pode alterar o papel nem desativar a sua própria conta</Text>
                 </View>
             ) : null}
 
             <Text style={styles.rotulo}>Papel</Text>
             {!usuario.papel ? (
-                <Text style={styles.semPapel}>Esta conta ainda não tem papel e não consegue usar o app. Escolha um abaixo.</Text>
+                <Text style={styles.semPapel}>Esta conta ainda não tem papel e não consegue usar o app. Escolha um abaixo</Text>
             ) : null}
             <SeletorPapel
                 papelSelecionado={usuario.papel}

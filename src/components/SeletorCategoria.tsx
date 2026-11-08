@@ -14,7 +14,7 @@ type Props = {
 
 export function SeletorCategoria({ categorias, categoriaSelecionadaId, onSelecionar, desabilitado }: Props) {
     if (categorias.length === 0) {
-        return <Text style={styles.textoVazio}>Nenhuma categoria ativa disponível — crie uma categoria antes.</Text>;
+        return <Text style={styles.textoVazio}>Nenhuma categoria ativa disponível — crie uma categoria antes</Text>;
     }
 
     return (

@@ -35,7 +35,7 @@ export function NovaCategoriaScreen({ navigation }: Props) {
                 descricao: descricao.trim() || undefined,
             });
 
-            mostrarSucesso('Categoria criada', 'A categoria foi criada com sucesso.', () => navigation.popTo('Catalogo'));
+            mostrarSucesso('Categoria criada', 'A categoria foi criada com sucesso', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível criar a categoria';
             setMensagemErro(mensagem);

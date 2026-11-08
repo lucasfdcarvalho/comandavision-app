@@ -119,14 +119,14 @@ export function RelatoriosScreen() {
         try {
             const resultado = await relatorioService.exportar({ ...dados, geradoEm: new Date().toISOString() });
             if (resultado === 'compartilhado') {
-                mostrarSucesso('PDF pronto', 'O relat\u00f3rio foi gerado e aberto para compartilhamento.');
+                mostrarSucesso('PDF pronto', 'O relat\u00f3rio foi gerado e aberto para compartilhamento');
             } else {
-                mostrarSucesso('Relat\u00f3rio aberto', 'Use o di\u00e1logo do sistema para salvar ou imprimir o PDF.');
+                mostrarSucesso('Relat\u00f3rio aberto', 'Use o di\u00e1logo do sistema para salvar ou imprimir o PDF');
             }
         } catch (error: unknown) {
             alertar(
                 'N\u00e3o foi poss\u00edvel gerar o PDF',
-                error instanceof Error ? error.message : 'Tente novamente em instantes.',
+                error instanceof Error ? error.message : 'Tente novamente em instantes',
                 undefined,
                 'erro'
             );
@@ -212,63 +212,62 @@ export function RelatoriosScreen() {
                     </View>
 
                     {dados.historicoDisponivel ? (
-                    <Cartao style={styles.secao}>
-                        <View style={styles.secaoCabecalho}>
-                            <View style={styles.flex}>
-                                <Text style={styles.secaoTitulo}>{'Hist\u00f3rico encerrado'}</Text>
-                                <Text style={styles.secaoDescricao}>{`A pr\u00e9via mostra at\u00e9 ${LIMITE_PREVIA_COMANDAS}; o PDF inclui todas.`}</Text>
-                            </View>
-                            <View style={styles.contador}>
-                                <Text style={styles.contadorTexto}>{resumoHistorico.encerradas}</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.resumoHistorico}>
-                            <View style={styles.resumoItem}>
-                                <Text style={styles.resumoValor}>{resumoHistorico.computadas}</Text>
-                                <Text style={styles.resumoRotulo}>nos indicadores</Text>
-                            </View>
-                            <View style={styles.divisorVertical} />
-                            <View style={styles.resumoItem}>
-                                <Text style={styles.resumoValor}>{resumoHistorico.canceladas}</Text>
-                                <Text style={styles.resumoRotulo}>canceladas</Text>
-                            </View>
-                        </View>
-
-                        {dados.comandas.length === 0 ? (
-                            <View style={styles.estadoVazio}>
-                                <Feather name="inbox" size={24} color={colors.textoTerciario} />
-                                <Text style={styles.textoVazio}>{'Nenhuma comanda encerrada neste per\u00edodo.'}</Text>
-                            </View>
-                        ) : (
-                            dados.comandas.slice(0, LIMITE_PREVIA_COMANDAS).map((comanda) => (
-                                <View key={comanda.id} style={styles.linhaComanda}>
-                                    <View style={styles.flex}>
-                                        <Text style={styles.comandaNome} numberOfLines={1}>{comanda.identificacao}</Text>
-                                        <Text style={styles.comandaMeta}>#{comanda.id} {'\u2022'} {formatarDataHoraCompleta(comanda.encerradaEm)}</Text>
-                                        <Text style={[styles.comandaCriterio, comanda.status === 'CANCELADA' && styles.textoCancelada]}>
-                                            {comanda.status === 'CANCELADA'
-                                                ? 'Cancelada \u2014 fora do faturamento'
-                                                : comanda.computadaNosIndicadores
-                                                    ? 'Computada nos indicadores'
-                                                    : 'Fora dos indicadores'}
-                                        </Text>
-                                    </View>
-                                    <Text style={styles.comandaTotal}>{formatarMoeda(comanda.total)}</Text>
+                        <Cartao style={styles.secao}>
+                            <View style={styles.secaoCabecalho}>
+                                <View style={styles.flex}>
+                                    <Text style={styles.secaoTitulo}>{'Hist\u00f3rico encerrado'}</Text>
                                 </View>
-                            ))
-                        )}
-                        {dados.comandas.length > LIMITE_PREVIA_COMANDAS ? (
-                            <Text style={styles.maisItens}>+ {dados.comandas.length - LIMITE_PREVIA_COMANDAS} comandas no PDF</Text>
-                        ) : null}
-                    </Cartao>
+                                <View style={styles.contador}>
+                                    <Text style={styles.contadorTexto}>{resumoHistorico.encerradas}</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.resumoHistorico}>
+                                <View style={styles.resumoItem}>
+                                    <Text style={styles.resumoValor}>{resumoHistorico.computadas}</Text>
+                                    <Text style={styles.resumoRotulo}>nos indicadores</Text>
+                                </View>
+                                <View style={styles.divisorVertical} />
+                                <View style={styles.resumoItem}>
+                                    <Text style={styles.resumoValor}>{resumoHistorico.canceladas}</Text>
+                                    <Text style={styles.resumoRotulo}>canceladas</Text>
+                                </View>
+                            </View>
+
+                            {dados.comandas.length === 0 ? (
+                                <View style={styles.estadoVazio}>
+                                    <Feather name="inbox" size={24} color={colors.textoTerciario} />
+                                    <Text style={styles.textoVazio}>{'Nenhuma comanda encerrada neste per\u00edodo'}</Text>
+                                </View>
+                            ) : (
+                                dados.comandas.slice(0, LIMITE_PREVIA_COMANDAS).map((comanda) => (
+                                    <View key={comanda.id} style={styles.linhaComanda}>
+                                        <View style={styles.flex}>
+                                            <Text style={styles.comandaNome} numberOfLines={1}>{comanda.identificacao}</Text>
+                                            <Text style={styles.comandaMeta}>#{comanda.id} {'\u2022'} {formatarDataHoraCompleta(comanda.encerradaEm)}</Text>
+                                            <Text style={[styles.comandaCriterio, comanda.status === 'CANCELADA' && styles.textoCancelada]}>
+                                                {comanda.status === 'CANCELADA'
+                                                    ? 'Cancelada \u2014 fora do faturamento'
+                                                    : comanda.computadaNosIndicadores
+                                                        ? 'Computada nos indicadores'
+                                                        : 'Fora dos indicadores'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.comandaTotal}>{formatarMoeda(comanda.total)}</Text>
+                                    </View>
+                                ))
+                            )}
+                            {dados.comandas.length > LIMITE_PREVIA_COMANDAS ? (
+                                <Text style={styles.maisItens}>+ {dados.comandas.length - LIMITE_PREVIA_COMANDAS} comandas no PDF</Text>
+                            ) : null}
+                        </Cartao>
                     ) : null}
 
                     <View style={styles.duasSecoes}>
                         <Cartao style={[styles.secao, styles.secaoMetade]}>
                             <Text style={styles.secaoTitulo}>Produtos</Text>
                             {dados.produtos.length === 0 ? (
-                                <Text style={styles.textoVazio}>{'Nenhuma venda no per\u00edodo.'}</Text>
+                                <Text style={styles.textoVazio}>{'Nenhuma venda no per\u00edodo'}</Text>
                             ) : dados.produtos.map((produto, indice) => (
                                 <View key={produto.produtoId} style={styles.linhaCompacta}>
                                     <Text style={styles.posicao}>{indice + 1}</Text>
@@ -281,7 +280,7 @@ export function RelatoriosScreen() {
                         <Cartao style={[styles.secao, styles.secaoMetade]}>
                             <Text style={styles.secaoTitulo}>Pagamentos</Text>
                             {dados.formasPagamento.length === 0 ? (
-                                <Text style={styles.textoVazio}>{'Nenhum pagamento no per\u00edodo.'}</Text>
+                                <Text style={styles.textoVazio}>{'Nenhum pagamento no per\u00edodo'}</Text>
                             ) : dados.formasPagamento.map((forma, indice) => (
                                 <View key={forma.forma} style={styles.linhaCompacta}>
                                     <Text style={styles.nomeCompacto}>{ROTULO_FORMA[forma.forma]}</Text>
@@ -317,7 +316,7 @@ const styles = StyleSheet.create({
     blocoConteudo: { gap: espacamento.md },
     grade: { flexDirection: 'row', gap: espacamento.md },
     secao: { gap: espacamento.md },
-    secaoCabecalho: { flexDirection: 'row', alignItems: 'flex-start', gap: espacamento.md },
+    secaoCabecalho: { flexDirection: 'row', alignItems: 'center', gap: espacamento.md },
     secaoTitulo: { ...tipografia.corpoForte, color: colors.textoPrimario },
     secaoDescricao: { ...tipografia.legenda, color: colors.textoSecundario, marginTop: 2 },
     contador: { minWidth: 34, height: 34, paddingHorizontal: espacamento.sm, borderRadius: raio.redondo, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.fundoSecundario },

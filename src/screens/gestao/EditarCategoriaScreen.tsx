@@ -34,7 +34,7 @@ export function EditarCategoriaScreen({ route, navigation }: Props) {
         if (categoria.ativa && !ativa) {
             alertar(
                 'Desativar categoria',
-                'Desativar esta categoria pode afetar a disponibilidade dos produtos vinculados a ela.',
+                'Desativar esta categoria pode afetar a disponibilidade dos produtos vinculados a ela',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Desativar', style: 'destructive', onPress: salvar },
@@ -58,7 +58,7 @@ export function EditarCategoriaScreen({ route, navigation }: Props) {
                 ativa,
             });
 
-            mostrarSucesso('Categoria atualizada', 'As alterações foram salvas com sucesso.', () => navigation.popTo('Catalogo'));
+            mostrarSucesso('Categoria atualizada', 'As alterações foram salvas com sucesso', () => navigation.popTo('Catalogo'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível salvar as alterações';
             setMensagemErro(mensagem);

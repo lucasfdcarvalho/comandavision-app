@@ -43,14 +43,14 @@ async function listarComandasAReceber(): Promise<ComandaAReceber[]> {
             const encerradas = historico.filter((comanda) => comanda.status === 'FECHADA');
             const ids = new Set(fechadas.map((comanda) => comanda.id));
             if (encerradas.length !== ids.size || encerradas.some((comanda) => !ids.has(comanda.id))) {
-                throw new Error('Hist\u00f3rico financeiro incompleto. Tente atualizar a lista.');
+                throw new Error('Hist\u00f3rico financeiro incompleto. Tente atualizar a lista');
             }
             return encerradas.flatMap((comanda): ComandaAReceber[] => {
                 const total = Math.round(comanda.total * 100);
                 const pago = Math.round(comanda.totalPago * 100);
                 if (!Number.isSafeInteger(total) || !Number.isSafeInteger(pago)
                     || total < 0 || pago < 0 || pago > total) {
-                    throw new Error('Dados financeiros inconsistentes. Tente atualizar a lista.');
+                    throw new Error('Dados financeiros inconsistentes. Tente atualizar a lista');
                 }
                 const restante = total - pago;
                 return restante > 0 ? [{
@@ -87,7 +87,7 @@ async function listarComandasAReceber(): Promise<ComandaAReceber[]> {
                 || ![total, pago, restante].every(Number.isSafeInteger)
                 || total < 0 || pago < 0 || restante < 0
                 || pago > total || Math.abs(total - pago - restante) > 1) {
-                throw new Error('Dados financeiros inconsistentes. Tente atualizar a lista.');
+                throw new Error('Dados financeiros inconsistentes. Tente atualizar a lista');
             }
             if (restante > 0) {
                 aReceber.push({
@@ -107,7 +107,7 @@ async function listarComandasAReceber(): Promise<ComandaAReceber[]> {
         await Promise.all(Array.from({ length: Math.min(12, fechadas.length) }, consultarResumos));
     } catch (error: unknown) {
         if (controlador.signal.aborted) {
-            throw new Error('Tempo esgotado ao carregar as comandas a receber. Tente novamente.');
+            throw new Error('Tempo esgotado ao carregar as comandas a receber. Tente novamente');
         }
         throw error;
     } finally {

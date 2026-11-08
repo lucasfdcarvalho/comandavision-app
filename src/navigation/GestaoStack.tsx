@@ -47,7 +47,7 @@ export function GestaoStack() {
             <View style={styles.acessoRestrito}>
                 <Feather name="lock" size={40} color={colors.textoSecundario} />
                 <Text style={styles.tituloRestrito}>Acesso restrito</Text>
-                <Text style={styles.textoRestrito}>Esta área é exclusiva para o papel DONO.</Text>
+                <Text style={styles.textoRestrito}>Esta área é exclusiva para o papel DONO</Text>
             </View>
         );
     }

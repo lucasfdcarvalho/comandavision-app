@@ -35,7 +35,7 @@ export function NovaComandaScreen({ navigation }: Props) {
                 observacao: observacao.trim() || undefined,
             });
 
-            mostrarSucesso('Comanda aberta', 'A comanda foi aberta com sucesso.', () => navigation.popTo('Lista'));
+            mostrarSucesso('Comanda aberta', 'A comanda foi aberta com sucesso', () => navigation.popTo('Lista'));
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível abrir a comanda';
             setMensagemErro(mensagem);

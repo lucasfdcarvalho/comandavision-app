@@ -26,7 +26,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
                 <td class="numero">${produto.quantidadeVendida}</td>
                 <td class="numero">${formatarMoeda(produto.faturamento)}</td>
             </tr>`).join('')
-        : linhaVazia('Nenhum produto vendido no per\u00edodo.', 4);
+        : linhaVazia('Nenhum produto vendido no per\u00edodo', 4);
 
     const percentuaisFormas = calcularPercentuaisFechandoCem(
         dados.formasPagamento.map((forma) => forma.valorRecebido)
@@ -39,7 +39,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
                 <td class="numero">${formatarMoeda(forma.valorRecebido)}</td>
                 <td class="numero">${formatarPercentualParticipacao(percentuaisFormas[indice])}</td>
             </tr>`).join('')
-        : linhaVazia('Nenhum pagamento confirmado no per\u00edodo.', 4);
+        : linhaVazia('Nenhum pagamento confirmado no per\u00edodo', 4);
 
     const linhasFaturamento = dados.faturamentoDiario.length > 0
         ? dados.faturamentoDiario.map((dia) => `
@@ -48,7 +48,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
                 <td class="numero">${dia.quantidadeVendas}</td>
                 <td class="numero">${formatarMoeda(dia.faturamento)}</td>
             </tr>`).join('')
-        : linhaVazia('Nenhum dia dispon\u00edvel para o per\u00edodo.', 3);
+        : linhaVazia('Nenhum dia dispon\u00edvel para o per\u00edodo', 3);
 
     const linhasComandas = dados.comandas.length > 0
         ? dados.comandas.map((comanda) => `
@@ -61,7 +61,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
                 <td class="numero">${formatarMoeda(comanda.totalPago)}</td>
                 <td>${comanda.computadaNosIndicadores ? 'Sim' : 'N\u00e3o'}</td>
             </tr>`).join('')
-        : linhaVazia('Nenhuma comanda encerrada no per\u00edodo.', 7);
+        : linhaVazia('Nenhuma comanda encerrada no per\u00edodo', 7);
 
     const quantidadeCanceladas = dados.comandas.filter((comanda) => comanda.status === 'CANCELADA').length;
     const quantidadeComputadas = dados.comandas.filter((comanda) => comanda.computadaNosIndicadores).length;
@@ -168,7 +168,7 @@ export function gerarRelatorioHtml(dados: DadosRelatorioGerencial): string {
     ${secaoHistoricoHtml}
 
     <footer class="rodape">
-        Documento gerencial gerado pelo ComandaVision. N\u00e3o possui valor fiscal ou cont\u00e1bil.
+        Documento gerencial gerado pelo ComandaVision. N\u00e3o possui valor fiscal ou cont\u00e1bil
     </footer>
 </body>
 </html>`;

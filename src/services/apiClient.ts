@@ -6,7 +6,7 @@ if (!urlBase) {
     throw new Error('API não configurada');
 }
 
-const MENSAGEM_SESSAO_EXPIRADA = 'Sua sessão expirou. Entre novamente.';
+const MENSAGEM_SESSAO_EXPIRADA = 'Sua sessão expirou. Entre novamente';
 
 export class ErroApi extends Error {
     readonly status: number;

@@ -26,7 +26,7 @@ export function SeletorImagemProduto({ imagemUri, onSelecionar, onRemover, desab
         const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (!permissao.granted) {
-            alertar('Permissão necessária', 'Libere o acesso às fotos nas configurações do aparelho para escolher uma imagem.', undefined, 'aviso');
+            alertar('Permissão necessária', 'Libere o acesso às fotos nas configurações do aparelho para escolher uma imagem', undefined, 'aviso');
             return;
         }
 

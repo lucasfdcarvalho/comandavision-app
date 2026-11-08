@@ -84,7 +84,7 @@ export function ComprovanteScreen({ route, navigation }: Props) {
                 <Feather name="alert-circle" size={40} color={colors.textoSecundario} />
                 <Text style={styles.tituloCentro}>Comprovante indisponível</Text>
                 <Text style={styles.textoCentro}>
-                    O comprovante só fica disponível quando a comanda está fechada e o pagamento está totalmente concluído.
+                    O comprovante só fica disponível quando a comanda está fechada e o pagamento está totalmente concluído
                 </Text>
                 <View style={styles.botaoCentroContainer}>
                     <SecondaryButton
@@ -118,7 +118,7 @@ export function ComprovanteScreen({ route, navigation }: Props) {
                 <Feather name="alert-triangle" size={40} color={colors.erro} />
                 <Text style={styles.tituloCentro}>Dados inconsistentes</Text>
                 <Text style={styles.textoCentro}>
-                    Não foi possível confirmar os valores desta comanda. Atualize os dados e tente novamente.
+                    Não foi possível confirmar os valores desta comanda. Atualize os dados e tente novamente
                 </Text>
                 <View style={styles.botaoCentroContainer}>
                     <PrimaryButton titulo="Atualizar" onPress={carregarDados} />
@@ -155,7 +155,7 @@ export function ComprovanteScreen({ route, navigation }: Props) {
             const resultado = await comprovanteService.compartilhar(dadosComprovante);
             if (!resultado.compartilhado) {
                 setAvisoCompartilhamento(
-                    'O compartilhamento não está disponível neste dispositivo. Você ainda pode conferir os dados aqui na tela.'
+                    'O compartilhamento não está disponível neste dispositivo. Você ainda pode conferir os dados aqui na tela'
                 );
             }
         } catch (error: unknown) {
@@ -242,7 +242,7 @@ export function ComprovanteScreen({ route, navigation }: Props) {
                 <View style={styles.divisor} />
 
                 <Text style={styles.rodapeData}>Comprovante gerado em {formatarDataHora(geradoEm)}</Text>
-                <Text style={styles.aviso}>Este documento não possui valor fiscal.</Text>
+                <Text style={styles.aviso}>Este documento não possui valor fiscal</Text>
             </View>
 
             {mensagemErroAcao ? <View style={styles.mensagemContainer}><MensagemErro texto={mensagemErroAcao} /></View> : null}

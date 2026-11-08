@@ -57,7 +57,7 @@ export function NovoUsuarioScreen({ navigation }: Props) {
 
             mostrarSucesso(
                 'Usuário criado',
-                `Passe para ${usuario.nome ?? 'o usuário'} o e-mail ${usuario.email} e a senha provisória para o primeiro acesso.`,
+                `Passe para ${usuario.nome ?? 'o usuário'} o e-mail ${usuario.email} e a senha provisória para o primeiro acesso`,
                 () => navigation.popTo('Equipe')
             );
         } catch (error: unknown) {
@@ -112,7 +112,7 @@ export function NovoUsuarioScreen({ navigation }: Props) {
                         <Feather name={mostrarSenha ? 'eye-off' : 'eye'} size={18} color={colors.textoSecundario} />
                     </Pressable>
                 </View>
-                <Text style={styles.dica}>Você vai repassar essa senha para a pessoa entrar pela primeira vez.</Text>
+                <Text style={styles.dica}>Você vai repassar essa senha para a pessoa entrar pela primeira vez</Text>
 
                 <Text style={styles.rotulo}>Papel</Text>
                 <SeletorPapel papelSelecionado={papel} onSelecionar={setPapel} desabilitado={carregando} />

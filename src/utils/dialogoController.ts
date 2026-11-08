@@ -84,7 +84,7 @@ export class DialogoController {
             this.fila[0] = {
                 ...atual,
                 titulo: 'Não foi possível concluir',
-                mensagem: erro instanceof Error ? erro.message : 'Tente novamente em instantes.',
+                mensagem: erro instanceof Error ? erro.message : 'Tente novamente em instantes',
                 tipo: 'erro',
                 botoes: [{ text: 'Entendi' }],
                 aoFechar: undefined,

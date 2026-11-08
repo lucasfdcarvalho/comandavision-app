@@ -19,7 +19,7 @@ export function PerfilScreen() {
     const inicial = (usuario?.email ?? '?').charAt(0).toUpperCase();
 
     function confirmarSaida() {
-        alertar('Sair da conta', 'Você precisará entrar de novo com e-mail e senha.', [
+        alertar('Sair da conta', 'Você precisará entrar de novo com e-mail e senha', [
             { text: 'Cancelar', style: 'cancel' },
             { text: 'Sair', style: 'destructive', onPress: sair },
         ]);

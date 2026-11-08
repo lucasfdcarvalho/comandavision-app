@@ -94,7 +94,7 @@ export function PagamentoPixScreen({ route, navigation }: Props) {
     }
 
     function confirmarCancelamento() {
-        alertar('Cancelar Pix', 'O QR Code deixa de valer e o valor volta para o saldo da comanda.', [
+        alertar('Cancelar Pix', 'O QR Code deixa de valer e o valor volta para o saldo da comanda', [
             { text: 'Manter', style: 'cancel' },
             { text: 'Cancelar Pix', style: 'destructive', onPress: cancelar },
         ]);
@@ -143,7 +143,7 @@ export function PagamentoPixScreen({ route, navigation }: Props) {
                     <Feather name="x" size={36} color={colors.textoSecundario} />
                 </View>
                 <Text style={styles.tituloFinal}>Pix encerrado</Text>
-                <Text style={styles.textoFinal}>Este QR Code foi cancelado ou expirou. Gere um novo para cobrar.</Text>
+                <Text style={styles.textoFinal}>Este QR Code foi cancelado ou expirou. Gere um novo para cobrar</Text>
                 <PrimaryButton titulo="Voltar" onPress={() => navigation.goBack()} style={styles.botaoFinal} />
             </View>
         );
