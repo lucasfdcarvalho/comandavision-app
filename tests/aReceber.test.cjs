@@ -28,10 +28,10 @@ test('Histórico abre em A receber e preserva o histórico completo', () => {
     assert.match(historico, /apiService\.listarComandas\(\)/);
     assert.match(api, /'\/api\/comandas\/a-receber'/);
     assert.doesNotMatch(hub, /ROTULO_AMBIENTE_DEMONSTRACAO|avisoDemonstracao/);
-    assert.match(aReceber, /MarcaDaguaLista/);
+    assert.doesNotMatch(aReceber, /MarcaDaguaLista/);
     assert.doesNotMatch(aReceber, /Nenhuma comanda com saldo pendente/);
     assert.match(aReceber, /Nenhuma comanda encontrada para esta busca/);
-    assert.match(historico, /MarcaDaguaLista/);
+    assert.doesNotMatch(historico, /MarcaDaguaLista/);
 });
 
 test('cartão e pagamento mostram número, data, total e saldo', () => {

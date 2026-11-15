@@ -8,7 +8,6 @@ import { Feather } from "@expo/vector-icons";
 import { apiService } from "../../services/apiService";
 import { Comanda } from "../../types/Comanda";
 import { ComandaCard } from "../../components/ComandaCard";
-import { MarcaDaguaLista } from "../../components/MarcaDaguaLista";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
 import { colors } from "../../theme/colors";
@@ -152,7 +151,6 @@ export function HistoricoScreen() {
             ) : null}
 
             <View style={styles.areaLista}>
-                <MarcaDaguaLista />
 
                 <FlatList
                     style={styles.lista}
@@ -229,7 +227,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoBotaoPeriodoSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
     avisoVazio: {
         fontSize: 13,

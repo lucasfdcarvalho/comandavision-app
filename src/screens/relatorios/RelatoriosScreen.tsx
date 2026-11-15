@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     botaoPeriodo: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', paddingHorizontal: espacamento.xs, borderWidth: 1, borderColor: colors.borda, borderRadius: raio.redondo, backgroundColor: colors.superficie },
     botaoPeriodoSelecionado: { backgroundColor: colors.laranja, borderColor: colors.laranja },
     textoPeriodo: { ...tipografia.rotuloForte, color: colors.textoSecundario, textAlign: 'center' },
-    textoPeriodoSelecionado: { color: colors.grafite },
+    textoPeriodoSelecionado: { color: colors.superficie },
     intervalo: { ...tipografia.legenda, color: colors.textoSecundario, textAlign: 'center' },
     carregandoPeriodo: { marginVertical: espacamento.xxxl },
     blocoConteudo: { gap: espacamento.md },

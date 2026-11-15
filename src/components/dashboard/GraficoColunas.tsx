@@ -119,7 +119,6 @@ export function GraficoColunas({ itens, indiceSelecionado, onSelecionar, maximoR
                         x={LARGURA_EIXO_Y - 8}
                         y={base - (marca / teto) * alturaPlot + 3.5}
                         fontSize={10}
-                        fontFamily="Inter_500Medium"
                         fill={colors.textoSecundario}
                         textAnchor="end">
                         {formatarMoedaCompacta(marca)}

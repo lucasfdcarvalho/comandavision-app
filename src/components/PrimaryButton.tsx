@@ -3,7 +3,7 @@ import { Text } from "./ui/Texto";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
-import { raio, sombras } from "../theme/tokens";
+import { raio } from "../theme/tokens";
 
 type Props = {
     titulo: string;
@@ -29,11 +29,11 @@ export function PrimaryButton({ titulo, onPress, disabled, carregando, icone, st
                 style,
             ]}>
             {carregando ? (
-                <ActivityIndicator color={inativo ? colors.textoSecundario : colors.grafite} />
+                <ActivityIndicator color={inativo ? colors.textoSecundario : colors.superficie} />
             ) : (
                 <>
                     {icone ? (
-                        <Feather name={icone} size={16} color={inativo ? colors.textoSecundario : colors.grafite} />
+                        <Feather name={icone} size={16} color={inativo ? colors.textoSecundario : colors.superficie} />
                     ) : null}
                     <Text style={[styles.texto, inativo && styles.textoInativo]}>{titulo}</Text>
                 </>
@@ -48,13 +48,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 8,
-        minHeight: 52,
+        minHeight: 50,
         borderRadius: raio.md,
     },
-    // Texto grafite sobre o laranja (7:1 de contraste), igual ao botão de entrar do login.
     botaoAtivo: {
         backgroundColor: colors.laranja,
-        ...sombras.destaque,
     },
     botaoInativo: {
         backgroundColor: colors.borda,
@@ -63,7 +61,7 @@ const styles = StyleSheet.create({
         opacity: 0.85,
     },
     texto: {
-        color: colors.grafite,
+        color: colors.superficie,
         fontSize: 16,
         fontWeight: '700',
     },

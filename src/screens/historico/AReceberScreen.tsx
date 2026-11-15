@@ -5,7 +5,6 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Text, TextInput } from '../../components/ui/Texto';
 import { ComandaAReceberCard } from '../../components/ComandaAReceberCard';
-import { MarcaDaguaLista } from '../../components/MarcaDaguaLista';
 import { ErrorState } from '../../components/ErrorState';
 import { LoadingState } from '../../components/LoadingState';
 import type { ComandasStackParamList } from '../../navigation/ComandasStack';
@@ -76,7 +75,6 @@ export function AReceberScreen() {
             </View>
 
             <View style={styles.areaLista}>
-                <MarcaDaguaLista />
                 <FlatList
                     style={styles.lista}
                     data={comandasFiltradas}

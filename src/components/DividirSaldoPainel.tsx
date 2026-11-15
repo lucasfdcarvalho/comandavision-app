@@ -170,6 +170,6 @@ const styles = StyleSheet.create({
     textoBotaoUsar: {
         fontSize: 13,
         fontWeight: '700',
-        color: colors.grafite,
+        color: colors.superficie,
     },
 });

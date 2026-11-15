@@ -30,7 +30,7 @@ export function SeletorPapel({ papelSelecionado, onSelecionar, desabilitado }: P
                         accessibilityRole="radio"
                         accessibilityState={{ selected: selecionado, disabled: desabilitado }}
                         accessibilityLabel={`${opcao.titulo}: ${opcao.descricao}`}>
-                        <Feather name={opcao.icone} size={18} color={selecionado ? colors.grafite : colors.laranja} />
+                        <Feather name={opcao.icone} size={18} color={selecionado ? colors.superficie : colors.laranja} />
                         <Text style={[styles.titulo, selecionado && styles.textoSelecionado]}>{opcao.titulo}</Text>
                         <Text style={[styles.descricao, selecionado && styles.textoSelecionado]}>{opcao.descricao}</Text>
                     </Pressable>
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
 });

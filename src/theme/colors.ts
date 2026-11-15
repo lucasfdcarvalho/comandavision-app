@@ -4,7 +4,7 @@ export const colors = {
     fundoSecundario: '#F4F2EC',
     superficie: '#FFFFFF',
     superficieElevada: '#FFFFFF',
-    borda: '#ECE9E2',
+    borda: '#EFEFEF',
     bordaForte: '#DAD6CC',
 
     // Cores da marca Supri Conveniência (extraídas da logo oficial)

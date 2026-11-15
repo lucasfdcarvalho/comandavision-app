@@ -42,19 +42,17 @@ export function CartaoIndicador({ rotulo, valor, comparacao, variacao }: Props) 
 const styles = StyleSheet.create({
     cartao: {
         flex: 1,
-        minHeight: 110,
+        minHeight: 104,
         gap: 6,
         padding: 14,
         backgroundColor: colors.superficie,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: colors.borda,
-        justifyContent: 'space-between',
     },
     rotulo: {
         fontSize: 13,
         color: colors.textoSecundario,
-        fontWeight: '500',
     },
     valor: {
         fontSize: 22,
@@ -63,7 +61,7 @@ const styles = StyleSheet.create({
         fontVariant: ['tabular-nums'],
     },
     areaComparacao: {
-        minHeight: 24,
+        minHeight: 22,
         justifyContent: 'center',
     },
     seloNeutro: {

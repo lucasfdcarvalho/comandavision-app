@@ -15,30 +15,16 @@ export const espacamento = {
 export const raio = {
     xs: 4,
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
+    md: 8,
+    lg: 12,
+    xl: 16,
+    xxl: 20,
     redondo: 999,
 } as const;
 
 export const sombras = {
     nenhuma: {} as ViewStyle,
-    suave: Platform.select<ViewStyle>({
-        ios: {
-            shadowColor: '#1F1F1F',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-        },
-        android: {
-            elevation: 2,
-        },
-        default: {
-            // Web
-            boxShadow: '0 2px 8px rgba(31, 31, 31, 0.05)',
-        } as unknown as ViewStyle,
-    }) || {},
+    suave: {} as ViewStyle,
     media: Platform.select<ViewStyle>({
         ios: {
             shadowColor: '#1F1F1F',

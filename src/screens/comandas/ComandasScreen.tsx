@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, FlatList, RefreshControl, Image, StyleSheet, useWindowDimensions } from "react-native";
+import { View, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -16,12 +16,8 @@ import { formatarTempoDecorrido } from "../../utils/formatadores";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'Lista'>;
 
-const PROPORCAO_LOGO = 1591 / 845;
 
 export function ComandasScreen({ navigation }: Props) {
-    const { width: larguraTela } = useWindowDimensions();
-    const larguraMarca = Math.min(larguraTela * 0.72, 320);
-    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
 
     const [comandas, setComandas] = useState<Comanda[]>([]);
     const [busca, setBusca] = useState('');
@@ -103,29 +99,6 @@ export function ComandasScreen({ navigation }: Props) {
             ) : null}
 
             <View style={styles.areaLista}>
-                <View
-                    style={styles.marcaDaguaContainer}
-                    pointerEvents="none"
-                    accessible={false}
-                    aria-hidden={true}
-                    importantForAccessibility="no-hide-descendants"
-                >
-                    <Image
-                        source={require('../../../assets/images/supri-logo-v2.png')}
-                        style={[
-                            styles.marcaDaguaLogo,
-                            {
-                                width: larguraMarca,
-                                height: alturaMarca,
-                            },
-                        ]}
-                        resizeMode="contain"
-                        accessible={false}
-                        aria-hidden={true}
-                        importantForAccessibility="no"
-                    />
-                </View>
-
                 <FlatList
                     style={styles.lista}
                     data={comandasFiltradas}
@@ -192,18 +165,6 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 8,
         position: 'relative',
-    },
-    marcaDaguaContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    marcaDaguaLogo: {
-        opacity: 0.06,
     },
     lista: {
         flex: 1,

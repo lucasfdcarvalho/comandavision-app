@@ -137,11 +137,11 @@ export function LoginScreen() {
                                 carregando && styles.botaoEntrarDesabilitado,
                             ]}>
                             {carregando ? (
-                                <ActivityIndicator color={colors.grafite} size="small" />
+                                <ActivityIndicator color={colors.superficie} size="small" />
                             ) : (
                                 <>
                                     <Text style={styles.textoBotaoEntrar}>Entrar</Text>
-                                    <Feather name="arrow-right" size={18} color={colors.grafite} />
+                                    <Feather name="arrow-right" size={18} color={colors.superficie} />
                                 </>
                             )}
                         </Pressable>
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     textoBotaoEntrar: {
         fontSize: 16,
         fontWeight: '700',
-        color: colors.grafite,
+        color: colors.superficie,
         letterSpacing: 0.2,
     },
     rodape: {

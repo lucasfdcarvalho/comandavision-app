@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, FlatList, Pressable, Image, StyleSheet, useWindowDimensions } from "react-native";
+import { View, FlatList, Pressable, StyleSheet } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -16,16 +16,12 @@ import { ProdutoImagem } from "../../components/ProdutoImagem";
 
 type Props = NativeStackScreenProps<ComandasStackParamList, 'AdicionarItem'>;
 
-const PROPORCAO_LOGO = 1591 / 845;
 const TODAS_CATEGORIAS = 'TODAS';
 
 type ChipCategoria = { id: number | typeof TODAS_CATEGORIAS; nome: string };
 
 export function AdicionarItemScreen({ route, navigation }: Props) {
     const { comandaId } = route.params;
-    const { width: larguraTela } = useWindowDimensions();
-    const larguraMarca = Math.min(larguraTela * 0.72, 320);
-    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
 
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [busca, setBusca] = useState('');
@@ -130,29 +126,6 @@ export function AdicionarItemScreen({ route, navigation }: Props) {
             ) : null}
 
             <View style={styles.areaLista}>
-                <View
-                    style={styles.marcaDaguaContainer}
-                    pointerEvents="none"
-                    accessible={false}
-                    aria-hidden={true}
-                    importantForAccessibility="no-hide-descendants"
-                >
-                    <Image
-                        source={require('../../../assets/images/supri-logo-v2.png')}
-                        style={[
-                            styles.marcaDaguaLogo,
-                            {
-                                width: larguraMarca,
-                                height: alturaMarca,
-                            },
-                        ]}
-                        resizeMode="contain"
-                        accessible={false}
-                        aria-hidden={true}
-                        importantForAccessibility="no"
-                    />
-                </View>
-
                 <FlatList
                     style={styles.listaProdutos}
                     data={produtosFiltrados}
@@ -238,7 +211,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoChipSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
     avisoVazio: {
         fontSize: 13,
@@ -252,18 +225,6 @@ const styles = StyleSheet.create({
     areaLista: {
         flex: 1,
         position: 'relative',
-    },
-    marcaDaguaContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    marcaDaguaLogo: {
-        opacity: 0.06,
     },
     listaProdutos: {
         flex: 1,

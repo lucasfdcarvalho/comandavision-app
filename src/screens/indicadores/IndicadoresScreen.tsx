@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoBotaoPeriodoSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
     contextoPeriodo: {
         marginTop: -4,

@@ -2,28 +2,27 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 import { colors } from '../theme/colors';
 
-// Cabeçalho limpo: mesma cor do fundo das telas, sem linha de sombra e título na fonte do app.
+// Cabeçalho branco e tipografia nativa, como nas telas de referência.
 const cabecalho = {
-    headerShadowVisible: false,
-    headerStyle: { backgroundColor: colors.fundo },
+    headerShadowVisible: true,
+    headerStyle: { backgroundColor: colors.superficie },
     headerTintColor: colors.textoPrimario,
-    headerTitleStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 17, color: colors.textoPrimario },
+    headerTitleStyle: { fontSize: 20, fontWeight: '500' as const, color: colors.textoPrimario },
 };
 
 export const stackScreenOptions: NativeStackNavigationOptions = {
     ...cabecalho,
     headerBackTitle: 'Voltar',
     // Impede o iOS de trocar o título por "Back" ao calcular o espaço disponível.
-    headerBackTitleStyle: { fontSize: 17, fontFamily: 'Inter_400Regular' },
+    headerBackTitleStyle: { fontSize: 17 },
     contentStyle: { backgroundColor: colors.fundo },
 };
 
 export const tabScreenOptions: BottomTabNavigationOptions = {
     ...cabecalho,
     sceneStyle: { backgroundColor: colors.fundo },
-    // Laranja escuro no rótulo ativo: o laranja da marca tem pouco contraste em texto pequeno.
-    tabBarActiveTintColor: colors.laranjaEscuro,
-    tabBarInactiveTintColor: colors.textoSecundario,
+    tabBarActiveTintColor: colors.laranja,
+    tabBarInactiveTintColor: '#8E8E8F',
     tabBarStyle: {
         backgroundColor: colors.superficie,
         borderTopColor: colors.borda,
@@ -32,5 +31,5 @@ export const tabScreenOptions: BottomTabNavigationOptions = {
         shadowOpacity: 0,
     },
     tabBarItemStyle: { paddingTop: 4 },
-    tabBarLabelStyle: { fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 14 },
+    tabBarLabelStyle: { fontSize: 10, fontWeight: '400', lineHeight: 13 },
 };

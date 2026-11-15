@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { View, FlatList, Pressable, RefreshControl, Image, StyleSheet, useWindowDimensions } from "react-native";
+import { View, FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -17,16 +17,12 @@ import { ErrorState } from "../../components/ErrorState";
 
 type Props = NativeStackScreenProps<GestaoStackParamList, 'Catalogo'>;
 
-const PROPORCAO_LOGO = 1591 / 845;
 
 type Aba = 'produtos' | 'categorias';
 type FiltroProduto = 'todos' | 'ativos' | 'inativos';
 type FiltroCategoria = 'todas' | 'ativas' | 'inativas';
 
 export function CatalogoScreen({ navigation }: Props) {
-    const { width: larguraTela } = useWindowDimensions();
-    const larguraMarca = Math.min(larguraTela * 0.72, 320);
-    const alturaMarca = larguraMarca / PROPORCAO_LOGO;
 
     const [aba, setAba] = useState<Aba>('produtos');
     const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -197,29 +193,6 @@ export function CatalogoScreen({ navigation }: Props) {
             ) : null}
 
             <View style={styles.areaLista}>
-                <View
-                    style={styles.marcaDaguaContainer}
-                    pointerEvents="none"
-                    accessible={false}
-                    aria-hidden={true}
-                    importantForAccessibility="no-hide-descendants"
-                >
-                    <Image
-                        source={require('../../../assets/images/supri-logo-v2.png')}
-                        style={[
-                            styles.marcaDaguaLogo,
-                            {
-                                width: larguraMarca,
-                                height: alturaMarca,
-                            },
-                        ]}
-                        resizeMode="contain"
-                        accessible={false}
-                        aria-hidden={true}
-                        importantForAccessibility="no"
-                    />
-                </View>
-
                 {aba === 'produtos' ? (
                     <FlatList
                         style={styles.lista}
@@ -322,7 +295,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoSegmentoSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
     linhaBusca: {
         flexDirection: 'row',
@@ -381,7 +354,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     textoChipSelecionado: {
-        color: colors.grafite,
+        color: colors.superficie,
     },
     avisoVazio: {
         fontSize: 13,
@@ -396,18 +369,6 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 8,
         position: 'relative',
-    },
-    marcaDaguaContainer: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    marcaDaguaLogo: {
-        opacity: 0.06,
     },
     lista: {
         flex: 1,

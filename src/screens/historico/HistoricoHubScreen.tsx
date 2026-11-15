@@ -47,7 +47,9 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         marginTop: 12,
         padding: 4,
-        backgroundColor: colors.fundoSecundario,
+        backgroundColor: colors.superficie,
+        borderWidth: 1,
+        borderColor: colors.borda,
         borderRadius: raio.md,
     },
     opcao: {
@@ -59,9 +61,7 @@ const styles = StyleSheet.create({
         borderRadius: raio.sm,
     },
     opcaoSelecionada: {
-        backgroundColor: colors.superficie,
-        borderWidth: 1,
-        borderColor: colors.borda,
+        backgroundColor: colors.laranja,
     },
     opcaoTexto: {
         fontSize: 14,
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         color: colors.textoSecundario,
     },
     opcaoTextoSelecionado: {
-        color: colors.laranjaEscuro,
+        color: colors.superficie,
     },
     conteudo: {
         flex: 1,

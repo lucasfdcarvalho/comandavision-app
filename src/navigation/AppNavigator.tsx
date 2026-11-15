@@ -13,7 +13,7 @@ const tema: Theme = {
         ...DefaultTheme.colors,
         primary: colors.laranja,
         background: colors.fundo,
-        card: colors.fundo,
+        card: colors.superficie,
         text: colors.textoPrimario,
         border: colors.borda,
     },
