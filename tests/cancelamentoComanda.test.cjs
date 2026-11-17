@@ -23,7 +23,7 @@ test('contrato envia motivo e tela preserva erro, confirmação e trava de dupli
     assert.match(tela, /setErroCancelamento\(mensagem\)/);
     assert.match(tela, /setConfirmandoCancelamento\(false\)/);
     assert.match(tela, /Confirmar cancelamento/);
-    assert.match(tela, /comanda.canceladaEm/);
+    assert.match(tela, /formatarDataHoraCompleta\(comanda.canceladaEm\)/);
     assert.match(tela, /comanda.canceladaPorNome/);
     assert.match(tela, /comanda.motivoCancelamento/);
 });

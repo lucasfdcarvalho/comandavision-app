@@ -13,7 +13,7 @@ import { ComandaDetalhada } from "../../types/Comanda";
 import { Pagamento, ResumoPagamentos } from "../../types/Pagamento";
 import { colors } from "../../theme/colors";
 import { raio, sombras } from "../../theme/tokens";
-import { formatarMoeda, formatarDataHora } from "../../utils/formatadores";
+import { formatarMoeda, formatarDataHora, formatarDataHoraCompleta } from "../../utils/formatadores";
 import { avaliarSaldoPagamento, centavosParaMoeda } from "../../utils/saldoPagamento";
 import { ICONE_FORMA, ROTULO_FORMA } from "../../utils/formaPagamento";
 import { StatusBadge } from "../../components/StatusBadge";
@@ -458,7 +458,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                 <Text style={styles.textoInfoPagamento}>Os itens e o histórico foram preservados. Esta ação não realiza devolução de valores.</Text>
                                 <Text style={styles.textoInfoPagamento}>Motivo: {comanda.motivoCancelamento || 'Não registrado (histórico anterior)'}</Text>
                                 <Text style={styles.textoInfoPagamento}>Responsável: {comanda.canceladaPorNome || comanda.canceladaPor || 'Não registrado (histórico anterior)'}</Text>
-                                <Text style={styles.textoInfoPagamento}>Data: {comanda.canceladaEm ? formatarDataHora(comanda.canceladaEm) : 'Não registrada (histórico anterior)'}</Text>
+                                <Text style={styles.textoInfoPagamento}>Data: {comanda.canceladaEm ? formatarDataHoraCompleta(comanda.canceladaEm) : 'Não registrada (histórico anterior)'}</Text>
                             </View>
                         ) : null}
 
