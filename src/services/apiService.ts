@@ -191,9 +191,10 @@ async function fecharComanda(id: number): Promise<ComandaDetalhada> {
     });
 }
 
-async function cancelarComanda(id: number): Promise<ComandaDetalhada> {
+async function cancelarComanda(id: number, motivo: string): Promise<ComandaDetalhada> {
     return apiClient.requisitar<ComandaDetalhada>(`/api/comandas/${id}/cancelar`, {
         method: 'PATCH',
+        body: JSON.stringify({ motivo: motivo.trim() }),
     });
 }
 

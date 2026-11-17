@@ -13,6 +13,10 @@ export interface Comanda {
 }
 
 export interface ComandaDetalhada extends Comanda {
+    canceladaPor?: string | null;
+    canceladaPorNome?: string | null;
+    motivoCancelamento?: string | null;
+    canceladaEm?: string | null;
     itens: ItemComanda[];
     total: number;
 }

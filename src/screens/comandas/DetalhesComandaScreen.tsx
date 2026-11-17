@@ -1,6 +1,7 @@
+import { podeCancelarComanda, validarMotivoCancelamento } from "../../utils/cancelamentoComanda";
 import { useDialogo } from "../../contexts/DialogoContext";
-import { useCallback, useLayoutEffect, useState } from "react";
-import { View, FlatList, ActivityIndicator, Pressable, StyleSheet, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { View, ScrollView, FlatList, ActivityIndicator, Pressable, StyleSheet, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { Text } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -38,7 +39,6 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     const { alertar } = useDialogo();
     const { comandaId } = route.params;
     const { usuario } = useAuth();
-    const ehDono = usuario?.papel === 'DONO';
 
     const [comanda, setComanda] = useState<ComandaDetalhada | null>(null);
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
@@ -52,6 +52,11 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     const [pagamentoEmCorrecao, setPagamentoEmCorrecao] = useState<Pagamento | null>(null);
     const [motivoCorrecao, setMotivoCorrecao] = useState('');
     const [erroMotivoCorrecao, setErroMotivoCorrecao] = useState('');
+    const [cancelamentoAberto, setCancelamentoAberto] = useState(false);
+    const [motivoCancelamento, setMotivoCancelamento] = useState('');
+    const [erroCancelamento, setErroCancelamento] = useState('');
+    const [confirmandoCancelamento, setConfirmandoCancelamento] = useState(false);
+    const cancelamentoPendente = useRef(false);
 
     const carregarComanda = useCallback(async (): Promise<ComandaDetalhada | null> => {
         try {
@@ -142,27 +147,44 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
         }
     }
 
+    function abrirCancelamento() {
+        if (!podeCancelarComanda(usuario?.papel, comanda?.status) || acaoEmAndamento) return;
+        setMotivoCancelamento('');
+        setErroCancelamento('');
+        setConfirmandoCancelamento(false);
+        setCancelamentoAberto(true);
+    }
+
+    function fecharCancelamento() {
+        if (cancelamentoPendente.current) return;
+        setCancelamentoAberto(false);
+    }
+
     function confirmarCancelamento() {
-        alertar(
-            'Cancelar comanda',
-            'Deseja cancelar esta comanda? Essa ação não pode ser desfeita',
-            [
-                { text: 'Manter comanda', style: 'cancel' },
-                { text: 'Cancelar comanda', style: 'destructive', onPress: cancelar },
-            ]
-        );
+        const erro = validarMotivoCancelamento(motivoCancelamento);
+        setErroCancelamento(erro);
+        if (!erro) setConfirmandoCancelamento(true);
     }
 
     async function cancelar() {
-        setMensagemErroAcao('');
+        if (cancelamentoPendente.current || !confirmandoCancelamento
+            || !podeCancelarComanda(usuario?.papel, comanda?.status)) return;
+        const erro = validarMotivoCancelamento(motivoCancelamento);
+        if (erro) { setErroCancelamento(erro); return; }
+        cancelamentoPendente.current = true;
+        setErroCancelamento('');
         try {
             setAcaoEmAndamento('cancelar');
-            const atualizada = await apiService.cancelarComanda(comandaId);
+            const atualizada = await apiService.cancelarComanda(comandaId, motivoCancelamento);
             setComanda(atualizada);
+            setCancelamentoAberto(false);
+            setMotivoCancelamento('');
         } catch (error: unknown) {
             const mensagem = error instanceof Error ? error.message : 'Não foi possível cancelar a comanda';
-            setMensagemErroAcao(mensagem);
+            setErroCancelamento(mensagem);
+            setConfirmandoCancelamento(false);
         } finally {
+            cancelamentoPendente.current = false;
             setAcaoEmAndamento(null);
         }
     }
@@ -430,6 +452,16 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                             </View>
                         ) : null}
 
+                        {comandaCancelada ? (
+                            <View style={styles.secao}>
+                                <Text style={styles.secaoTitulo}>Cancelamento</Text>
+                                <Text style={styles.textoInfoPagamento}>Os itens e o histórico foram preservados. Esta ação não realiza devolução de valores.</Text>
+                                <Text style={styles.textoInfoPagamento}>Motivo: {comanda.motivoCancelamento || 'Não registrado (histórico anterior)'}</Text>
+                                <Text style={styles.textoInfoPagamento}>Responsável: {comanda.canceladaPorNome || comanda.canceladaPor || 'Não registrado (histórico anterior)'}</Text>
+                                <Text style={styles.textoInfoPagamento}>Data: {comanda.canceladaEm ? formatarDataHora(comanda.canceladaEm) : 'Não registrada (histórico anterior)'}</Text>
+                            </View>
+                        ) : null}
+
                         {comandaAberta ? (
                             <View style={styles.secao}>
                                 <Text style={styles.secaoTitulo}>Ações</Text>
@@ -450,11 +482,11 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                                         disabled={acaoEmAndamento !== null || comandaSemItens}
                                         carregando={acaoEmAndamento === 'fechar'}
                                     />
-                                    {ehDono ? (
+                                    {podeCancelarComanda(usuario?.papel, comanda.status) ? (
                                         <SecondaryButton
                                             titulo="Cancelar comanda"
                                             icone="x-circle"
-                                            onPress={confirmarCancelamento}
+                                            onPress={abrirCancelamento}
                                             disabled={acaoEmAndamento !== null}
                                             carregando={acaoEmAndamento === 'cancelar'}
                                         />
@@ -465,6 +497,43 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                     </View>
                 }
             />
+            <Modal transparent animationType="fade" visible={cancelamentoAberto} onRequestClose={fecharCancelamento}>
+                <KeyboardAvoidingView style={styles.modalFundo} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={fecharCancelamento} disabled={acaoEmAndamento !== null} accessible={false} />
+                    <View style={[styles.modalCartao, { maxHeight: '90%' }]} accessibilityViewIsModal>
+                        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 12 }}>
+                        <Text accessibilityRole="header" style={styles.modalTitulo}>{confirmandoCancelamento ? 'Confirmar cancelamento' : 'Cancelar comanda'}</Text>
+                        <Text style={styles.modalAviso}>
+                            {confirmandoCancelamento
+                                ? 'Esta ação não pode ser desfeita. A comanda e seus itens permanecerão no histórico, com o motivo, responsável e data. Deseja confirmar?'
+                                : 'Informe por que esta comanda precisa ser cancelada. Comandas com pagamento ou cobrança Pix vinculados não podem ser canceladas por este fluxo. Nenhuma devolução será realizada.'}
+                        </Text>
+                        {confirmandoCancelamento ? (
+                            <Text style={styles.modalAviso}>Motivo: {motivoCancelamento.trim()}</Text>
+                        ) : (
+                            <>
+                                <TextInput value={motivoCancelamento} onChangeText={(texto) => { setMotivoCancelamento(texto); setErroCancelamento(''); }}
+                                    placeholder="Ex.: comanda aberta por engano" placeholderTextColor={colors.textoSecundario}
+                                    multiline maxLength={500} editable={acaoEmAndamento === null} autoFocus
+                                    accessibilityLabel="Motivo do cancelamento" style={[styles.campoMotivo, { maxHeight: 160 }]} />
+                                <Text style={styles.contadorMotivo}>{motivoCancelamento.length}/500</Text>
+                            </>
+                        )}
+                        {erroCancelamento ? <MensagemErro texto={erroCancelamento} /> : null}
+                        <View style={styles.modalAcoes}>
+                            <SecondaryButton titulo="Manter comanda" onPress={fecharCancelamento} disabled={acaoEmAndamento !== null} />
+                            {confirmandoCancelamento ? (
+                                <PrimaryButton titulo="Confirmar cancelamento" icone="x-circle" onPress={() => { void cancelar(); }}
+                                    disabled={acaoEmAndamento !== null} carregando={acaoEmAndamento === 'cancelar'} />
+                            ) : (
+                                <PrimaryButton titulo="Revisar cancelamento" onPress={confirmarCancelamento}
+                                    disabled={acaoEmAndamento !== null || Boolean(validarMotivoCancelamento(motivoCancelamento))} />
+                            )}
+                        </View>
+                        </ScrollView>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
             <Modal
                 transparent
                 animationType="fade"
