@@ -489,3 +489,141 @@ test('tela focada recebe resultado pendente e futuro; desfocada preserva para re
     assert.equal(exibidos[2][0], 'Alteracao nao confirmada');
     sair();
 });
+// Integracao com o SDK Supabase instalado. Toda chamada HTTP e interceptada;
+// nao usa .env, conta, token, servidor ou chave reais.
+async function cenarioSdkReal(modo = 'sucesso') {
+    const { createClient } = require('@supabase/supabase-js');
+    const chamadas = [];
+    const clientes = [];
+    const itens = new Map();
+    let senhaServidor = SENHA_ATUAL;
+    let numeroSessao = 0;
+    const tokens = new Map();
+    const usuario = { id: USUARIO.id, email: USUARIO.email, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' };
+    const jwt = (sessao) => {
+        const parte = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+        return `${parte({ alg: 'HS256', typ: 'JWT' })}.${parte({ sub: usuario.id, exp: Math.floor(Date.now() / 1000) + 3600, session_id: sessao })}.assinatura-ficticia`;
+    };
+    const resposta = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'X-Supabase-Api-Version': '2024-01-01' } });
+    const fetchSimulado = async (input, init = {}) => {
+        const url = new URL(String(input));
+        assert.equal(url.hostname, 'auth-ficticio.test'); // Fail-closed, nenhum destino real.
+        const method = init.method ?? 'GET';
+        const body = init.body ? JSON.parse(init.body) : undefined;
+        const headers = new Headers(init.headers);
+        const token = headers.get('Authorization')?.replace('Bearer ', '');
+        chamadas.push({ path: url.pathname, query: url.search, method, body, token });
+        if (url.pathname === '/auth/v1/token') {
+            if (body.email !== usuario.email || body.password !== senhaServidor) return resposta({ code: 'invalid_credentials', msg: 'Invalid login credentials' }, 400);
+            const id = `sessao-ficticia-${++numeroSessao}`;
+            const access_token = jwt(id);
+            tokens.set(access_token, id);
+            return resposta({ access_token, refresh_token: `refresh-ficticio-${numeroSessao}`, token_type: 'bearer', expires_in: 3600, user: usuario });
+        }
+        if (url.pathname === '/auth/v1/user' && method === 'GET') {
+            if (!tokens.has(token)) return resposta({ code: 'bad_jwt', msg: 'Invalid token' }, 401);
+            return resposta(usuario);
+        }
+        if (url.pathname === '/auth/v1/user' && method === 'PUT') {
+            assert.ok(tokens.has(token));
+            assert.equal(body.current_password, senhaServidor);
+            if (modo === 'senha-fraca') return resposta({ code: 'weak_password', msg: 'Weak password', weak_password: { reasons: ['length'] } }, 422);
+            senhaServidor = body.password;
+            if (modo === 'resposta-perdida') throw new TypeError('Resposta simulada perdida apos gravacao');
+            return resposta(usuario);
+        }
+        if (url.pathname === '/auth/v1/logout') {
+            assert.equal(url.searchParams.get('scope'), 'local');
+            if (modo === 'falha-logout') return resposta({ code: 'unexpected_failure', msg: 'Falha simulada' }, 503);
+            tokens.delete(token);
+            return resposta({});
+        }
+        throw new Error(`Requisicao inesperada: ${method} ${url.pathname}`);
+    };
+    const adaptador = { getItem: (k) => itens.get(k) ?? null, setItem: (k, v) => { itens.set(k, v); }, removeItem: (k) => { itens.delete(k); } };
+    const moduloSupabase = carregar('src/services/supabase.ts', (nome) => {
+        if (nome === 'react-native') return { AppState: { addEventListener() {} } };
+        if (nome === 'react-native-url-polyfill/auto') return {};
+        if (nome === './secureSessionAdapter') return { SecureSessionAdapter: adaptador };
+        if (nome === '@supabase/supabase-js') return { createClient: (url, key, options) => {
+            const cliente = createClient(url, key, { ...options, global: { fetch: fetchSimulado } });
+            clientes.push(cliente);
+            return cliente;
+        } };
+        throw new Error(nome);
+    }, { process: { env: { EXPO_PUBLIC_SUPABASE_URL: 'https://auth-ficticio.test', EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'chave-publica-ficticia' } } });
+    const moduloTroca = carregar('src/services/trocaSenhaService.ts');
+    const { authService } = carregar('src/services/authService.ts', (nome) => {
+        if (nome === './supabase') return moduloSupabase;
+        if (nome === './trocaSenhaService') return moduloTroca;
+        throw new Error(nome);
+    });
+    await authService.entrar(usuario.email, SENHA_ATUAL);
+    const antes = await authService.obterSessao();
+    return { chamadas, clientes, authService, antes, senha: () => senhaServidor, tokens, limpar: async () => {
+        for (const cliente of clientes) await cliente.auth.stopAutoRefresh();
+    } };
+}
+
+test('SDK Supabase real: altera com senha atual, preserva sessao principal e encerra apenas auxiliar', async () => {
+    const c = await cenarioSdkReal();
+    try {
+        await c.authService.alterarSenhaPropria(dados());
+        await new Promise((r) => setImmediate(r));
+        const depois = await c.authService.obterSessao();
+        assert.equal(depois.access_token, c.antes.access_token);
+        assert.equal(depois.refresh_token, c.antes.refresh_token);
+        assert.equal(c.senha(), NOVA_SENHA);
+        const troca = c.chamadas.find((x) => x.method === 'PUT');
+        assert.notEqual(troca.token, c.antes.access_token);
+        const logout = c.chamadas.find((x) => x.path.endsWith('/logout'));
+        assert.equal(logout.token, troca.token);
+        assert.ok(c.tokens.has(c.antes.access_token));
+        assert.ok(!c.tokens.has(troca.token));
+        assert.equal(c.chamadas.filter((x) => x.method === 'PUT').length, 1);
+    } finally { await c.limpar(); }
+});
+
+test('SDK Supabase real: senha atual incorreta nao envia atualizacao', async () => {
+    const c = await cenarioSdkReal();
+    try {
+        await assert.rejects(c.authService.alterarSenhaPropria({ ...dados(), senhaAtual: 'incorreta-ficticia' }), (e) => e.motivo === 'senha_atual_incorreta');
+        assert.equal(c.chamadas.filter((x) => x.method === 'PUT').length, 0);
+        assert.equal(c.senha(), SENHA_ATUAL);
+        assert.equal((await c.authService.obterSessao()).access_token, c.antes.access_token);
+    } finally { await c.limpar(); }
+});
+
+test('SDK Supabase real: resposta perdida apos gravacao informa incerteza e nao repete update', async () => {
+    const c = await cenarioSdkReal('resposta-perdida');
+    try {
+        await assert.rejects(c.authService.alterarSenhaPropria(dados()), (e) => e.resultadoDesconhecido === true);
+        assert.equal(c.senha(), NOVA_SENHA);
+        assert.equal(c.chamadas.filter((x) => x.method === 'PUT').length, 1);
+    } finally { await c.limpar(); }
+});
+test('SDK Supabase real: rejeicao de senha fraca preserva senha anterior e limpa auxiliar', async () => {
+    const c = await cenarioSdkReal('senha-fraca');
+    try {
+        await assert.rejects(c.authService.alterarSenhaPropria(dados()), (e) => e.motivo === 'senha_fraca' && !e.resultadoDesconhecido);
+        await new Promise((r) => setImmediate(r));
+        assert.equal(c.senha(), SENHA_ATUAL);
+        const tentativa = c.chamadas.find((x) => x.method === 'PUT');
+        assert.ok(!c.tokens.has(tentativa.token));
+        assert.ok(c.tokens.has(c.antes.access_token));
+    } finally { await c.limpar(); }
+});
+
+test('SDK Supabase real: falha de logout auxiliar nao transforma troca confirmada em falha', async () => {
+    const c = await cenarioSdkReal('falha-logout');
+    try {
+        await c.authService.alterarSenhaPropria(dados());
+        await new Promise((r) => setImmediate(r));
+        assert.equal(c.senha(), NOVA_SENHA);
+        assert.equal((await c.authService.obterSessao()).access_token, c.antes.access_token);
+        assert.equal(c.chamadas.filter((x) => x.method === 'PUT').length, 1);
+        const logout = c.chamadas.find((x) => x.path.endsWith('/logout'));
+        assert.notEqual(logout.token, c.antes.access_token);
+        assert.ok(c.tokens.has(c.antes.access_token));
+    } finally { await c.limpar(); }
+});
