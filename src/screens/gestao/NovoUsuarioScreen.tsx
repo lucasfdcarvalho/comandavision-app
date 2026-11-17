@@ -12,10 +12,9 @@ import { raio } from "../../theme/tokens";
 import { MensagemErro } from "../../components/MensagemErro";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SeletorPapel } from "../../components/SeletorPapel";
+import { TAMANHO_MINIMO_SENHA } from "../../services/trocaSenhaService";
 
 type Props = NativeStackScreenProps<GestaoStackParamList, 'NovoUsuario'>;
-
-const TAMANHO_MINIMO_SENHA = 6;
 
 export function NovoUsuarioScreen({ navigation }: Props) {
     const { mostrarSucesso } = useDialogo();
@@ -57,7 +56,7 @@ export function NovoUsuarioScreen({ navigation }: Props) {
 
             mostrarSucesso(
                 'Usuário criado',
-                `Passe para ${usuario.nome ?? 'o usuário'} o e-mail ${usuario.email} e a senha provisória para o primeiro acesso`,
+                `Passe para ${usuario.nome ?? 'o usuário'} o e-mail ${usuario.email} e a senha provisória. Depois de entrar, a pessoa pode trocar a senha em Perfil > Alterar senha`,
                 () => navigation.popTo('Equipe')
             );
         } catch (error: unknown) {
@@ -112,7 +111,7 @@ export function NovoUsuarioScreen({ navigation }: Props) {
                         <Feather name={mostrarSenha ? 'eye-off' : 'eye'} size={18} color={colors.textoSecundario} />
                     </Pressable>
                 </View>
-                <Text style={styles.dica}>Você vai repassar essa senha para a pessoa entrar pela primeira vez</Text>
+                <Text style={styles.dica}>Você vai repassar essa senha para a pessoa entrar. Depois, ela pode trocá-la em Perfil {'>'} Alterar senha</Text>
 
                 <Text style={styles.rotulo}>Papel</Text>
                 <SeletorPapel papelSelecionado={papel} onSelecionar={setPapel} desabilitado={carregando} />

@@ -1,6 +1,8 @@
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, Pressable, StyleSheet } from "react-native";
 import { Text } from "../../components/ui/Texto";
 import { Feather } from "@expo/vector-icons";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { PerfilStackParamList } from "../../navigation/PerfilStack";
 import { useAuth } from "../../hooks/useAuth";
 import { useDialogo } from "../../contexts/DialogoContext";
 import { Cartao } from "../../components/ui/Cartao";
@@ -13,7 +15,9 @@ const NOME_PAPEL = {
     FUNCIONARIO: 'Funcionário',
 } as const;
 
-export function PerfilScreen() {
+type Props = NativeStackScreenProps<PerfilStackParamList, 'Perfil'>;
+
+export function PerfilScreen({ navigation }: Props) {
     const { usuario, sair } = useAuth();
     const { alertar } = useDialogo();
     const inicial = (usuario?.email ?? '?').charAt(0).toUpperCase();
@@ -58,6 +62,18 @@ export function PerfilScreen() {
                         </Text>
                     </View>
                 </View>
+            </Cartao>
+
+            <Cartao style={styles.cartao}>
+                <Pressable
+                    style={({ pressed }) => [styles.linha, pressed && styles.linhaPressionada]}
+                    onPress={() => navigation.navigate('AlterarSenha')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Alterar senha">
+                    <Feather name="lock" size={18} color={colors.textoSecundario} />
+                    <Text style={[styles.valor, styles.flex]}>Alterar senha</Text>
+                    <Feather name="chevron-right" size={18} color={colors.textoSecundario} />
+                </Pressable>
             </Cartao>
 
             <SecondaryButton titulo="Sair" icone="log-out" onPress={confirmarSaida} />
@@ -119,6 +135,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: espacamento.md,
+    },
+    linhaPressionada: {
+        opacity: 0.6,
     },
     flex: {
         flex: 1,

@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ComandasStack, HistoricoStack } from "./ComandasStack";
 import { GestaoStack } from "./GestaoStack";
 import { IndicadoresScreen } from "../screens/indicadores/IndicadoresScreen";
-import { PerfilScreen } from "../screens/perfil/PerfilScreen";
+import { PerfilStack } from "./PerfilStack";
 import { tabScreenOptions } from "./stackScreenOptions";
 import { calcularLayoutBarraInferior } from "./tabBarLayout";
 import { feedbackTatil } from "../utils/feedbackTatil";
@@ -67,8 +67,9 @@ export function MainTabs() {
             )}
             <Tab.Screen
                 name="Perfil"
-                component={PerfilScreen}
+                component={PerfilStack}
                 options={{
+                    headerShown: false,
                     tabBarIcon: ({ color, size }) => <Feather name="user" size={size} color={color} />,
                 }}
             />

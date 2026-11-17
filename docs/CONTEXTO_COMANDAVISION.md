@@ -115,6 +115,13 @@ comportamento de voltar no Android.
   Requisições paralelas não devem gerar vários avisos iguais.
 - Um 403 não deve encerrar a sessão: representa falta de permissão.
 - Ocultar uma tela no aplicativo não substitui autorização no back-end.
+- Troca da própria senha (DONO e FUNCIONARIO) em Perfil > Alterar senha,
+  via `trocaSenhaService.ts`: confirma a senha atual entrando num cliente
+  Supabase isolado (sem persistência, sem renovação, `storageKey` único) com o
+  e-mail confirmado por `getUser`, confere os IDs e troca a senha nesse mesmo
+  cliente (`updateUser` com `current_password`), encerrando só essa sessão
+  (`scope: 'local'`). A sessão principal é apenas lida. Não há troca
+  obrigatória no primeiro acesso nem redefinição administrativa de senha.
 
 O `apiClient.ts` centraliza fetch, token e tratamento dos erros. O contrato
 de erro da API é `{ status, erro, mensagem, dataHora, campos }`; o aplicativo

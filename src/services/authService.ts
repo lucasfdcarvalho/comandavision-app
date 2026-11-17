@@ -1,6 +1,42 @@
-import { supabase } from "./supabase";
+import { supabase, criarClienteSupabaseIsolado } from "./supabase";
+import { criarTrocaDeSenha } from "./trocaSenhaService";
+
+// A sessão principal é só lida aqui; login de conferência e troca acontecem no cliente isolado.
+const alterarSenhaPropria = criarTrocaDeSenha({
+    async obterUsuarioVerificado() {
+        const { data, error } = await supabase.auth.getUser();
+        return {
+            data: { user: data.user ? { id: data.user.id, email: data.user.email ?? null } : null },
+            error,
+        };
+    },
+
+    async obterIdUsuarioDaSessaoAtual() {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        return data.session?.user.id ?? null;
+    },
+
+    criarSessaoIsolada() {
+        const { auth } = criarClienteSupabaseIsolado();
+
+        return {
+            entrar: (email: string, senha: string) => auth.signInWithPassword({ email, password: senha }),
+            atualizarSenha: (novaSenha: string, senhaAtual: string) =>
+                auth.updateUser({ password: novaSenha, current_password: senhaAtual }),
+            // Nunca 'global' ou 'others': só a sessão criada para a conferência.
+            encerrarLocal: () => auth.signOut({ scope: 'local' }),
+        };
+    },
+});
 
 export const authService = {
+    alterarSenhaPropria,
+
     async entrar(email: string, senha: string) {
         const { error, data } = await supabase.auth.signInWithPassword({ email, password: senha });
 
