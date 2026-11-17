@@ -441,6 +441,51 @@ test('textos e código não prometem troca obrigatória nem registram senhas', (
 
 test('callbacks de tela abandonada nao navegam nem mostram dialogos tardios', () => {
     const tela = ler('src/screens/perfil/AlterarSenhaScreen.tsx');
-    assert.match(tela, /if \(!montada\.current \|\| !navigation\.isFocused\(\)\) return;/);
+    assert.match(tela, /if \(!montada\.current \|\| !navigation\.isFocused\(\)\) \{/);
+    assert.equal((tela.match(/resultadosTrocaSenha\.guardar\(usuarioId/g) ?? []).length, 2);
     assert.match(tela, /if \(montada\.current && navigation\.isFocused\(\)\) navigation\.goBack\(\)/);
+});
+test('resultado tardio permanece para a mesma conta, sem duplicar nem expor a outra', () => {
+    const { criarResultadosTrocaSenha } = carregar('src/services/resultadosTrocaSenha.ts');
+    const fila = criarResultadosTrocaSenha();
+    const resultado = { titulo: 'Alteracao nao confirmada', mensagem: 'Confira no proximo acesso', tipo: 'aviso' };
+    let eventos = 0;
+    const parar = fila.observar(() => eventos++);
+    fila.guardar('conta-a', resultado);
+    assert.equal(eventos, 1);
+    assert.equal(fila.consumir('conta-b'), undefined);
+    assert.equal(fila.consumir('conta-a'), resultado);
+    assert.equal(fila.consumir('conta-a'), undefined);
+    parar();
+    fila.guardar('conta-a', resultado);
+    assert.equal(eventos, 1);
+    assert.equal(fila.consumir('conta-a'), resultado);
+});
+
+test('tela focada recebe resultado pendente e futuro; desfocada preserva para retorno', () => {
+    const { criarResultadosTrocaSenha } = carregar('src/services/resultadosTrocaSenha.ts');
+    const fila = criarResultadosTrocaSenha();
+    const exibidos = [];
+    let focar;
+    const hook = carregar('src/hooks/useResultadoTrocaSenha.ts', (nome) => {
+        if (nome === 'react') return { useCallback: (fn) => fn };
+        if (nome === '@react-navigation/native') return { useFocusEffect: (fn) => { focar = fn; } };
+        if (nome === '../contexts/DialogoContext') return { useDialogo: () => ({ alertar: (...args) => exibidos.push(args) }) };
+        if (nome === '../services/resultadosTrocaSenha') return { resultadosTrocaSenha: fila };
+        throw new Error(nome);
+    });
+    const sucesso = { titulo: 'Senha alterada', mensagem: 'Use a nova senha', tipo: 'sucesso' };
+    fila.guardar('conta-a', sucesso);
+    hook.useResultadoTrocaSenha('conta-a');
+    const desfocar = focar();
+    assert.equal(exibidos.length, 1);
+    fila.guardar('conta-a', sucesso);
+    assert.equal(exibidos.length, 2);
+    desfocar();
+    fila.guardar('conta-a', { ...sucesso, titulo: 'Alteracao nao confirmada', tipo: 'aviso' });
+    assert.equal(exibidos.length, 2);
+    const sair = focar();
+    assert.equal(exibidos.length, 3);
+    assert.equal(exibidos[2][0], 'Alteracao nao confirmada');
+    sair();
 });

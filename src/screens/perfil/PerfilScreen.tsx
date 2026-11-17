@@ -1,3 +1,4 @@
+import { useResultadoTrocaSenha } from "../../hooks/useResultadoTrocaSenha";
 import { View, ScrollView, Pressable, StyleSheet } from "react-native";
 import { Text } from "../../components/ui/Texto";
 import { Feather } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<PerfilStackParamList, 'Perfil'>;
 
 export function PerfilScreen({ navigation }: Props) {
     const { usuario, sair } = useAuth();
+    useResultadoTrocaSenha(usuario?.usuarioId);
     const { alertar } = useDialogo();
     const inicial = (usuario?.email ?? '?').charAt(0).toUpperCase();
 

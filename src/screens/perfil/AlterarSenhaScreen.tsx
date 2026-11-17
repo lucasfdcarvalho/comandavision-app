@@ -1,3 +1,5 @@
+import { resultadosTrocaSenha } from "../../services/resultadosTrocaSenha";
+import { useResultadoTrocaSenha } from "../../hooks/useResultadoTrocaSenha";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
@@ -17,6 +19,7 @@ type Props = NativeStackScreenProps<PerfilStackParamList, 'AlterarSenha'>;
 
 export function AlterarSenhaScreen({ navigation }: Props) {
     const { usuario } = useAuth();
+    useResultadoTrocaSenha(usuario?.usuarioId);
     const { alertar, mostrarSucesso } = useDialogo();
 
     const novaSenhaRef = useRef<TextInput>(null);
@@ -64,6 +67,8 @@ export function AlterarSenhaScreen({ navigation }: Props) {
             return;
         }
 
+        const usuarioId = usuario?.usuarioId;
+        if (!usuarioId) return;
         const dados = { senhaAtual, novaSenha, confirmacao };
         const erroValidacao = validarTrocaSenha(dados);
         if (erroValidacao) {
@@ -77,7 +82,12 @@ export function AlterarSenhaScreen({ navigation }: Props) {
 
         try {
             await authService.alterarSenhaPropria(dados);
-            if (!montada.current || !navigation.isFocused()) return;
+            if (!montada.current || !navigation.isFocused()) {
+                resultadosTrocaSenha.guardar(usuarioId, {
+                    titulo: 'Senha alterada', mensagem: 'Use a nova senha no próximo acesso', tipo: 'sucesso',
+                });
+                return;
+            }
             limparCampos();
             mostrarSucesso(
                 'Senha alterada',
@@ -85,7 +95,14 @@ export function AlterarSenhaScreen({ navigation }: Props) {
                 () => { if (montada.current && navigation.isFocused()) navigation.goBack(); }
             );
         } catch (error: unknown) {
-            if (!montada.current || !navigation.isFocused()) return;
+            if (!montada.current || !navigation.isFocused()) {
+                resultadosTrocaSenha.guardar(usuarioId, {
+                    titulo: error instanceof ErroTrocaSenha && error.resultadoDesconhecido ? 'Alteração não confirmada' : 'Senha não alterada',
+                    mensagem: error instanceof ErroTrocaSenha ? error.message : 'Não foi possível concluir a alteração da senha',
+                    tipo: 'aviso',
+                });
+                return;
+            }
             if (error instanceof ErroTrocaSenha && error.resultadoDesconhecido) {
                 // Sem repetir sozinho: uma nova tentativa precisa ser decisão da pessoa.
                 limparCampos();
