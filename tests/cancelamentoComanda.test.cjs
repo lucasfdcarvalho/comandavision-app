@@ -27,3 +27,7 @@ test('contrato envia motivo e tela preserva erro, confirmação e trava de dupli
     assert.match(tela, /comanda.canceladaPorNome/);
     assert.match(tela, /comanda.motivoCancelamento/);
 });
+
+test('cancelamento auditavel usa rota dedicada sem fallback legado', async () => {
+ const ts=require('typescript'),vm=require('node:vm');const fonte=fs.readFileSync('src/services/apiService.ts','utf8');const codigo=ts.transpileModule(fonte,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;const chamadas=[];const erro=Object.assign(new Error('rota indisponivel'),{status:404});const exports={};vm.runInNewContext(codigo,{exports,AbortController,setTimeout,clearTimeout,require(nome){assert.equal(nome,'./apiClient');return {apiClient:{async requisitar(rota,opcoes){chamadas.push({rota,opcoes});throw erro;}},ehErroApiStatus:(e,status)=>e.status===status};}});await assert.rejects(exports.apiService.cancelarComanda(7,'  Motivo teste  '),e=>e===erro);assert.equal(chamadas.length,1);assert.equal(chamadas[0].rota,'/api/comandas/7/cancelar-com-motivo');assert.equal(chamadas[0].opcoes.method,'PATCH');assert.deepEqual(JSON.parse(chamadas[0].opcoes.body),{motivo:'Motivo teste'});
+});
