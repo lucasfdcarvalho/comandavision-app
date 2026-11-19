@@ -12,7 +12,6 @@ import { colors } from "../../theme/colors";
 import { raio, sombras } from "../../theme/tokens";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { EmptyState } from "../../components/EmptyState";
 
 type Props = NativeStackScreenProps<GestaoStackParamList, 'Equipe'>;
 
@@ -20,6 +19,7 @@ export function EquipeScreen({ navigation }: Props) {
     const { usuario: usuarioLogado } = useAuth();
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [busca, setBusca] = useState('');
+    const [filtro, setFiltro] = useState<'ativos' | 'inativos' | 'todos'>('ativos');
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
@@ -53,12 +53,8 @@ export function EquipeScreen({ navigation }: Props) {
 
     const usuariosFiltrados = useMemo(() => {
         const termo = busca.trim().toLowerCase();
-        if (!termo) {
-            return usuarios;
-        }
-        return usuarios.filter((usuario) =>
-            (usuario.nome ?? '').toLowerCase().includes(termo) || usuario.email.toLowerCase().includes(termo));
-    }, [usuarios, busca]);
+        return usuarios.filter(usuario => (filtro === 'todos' || usuario.ativo === (filtro === 'ativos')) && (!termo || (usuario.nome ?? '').toLowerCase().includes(termo) || usuario.email.toLowerCase().includes(termo)));
+    }, [usuarios, busca, filtro]);
 
     if (carregando) {
         return <LoadingState variante="lista" />;
@@ -90,15 +86,19 @@ export function EquipeScreen({ navigation }: Props) {
                 </Pressable>
             </View>
 
+            <View style={styles.filtros}>
+                {(['ativos', 'inativos', 'todos'] as const).map(opcao => <Pressable key={opcao} accessibilityRole="button" accessibilityState={{ selected: filtro === opcao }} onPress={() => setFiltro(opcao)} style={[styles.chip, filtro === opcao && styles.chipSelecionado]}><Text style={[styles.textoChip, filtro === opcao && styles.textoChipSelecionado]}>{opcao === 'ativos' ? 'Ativos' : opcao === 'inativos' ? 'Inativos' : 'Todos'}</Text></Pressable>)}
+            </View>
+            {usuariosFiltrados.length === 0 ? (
+                <Text style={styles.avisoVazio}>{usuarios.length === 0 ? 'Nenhum usuário cadastrado' : 'Nenhum usuário encontrado'}</Text>
+            ) : null}
             <FlatList
                 style={styles.lista}
                 data={usuariosFiltrados}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listaConteudo}
+                contentContainerStyle={usuariosFiltrados.length === 0 ? styles.listaVazia : styles.listaConteudo}
                 refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
-                ListEmptyComponent={
-                    <EmptyState texto={usuarios.length === 0 ? 'Nenhum usuário cadastrado' : 'Nenhum usuário encontrado'} />
-                }
+
                 renderItem={({ item }) => {
                     const ehVoce = item.id === usuarioLogado?.usuarioId;
                     return (
@@ -138,6 +138,43 @@ export function EquipeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+    listaVazia: {
+        flexGrow: 1,
+    },
+    avisoVazio: {
+        fontSize: 13,
+        lineHeight: 18,
+        color: colors.textoSecundario,
+        textAlign: 'center',
+        marginHorizontal: 16,
+        marginTop: 14,
+    },
+    filtros: {
+        flexDirection: 'row',
+        gap: 8,
+        marginHorizontal: 16,
+        marginTop: 12,
+    },
+    chip: {
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        backgroundColor: colors.superficie,
+        borderWidth: 1,
+        borderColor: colors.borda,
+        borderRadius: 999,
+    },
+    chipSelecionado: {
+        backgroundColor: colors.laranja,
+        borderColor: colors.laranja,
+    },
+    textoChip: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colors.textoSecundario,
+    },
+    textoChipSelecionado: {
+        color: colors.superficie,
+    },
     container: {
         flex: 1,
         backgroundColor: colors.fundo,

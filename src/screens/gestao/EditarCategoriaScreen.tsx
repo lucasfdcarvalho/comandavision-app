@@ -1,5 +1,8 @@
+import { ehErroApiStatus } from "../../services/apiClient";
+import { mensagemConflitoExclusao, mensagemErroExclusao } from "../../utils/mensagemExclusao";
+import { useAuth } from "../../hooks/useAuth";
 import { useDialogo } from "../../contexts/DialogoContext";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -16,12 +19,28 @@ type Props = NativeStackScreenProps<GestaoStackParamList, 'EditarCategoria'>;
 export function EditarCategoriaScreen({ route, navigation }: Props) {
     const { alertar, mostrarSucesso } = useDialogo();
     const { categoria } = route.params;
+    const { usuario } = useAuth();
+    const exclusaoPendente = useRef(false);
 
     const [nome, setNome] = useState(categoria.nome);
     const [descricao, setDescricao] = useState(categoria.descricao ?? '');
     const [ativa, setAtiva] = useState(categoria.ativa);
     const [carregando, setCarregando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
+
+    function confirmarExclusao() {
+        if (usuario?.papel !== 'DONO' || carregando || exclusaoPendente.current) return;
+        alertar('Excluir categoria?', `Tem certeza de que quer excluir “${categoria.nome}”? Não dá para desfazer essa ação`, [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Excluir', style: 'destructive', onPress: async () => {
+                if (exclusaoPendente.current) return;
+                exclusaoPendente.current = true; setCarregando(true); setMensagemErro('');
+                try { await apiService.excluirCategoria(categoria.id); navigation.popTo('Catalogo', { aba: 'categorias', retorno: Date.now() }); }
+                catch (error) { const conflito = ehErroApiStatus(error, 409); alertar('Não foi possível excluir', conflito ? mensagemConflitoExclusao('categoria') : mensagemErroExclusao(error), undefined, conflito ? 'aviso' : 'erro', undefined, conflito ? 'exclusaoBloqueada' : undefined); }
+                finally { exclusaoPendente.current = false; setCarregando(false); }
+            } },
+        ]);
+    }
 
     function confirmarSalvar() {
         if (!nome.trim()) {
@@ -116,6 +135,7 @@ export function EditarCategoriaScreen({ route, navigation }: Props) {
                 <View style={styles.botaoContainer}>
                     <PrimaryButton titulo="Salvar alterações" onPress={confirmarSalvar} carregando={carregando} />
                 </View>
+                {usuario?.papel === 'DONO' ? <PrimaryButton titulo="Excluir categoria" onPress={confirmarExclusao} disabled={carregando} style={!carregando ? styles.botaoExcluir : undefined} /> : null}
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -180,6 +200,7 @@ const styles = StyleSheet.create({
     textoBotaoStatusSelecionado: {
         color: colors.superficie,
     },
+    botaoExcluir: { backgroundColor: colors.erro },
     botaoContainer: {
         marginTop: 24,
     },

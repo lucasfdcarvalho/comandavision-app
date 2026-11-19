@@ -2,7 +2,7 @@ import { resultadosTrocaSenha } from "../../services/resultadosTrocaSenha";
 import { useResultadoTrocaSenha } from "../../hooks/useResultadoTrocaSenha";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
-import { Text, TextInput } from "../../components/ui/Texto";
+import { TextInput } from "../../components/ui/Texto";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { PerfilStackParamList } from "../../navigation/PerfilStack";
 import { useAuth } from "../../hooks/useAuth";
@@ -13,7 +13,7 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { authService } from "../../services/authService";
 import { ErroTrocaSenha, TAMANHO_MINIMO_SENHA, validarTrocaSenha } from "../../services/trocaSenhaService";
 import { colors } from "../../theme/colors";
-import { espacamento, tipografia } from "../../theme/tokens";
+import { espacamento } from "../../theme/tokens";
 
 type Props = NativeStackScreenProps<PerfilStackParamList, 'AlterarSenha'>;
 
@@ -91,7 +91,7 @@ export function AlterarSenhaScreen({ navigation }: Props) {
             limparCampos();
             mostrarSucesso(
                 'Senha alterada',
-                'Use a nova senha no próximo acesso. Se o aplicativo pedir para entrar de novo, use a nova senha',
+                'Use a nova senha no próximo acesso',
                 () => { if (montada.current && navigation.isFocused()) navigation.goBack(); }
             );
         } catch (error: unknown) {
@@ -106,7 +106,7 @@ export function AlterarSenhaScreen({ navigation }: Props) {
             if (error instanceof ErroTrocaSenha && error.resultadoDesconhecido) {
                 // Sem repetir sozinho: uma nova tentativa precisa ser decisão da pessoa.
                 limparCampos();
-                alertar('Alteração não confirmada', error.message, undefined, 'aviso');
+                alertar('Alteração não confirmada', error.message, undefined, 'aviso', undefined, 'exclusaoBloqueada');
                 return;
             }
 
@@ -124,10 +124,6 @@ export function AlterarSenhaScreen({ navigation }: Props) {
     return (
         <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-                <Text style={styles.descricao}>
-                    Você está alterando a senha de {usuario?.email ?? 'sua conta'}. Para sua segurança, confirme a senha atual
-                </Text>
-
                 <CampoTexto
                     rotulo="Senha atual"
                     icone="lock"
@@ -202,10 +198,6 @@ const styles = StyleSheet.create({
         padding: espacamento.xxl,
         gap: espacamento.lg,
         backgroundColor: colors.fundo,
-    },
-    descricao: {
-        ...tipografia.corpo,
-        color: colors.textoSecundario,
     },
     botaoContainer: {
         marginTop: espacamento.sm,

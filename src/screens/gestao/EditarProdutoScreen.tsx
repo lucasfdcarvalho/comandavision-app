@@ -1,5 +1,9 @@
+import { mensagemConflitoExclusao, mensagemErroExclusao } from "../../utils/mensagemExclusao";
+import { useAuth } from "../../hooks/useAuth";
+import { podeExcluirProduto } from "../../utils/exclusaoProduto";
+import { ehErroApiStatus } from "../../services/apiClient";
 import { useDialogo } from "../../contexts/DialogoContext";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { View, Pressable, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,6 +26,9 @@ type Props = NativeStackScreenProps<GestaoStackParamList, 'EditarProduto'>;
 export function EditarProdutoScreen({ route, navigation }: Props) {
     const { alertar, mostrarSucesso } = useDialogo();
     const { produto } = route.params;
+    const { usuario } = useAuth();
+    const exclusaoPendente = useRef(false);
+    const exclusaoDisponivel = podeExcluirProduto(usuario?.papel, produto.exclusaoPermitida);
 
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [carregandoCategorias, setCarregandoCategorias] = useState(true);
@@ -58,6 +65,24 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
             carregarCategorias();
         }, [carregarCategorias])
     );
+
+    function confirmarExclusao() {
+        if (!exclusaoDisponivel || carregando || exclusaoPendente.current) return;
+        alertar('Excluir produto?', `Tem certeza de que quer excluir “${produto.nome}”? Não dá para desfazer essa ação`, [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Excluir', style: 'destructive', onPress: async () => {
+                if (!exclusaoDisponivel || exclusaoPendente.current) return;
+                exclusaoPendente.current = true; setCarregando(true); setMensagemErro('');
+                try {
+                    await apiService.excluirProduto(produto.id);
+                    navigation.popTo('Catalogo', { aba: 'produtos', retorno: Date.now() });
+                } catch (error) {
+                    const conflito = ehErroApiStatus(error, 409);
+                    alertar('Não foi possível excluir', conflito ? mensagemConflitoExclusao('produto') : mensagemErroExclusao(error), undefined, conflito ? 'aviso' : 'erro', undefined, conflito ? 'exclusaoBloqueada' : undefined);
+                } finally { exclusaoPendente.current = false; setCarregando(false); }
+            } },
+        ]);
+    }
 
     function confirmarSalvar() {
         if (!nome.trim()) {
@@ -204,6 +229,7 @@ export function EditarProdutoScreen({ route, navigation }: Props) {
                 <View style={styles.botaoContainer}>
                     <PrimaryButton titulo="Salvar alterações" onPress={confirmarSalvar} carregando={carregando} />
                 </View>
+                {exclusaoDisponivel ? <PrimaryButton titulo="Excluir produto" onPress={confirmarExclusao} disabled={carregando} style={!carregando ? styles.botaoExcluir : undefined} /> : null}
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -268,6 +294,7 @@ const styles = StyleSheet.create({
     textoBotaoStatusSelecionado: {
         color: colors.superficie,
     },
+    botaoExcluir: { backgroundColor: colors.erro },
     botaoContainer: {
         marginTop: 24,
     },

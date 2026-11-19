@@ -22,7 +22,7 @@ import { colors } from "../theme/colors";
 export type GestaoStackParamList = {
     Dashboard: undefined;
     Relatorios: undefined;
-    Catalogo: undefined;
+    Catalogo: { aba?: 'produtos' | 'categorias'; retorno?: number } | undefined;
     NovoProduto: undefined;
     EditarProduto: { produto: Produto };
     NovaCategoria: undefined;

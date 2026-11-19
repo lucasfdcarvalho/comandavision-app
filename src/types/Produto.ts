@@ -7,6 +7,8 @@ export interface Produto {
     preco: number;
     categoria: Categoria;
     ativo: boolean;
+    // Ausente em APIs antigas: nunca presumir que um produto pode ser excluído.
+    exclusaoPermitida?: boolean;
     // URL pública do arquivo no Supabase Storage (bucket `produtos`).
     imagemUrl?: string | null;
 }

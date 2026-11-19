@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { Text, TextInput } from "../../components/ui/Texto";
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,41 +22,51 @@ type Aba = 'produtos' | 'categorias';
 type FiltroProduto = 'todos' | 'ativos' | 'inativos';
 type FiltroCategoria = 'todas' | 'ativas' | 'inativas';
 
-export function CatalogoScreen({ navigation }: Props) {
+export function CatalogoScreen({ navigation, route }: Props) {
 
-    const [aba, setAba] = useState<Aba>('produtos');
+    const [aba, setAba] = useState<Aba>(route.params?.aba ?? 'produtos');
+    useEffect(() => { if (route.params?.aba) { setAba(route.params.aba); setBusca(''); } }, [route.params?.aba, route.params?.retorno]);
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [busca, setBusca] = useState('');
-    const [filtroProduto, setFiltroProduto] = useState<FiltroProduto>('todos');
-    const [filtroCategoria, setFiltroCategoria] = useState<FiltroCategoria>('todas');
+    const [filtroProduto, setFiltroProduto] = useState<FiltroProduto>('ativos');
+    const [filtroCategoria, setFiltroCategoria] = useState<FiltroCategoria>('ativas');
+    const [pagina, setPagina] = useState(0);
+    const [ultimaPagina, setUltimaPagina] = useState(true);
+    const [totalProdutos, setTotalProdutos] = useState(0);
+    const [contagens, setContagens] = useState<Record<string, number>>({});
+    const requisicao = useRef(0);
     const [carregando, setCarregando] = useState(true);
     const [atualizando, setAtualizando] = useState(false);
     const [mensagemErro, setMensagemErro] = useState('');
 
     const carregarDados = useCallback(async () => {
+        const numero = ++requisicao.current;
         try {
             setMensagemErro('');
-            const [produtosDados, categoriasDados] = await Promise.all([
-                apiService.listarProdutos(),
-                apiService.listarCategorias(),
+            const [resultado, categoriasDados, totais] = await Promise.all([
+                apiService.listarProdutosPaginados(pagina, 10, busca, filtroProduto === 'todos' ? undefined : filtroProduto === 'ativos'),
+                apiService.listarCategorias(), apiService.contarProdutosPorCategoria(),
             ]);
-            setProdutos(produtosDados);
-            setCategorias(categoriasDados);
+            if (numero !== requisicao.current) return;
+            if (pagina > 0 && resultado.content.length === 0) { setPagina(pagina - 1); return; }
+            setProdutos(resultado.content); setUltimaPagina(resultado.last); setTotalProdutos(resultado.totalElements);
+            setCategorias(categoriasDados); setContagens(totais);
         } catch (error: unknown) {
-            const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar o cardápio';
-            setMensagemErro(mensagem);
+            if (numero === requisicao.current) setMensagemErro(error instanceof Error ? error.message : 'Não foi possível carregar o catálogo');
         }
-    }, []);
+    }, [pagina, busca, filtroProduto]);
 
     useFocusEffect(
         useCallback(() => {
             async function carregarInicial() {
-                setCarregando(true);
+                setAtualizando(true);
                 await carregarDados();
                 setCarregando(false);
+                setAtualizando(false);
             }
             carregarInicial();
+            return () => { requisicao.current += 1; };
         }, [carregarDados])
     );
 
@@ -66,26 +76,8 @@ export function CatalogoScreen({ navigation }: Props) {
         setAtualizando(false);
     }
 
-    // Contagem de produtos por categoria calculada a partir da lista já carregada,
-    // sem nenhuma chamada extra por categoria.
-    const quantidadePorCategoria = useMemo(() => {
-        const contagem = new Map<number, number>();
-        produtos.forEach((produto) => {
-            contagem.set(produto.categoria.id, (contagem.get(produto.categoria.id) ?? 0) + 1);
-        });
-        return contagem;
-    }, [produtos]);
-
-    const produtosFiltrados = useMemo(() => {
-        const termo = busca.trim().toLowerCase();
-        return produtos.filter((produto) => {
-            const combinaBusca = !termo || produto.nome.toLowerCase().includes(termo);
-            const combinaFiltro = filtroProduto === 'todos'
-                || (filtroProduto === 'ativos' && produto.ativo)
-                || (filtroProduto === 'inativos' && !produto.ativo);
-            return combinaBusca && combinaFiltro;
-        });
-    }, [produtos, busca, filtroProduto]);
+    const quantidadePorCategoria = useMemo(() => new Map(Object.entries(contagens).map(([id, total]) => [Number(id), total])), [contagens]);
+    const produtosFiltrados = produtos;
 
     const categoriasFiltradas = useMemo(() => {
         const termo = busca.trim().toLowerCase();
@@ -145,7 +137,7 @@ export function CatalogoScreen({ navigation }: Props) {
                     <TextInput
                         style={styles.busca}
                         value={busca}
-                        onChangeText={setBusca}
+                        onChangeText={(texto) => { setPagina(0); setBusca(texto); }}
                         placeholder={aba === 'produtos' ? 'Buscar produto...' : 'Buscar categoria...'}
                     />
                 </View>
@@ -164,7 +156,7 @@ export function CatalogoScreen({ navigation }: Props) {
                         <Pressable
                             key={opcao}
                             style={[styles.chip, filtroProduto === opcao && styles.chipSelecionado]}
-                            onPress={() => setFiltroProduto(opcao)}>
+                            onPress={() => { setPagina(0); setFiltroProduto(opcao); }}>
                             <Text style={[styles.textoChip, filtroProduto === opcao && styles.textoChipSelecionado]}>
                                 {opcao === 'todos' ? 'Todos' : opcao === 'ativos' ? 'Ativos' : 'Inativos'}
                             </Text>
@@ -197,6 +189,19 @@ export function CatalogoScreen({ navigation }: Props) {
                     <FlatList
                         style={styles.lista}
                         data={produtosFiltrados}
+                        ListFooterComponent={
+                            <View style={styles.paginacao}>
+                                <Text style={styles.resumoPagina}>{produtos.length} {produtos.length === 1 ? 'produto' : 'produtos'} · Página {pagina + 1} de {Math.max(1, Math.ceil(totalProdutos / 10))}</Text>
+                                <View style={styles.acoesPagina}>
+                                    <Pressable accessibilityRole="button" accessibilityLabel="Página anterior" disabled={pagina === 0 || carregando || atualizando} style={[styles.botaoPagina, (pagina === 0 || carregando || atualizando) && styles.botaoPaginaInativo]} onPress={() => setPagina(p => Math.max(0, p - 1))}>
+                                        <Feather name="chevron-left" size={16} color={colors.textoSecundario} /><Text style={styles.textoPagina}>Anterior</Text>
+                                    </Pressable>
+                                    <Pressable accessibilityRole="button" accessibilityLabel="Próxima página" disabled={ultimaPagina || carregando || atualizando} style={[styles.botaoPagina, (ultimaPagina || carregando || atualizando) && styles.botaoPaginaInativo]} onPress={() => setPagina(p => p + 1)}>
+                                        <Text style={styles.textoPagina}>Próxima</Text><Feather name="chevron-right" size={16} color={colors.textoSecundario} />
+                                    </Pressable>
+                                </View>
+                            </View>
+                        }
                         keyExtractor={(item) => String(item.id)}
                         contentContainerStyle={produtosFiltrados.length === 0 ? styles.listaVazia : styles.listaConteudo}
                         refreshControl={<RefreshControl refreshing={atualizando} onRefresh={atualizar} colors={[colors.laranja]} />}
@@ -265,6 +270,13 @@ export function CatalogoScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+    paginacao: { paddingVertical: 12, gap: 12 },
+    resumoPagina: { fontSize: 13, fontWeight: '500', color: colors.textoSecundario, textAlign: 'center' },
+    acoesPagina: { flexDirection: 'row', gap: 12 },
+    botaoPagina: { flex: 1, minHeight: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.superficie, borderWidth: 1, borderColor: colors.borda, borderRadius: raio.md },
+    botaoPaginaInativo: { opacity: 0.4 },
+    textoPagina: { fontSize: 14, fontWeight: '600', color: colors.textoPrimario },
+
     container: {
         flex: 1,
         backgroundColor: colors.fundo,

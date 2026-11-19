@@ -10,7 +10,7 @@ export function useResultadoTrocaSenha(usuarioId: string | undefined) {
         if (!usuarioId) return;
         const mostrarPendente = () => {
             const resultado = resultadosTrocaSenha.consumir(usuarioId);
-            if (resultado) alertar(resultado.titulo, resultado.mensagem, undefined, resultado.tipo);
+            if (resultado) alertar(resultado.titulo, resultado.mensagem, undefined, resultado.tipo, undefined, resultado.tipo === 'sucesso' ? undefined : 'exclusaoBloqueada');
         };
         mostrarPendente();
         return resultadosTrocaSenha.observar(mostrarPendente);

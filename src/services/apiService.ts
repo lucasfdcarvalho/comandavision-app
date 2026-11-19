@@ -296,7 +296,31 @@ async function cancelarPix(comandaId: number, pagamentoId: number): Promise<Cobr
     });
 }
 
+
+export interface PaginaProdutos { content: Produto[]; totalElements: number; totalPages: number; number: number; last: boolean; }
+function rotaCatalogoAusente(error: unknown) {
+    return ehErroApiStatus(error, 404) || (ehErroApiStatus(error, 400) && error.message === "O parâmetro 'id' está em um formato inválido");
+}
+async function listarProdutosPaginados(page = 0, size = 20, busca = '', ativo?: boolean): Promise<PaginaProdutos> {
+    const query = `page=${page}&size=${size}&busca=${encodeURIComponent(busca)}${ativo === undefined ? '' : `&ativo=${ativo}`}`;
+    try { return await apiClient.requisitar<PaginaProdutos>(`/api/produtos/paginados?${query}`); }
+    catch (error) { if (!rotaCatalogoAusente(error)) throw error; }
+    // Compatibilidade apenas com API anterior; falhas de autorização/rede não são ocultadas.
+    const todos = (await listarProdutos()).filter(p => (ativo === undefined || p.ativo === ativo) && p.nome.toLocaleLowerCase().includes(busca.trim().toLocaleLowerCase()));
+    return { content: todos.slice(page * size, (page + 1) * size), totalElements: todos.length, totalPages: Math.ceil(todos.length / size), number: page, last: (page + 1) * size >= todos.length };
+}
+async function contarProdutosPorCategoria(): Promise<Record<string, number>> {
+    try { return await apiClient.requisitar<Record<string, number>>('/api/categorias/contagens'); }
+    catch (error) { if (!rotaCatalogoAusente(error)) throw error; }
+    const totais: Record<string, number> = {};
+    for (const p of await listarProdutos()) totais[p.categoria.id] = (totais[p.categoria.id] ?? 0) + 1;
+    return totais;
+}
+async function excluirProduto(id: number): Promise<void> { await apiClient.requisitar<void>(`/api/produtos/${id}`, { method: 'DELETE' }); }
+async function excluirCategoria(id: number): Promise<void> { await apiClient.requisitar<void>(`/api/categorias/${id}`, { method: 'DELETE' }); }
+
 export const apiService = {
+    listarProdutosPaginados, contarProdutosPorCategoria, excluirProduto, excluirCategoria,
     buscarUsuarioAutenticado,
     listarComandas,
     listarComandasAReceber,

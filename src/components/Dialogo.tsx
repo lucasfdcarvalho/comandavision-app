@@ -18,6 +18,7 @@ const ICONES: Record<TipoDialogo, keyof typeof Feather.glyphMap> = {
 
 export function Dialogo({ dialogo, onFechar, onSelecionar }: Props) {
     const tituloRef = useRef<Text>(null);
+    const exclusaoBloqueada = dialogo.visual === 'exclusaoBloqueada';
     const ocupado = dialogo.botaoEmAndamento !== null;
     const destrutivo = dialogo.botoes.some((botao) => botao.style === 'destructive');
     const corIcone = destrutivo || dialogo.tipo === 'erro' ? colors.erro
@@ -39,7 +40,7 @@ export function Dialogo({ dialogo, onFechar, onSelecionar }: Props) {
             <SafeAreaProvider>
                 <SafeAreaView style={styles.fundo}>
                     <Pressable style={StyleSheet.absoluteFill} onPress={onFechar} disabled={ocupado} accessible={false} importantForAccessibility="no" />
-                    <View style={styles.cartao} accessibilityViewIsModal onAccessibilityEscape={onFechar}>
+                    <View style={[styles.cartao, exclusaoBloqueada && styles.cartaoBloqueado]} accessibilityViewIsModal onAccessibilityEscape={onFechar}>
                         <ScrollView style={styles.rolagem} bounces={false} contentContainerStyle={styles.conteudo}>
                             <View style={styles.cabecalho}>
                                 <View style={styles.icone} accessible={false}>
@@ -49,17 +50,17 @@ export function Dialogo({ dialogo, onFechar, onSelecionar }: Props) {
                                     <Feather name="x" size={22} color={colors.textoSecundario} />
                                 </Pressable>
                             </View>
-                            <Text ref={tituloRef} accessible accessibilityRole="header" style={styles.titulo}>{dialogo.titulo}</Text>
-                            <Text style={styles.mensagem}>{dialogo.mensagem}</Text>
+                            <Text ref={tituloRef} accessible accessibilityRole="header" style={[styles.titulo, exclusaoBloqueada && styles.textoBloqueado]}>{dialogo.titulo}</Text>
+                            <Text style={[styles.mensagem, exclusaoBloqueada && styles.mensagemBloqueada]}>{dialogo.mensagem}</Text>
                             {ocupado ? <Text accessibilityLiveRegion="polite" style={styles.andamento}>Aguarde, concluindo a ação…</Text> : null}
                             {dialogo.botoes.length > 0 ? <View style={styles.acoes}>
                                 {dialogo.botoes.map((botao, indice) => {
                                     const cancelar = botao.style === 'cancel';
                                     const excluir = botao.style === 'destructive';
                                     return (
-                                        <Pressable key={indice} onPress={() => onSelecionar(indice)} disabled={ocupado} accessibilityRole="button" accessibilityLabel={botao.text} accessibilityState={{ disabled: ocupado, busy: dialogo.botaoEmAndamento === indice }} style={({ pressed }) => [styles.botao, cancelar ? styles.cancelar : excluir ? styles.destrutivo : styles.primario, ocupado && styles.inativo, pressed && styles.pressionado]}>
+                                        <Pressable key={indice} onPress={() => onSelecionar(indice)} disabled={ocupado} accessibilityRole="button" accessibilityLabel={botao.text} accessibilityState={{ disabled: ocupado, busy: dialogo.botaoEmAndamento === indice }} style={({ pressed }) => [styles.botao, cancelar ? styles.cancelar : excluir ? styles.destrutivo : styles.primario, exclusaoBloqueada && styles.botaoBloqueado, ocupado && styles.inativo, pressed && styles.pressionado]}>
                                             {dialogo.botaoEmAndamento === indice ? <ActivityIndicator color={excluir ? colors.superficie : colors.textoPrimario} accessible={false} /> : null}
-                                            <Text style={[styles.textoBotao, excluir && styles.textoDestrutivo]}>{botao.text}</Text>
+                                            <Text style={[styles.textoBotao, (excluir || exclusaoBloqueada) && styles.textoDestrutivo]}>{botao.text}</Text>
                                         </Pressable>
                                     );
                                 })}
@@ -73,6 +74,10 @@ export function Dialogo({ dialogo, onFechar, onSelecionar }: Props) {
 }
 
 const styles = StyleSheet.create({
+    cartaoBloqueado: { backgroundColor: colors.superficie, borderTopColor: colors.erro },
+    textoBloqueado: { color: colors.textoPrimario, fontWeight: '700' },
+    mensagemBloqueada: { color: colors.textoPrimario, fontWeight: '400' },
+    botaoBloqueado: { backgroundColor: colors.erro },
     fundo: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20, backgroundColor: 'rgba(31, 31, 31, 0.5)' },
     cartao: { width: '100%', maxWidth: 420, maxHeight: '100%', backgroundColor: colors.superficie, borderRadius: 16, borderTopWidth: 4, borderTopColor: colors.laranja, overflow: 'hidden' },
     rolagem: { flexGrow: 0, flexShrink: 1 },

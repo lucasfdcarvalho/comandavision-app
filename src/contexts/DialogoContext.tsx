@@ -40,14 +40,14 @@ export function useDialogo() {
         };
     }, [controller, origem]);
 
-    const alertar = useCallback((titulo: string, mensagem: string, botoes?: BotaoDialogo[], tipo?: TipoDialogo, aoFechar?: () => void) => {
+    const alertar = useCallback((titulo: string, mensagem: string, botoes?: BotaoDialogo[], tipo?: TipoDialogo, aoFechar?: () => void, visual?: 'exclusaoBloqueada') => {
         if (!montado.current) return;
         Keyboard.dismiss();
         // Todo aviso de sucesso, erro ou alerta do app passa por aqui: a vibração vem junto.
         if (tipo === 'sucesso') feedbackTatil.sucesso();
         else if (tipo === 'erro') feedbackTatil.erro();
         else if (tipo === 'aviso') feedbackTatil.aviso();
-        controller.abrir(origem, titulo, mensagem, botoes, tipo, aoFechar);
+        controller.abrir(origem, titulo, mensagem, botoes, tipo, aoFechar, visual);
     }, [controller, origem]);
 
     const mostrarSucesso = useCallback((titulo: string, mensagem: string, aoFechar?: () => void) => {

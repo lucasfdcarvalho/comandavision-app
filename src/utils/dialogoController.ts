@@ -14,6 +14,7 @@ export type EstadoDialogo = {
     botoes: BotaoDialogo[];
     tipo: TipoDialogo;
     aoFechar?: () => void;
+    visual?: 'exclusaoBloqueada';
     botaoEmAndamento: number | null;
 };
 
@@ -34,13 +35,13 @@ export class DialogoController {
         this.ouvintes.forEach((ouvinte) => ouvinte());
     }
 
-    abrir(origem: string, titulo: string, mensagem: string, botoes?: BotaoDialogo[], tipo: TipoDialogo = 'info', aoFechar?: () => void) {
+    abrir(origem: string, titulo: string, mensagem: string, botoes?: BotaoDialogo[], tipo: TipoDialogo = 'info', aoFechar?: () => void, visual?: 'exclusaoBloqueada') {
         // Toques repetidos não acumulam a mesma confirmação.
         if (this.fila.some((item) => item.origem === origem && item.titulo === titulo && item.mensagem === mensagem)) return;
         this.fila.push({
             id: ++this.proximoId, origem, titulo, mensagem,
             botoes: botoes ?? (tipo === 'sucesso' ? [] : [{ text: 'Entendi' }]),
-            tipo, aoFechar, botaoEmAndamento: null,
+            tipo, aoFechar, visual, botaoEmAndamento: null,
         });
         this.atualizar();
     }
