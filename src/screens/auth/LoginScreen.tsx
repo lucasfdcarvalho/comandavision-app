@@ -151,9 +151,6 @@ export function LoginScreen() {
                 {/* Rodapé institucional */}
                 <View style={styles.rodape}>
                     <Feather name="shield" size={14} color={colors.textoTerciario} />
-                    <Text style={styles.textoRodape}>
-                        Exclusivo para equipe Supri Conveniência
-                    </Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
