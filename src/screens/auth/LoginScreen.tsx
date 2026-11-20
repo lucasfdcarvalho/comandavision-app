@@ -148,10 +148,6 @@ export function LoginScreen() {
                     </View>
                 </Cartao>
 
-                {/* Rodapé institucional */}
-                <View style={styles.rodape}>
-                    <Feather name="shield" size={14} color={colors.textoTerciario} />
-                </View>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -232,16 +228,5 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colors.superficie,
         letterSpacing: 0.2,
-    },
-    rodape: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: espacamento.xs + 2,
-        marginTop: espacamento.xxl,
-    },
-    textoRodape: {
-        ...tipografia.legenda,
-        color: colors.textoTerciario,
     },
 });
