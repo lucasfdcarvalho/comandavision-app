@@ -247,7 +247,7 @@ export function RelatoriosScreen() {
                                             <Text style={styles.comandaMeta}>#{comanda.id} {'\u2022'} {formatarDataHoraCompleta(comanda.encerradaEm)}</Text>
                                             <Text style={[styles.comandaCriterio, comanda.status === 'CANCELADA' && styles.textoCancelada]}>
                                                 {comanda.status === 'CANCELADA'
-                                                    ? 'Cancelada \u2014 fora do faturamento'
+                                                    ? 'Cancelada'
                                                     : comanda.computadaNosIndicadores
                                                         ? 'Computada nos indicadores'
                                                         : 'Fora dos indicadores'}

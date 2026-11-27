@@ -24,7 +24,10 @@ test('contrato envia motivo e tela preserva erro, confirmação e trava de dupli
     assert.match(tela, /setConfirmandoCancelamento\(false\)/);
     assert.match(tela, /Confirmar cancelamento/);
     assert.match(tela, /formatarDataHoraCompleta\(comanda.canceladaEm\)/);
-    assert.match(tela, /comanda.canceladaPorNome/);
+    assert.match(tela, /comanda\?\.canceladaPorNome\?\.trim\(\)/);
+    assert.match(tela, /comanda\?\.canceladaPor === usuario\.usuarioId/);
+    assert.doesNotMatch(tela, /comanda\.canceladaPorNome \|\| comanda\.canceladaPor/);
+    assert.doesNotMatch(tela, /Os itens e o hist.rico foram preservados/);
     assert.match(tela, /comanda.motivoCancelamento/);
 });
 

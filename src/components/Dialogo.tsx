@@ -60,7 +60,7 @@ export function Dialogo({ dialogo, onFechar, onSelecionar }: Props) {
                                     return (
                                         <Pressable key={indice} onPress={() => onSelecionar(indice)} disabled={ocupado} accessibilityRole="button" accessibilityLabel={botao.text} accessibilityState={{ disabled: ocupado, busy: dialogo.botaoEmAndamento === indice }} style={({ pressed }) => [styles.botao, cancelar ? styles.cancelar : excluir ? styles.destrutivo : styles.primario, exclusaoBloqueada && styles.botaoBloqueado, ocupado && styles.inativo, pressed && styles.pressionado]}>
                                             {dialogo.botaoEmAndamento === indice ? <ActivityIndicator color={excluir ? colors.superficie : colors.textoPrimario} accessible={false} /> : null}
-                                            <Text style={[styles.textoBotao, (excluir || exclusaoBloqueada) && styles.textoDestrutivo]}>{botao.text}</Text>
+                                            <Text style={[styles.textoBotao, (excluir || exclusaoBloqueada || botao.textoBranco) && styles.textoDestrutivo]}>{botao.text}</Text>
                                         </Pressable>
                                     );
                                 })}

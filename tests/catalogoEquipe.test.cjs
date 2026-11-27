@@ -90,7 +90,7 @@ test('refinamento usa dez produtos e botoes padronizados sem alerta apos excluir
 test('conflitos explicam limites sem atribuir uso certo ao legado e retornos preservam aba',()=>{
  const {mensagemConflitoExclusao,mensagemErroExclusao}=require('../src/utils/mensagemExclusao.ts');
  assert.equal(mensagemConflitoExclusao('produto'),'Não é possível excluir este produto. Você pode inativá-lo');
- assert.match(mensagemConflitoExclusao('categoria'),/inclusive inativos/);
+ assert.match(mensagemConflitoExclusao('categoria'),/^Esta categoria tem produtos vinculados e /); assert.doesNotMatch(mensagemConflitoExclusao('categoria'),/inclusive inativos/);
  assert.equal(mensagemErroExclusao(new Error('Falhou. ')),'Falhou');
  const cat=readFileSync(resolve(__dirname,'../src/screens/gestao/EditarCategoriaScreen.tsx'),'utf8');
  assert.ok(cat.includes("aba: 'categorias'")); assert.ok(!cat.includes('A categoria sem produtos foi removida'));

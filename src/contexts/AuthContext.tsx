@@ -69,6 +69,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }, [alertar]);
 
 
+    async function obterPerfilDaSessao(sessao: NonNullable<Awaited<ReturnType<typeof authService.obterSessao>>>) {
+        const perfil = await apiService.buscarUsuarioAutenticado();
+        const nome = sessao.user.id === perfil.usuarioId ? sessao.user.user_metadata?.nome : null;
+        return { ...perfil, nome: typeof nome === 'string' ? nome.trim() || null : null };
+    }
+
     useEffect(() => {
         async function carregarDados() {
             try {
@@ -79,7 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                     return;
                 }
 
-                setUsuario(await apiService.buscarUsuarioAutenticado())
+                setUsuario(await obterPerfilDaSessao(sessao));
 
 
             } catch {
@@ -99,7 +105,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             throw new Error('Não foi possível criar a sessão do usuário');
         }
 
-        setUsuario(await apiService.buscarUsuarioAutenticado());
+        setUsuario(await obterPerfilDaSessao(data.session));
     }
 
     async function sair() {

@@ -4,6 +4,7 @@ export type BotaoDialogo = {
     text: string;
     style?: 'default' | 'cancel' | 'destructive';
     onPress?: () => void | Promise<void>;
+    textoBranco?: boolean;
 };
 
 export type EstadoDialogo = {

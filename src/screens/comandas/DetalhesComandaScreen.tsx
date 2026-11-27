@@ -118,6 +118,9 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 
     const comandaAberta = comanda?.status === 'ABERTA';
     const comandaCancelada = comanda?.status === 'CANCELADA';
+    const nomeResponsavelCancelamento = comanda?.canceladaPorNome?.trim()
+        || (usuario?.usuarioId && comanda?.canceladaPor === usuario.usuarioId ? usuario.nome?.trim() : null)
+        || 'Nome indisponível';
     const comandaSemItens = comandaAberta && (comanda?.itens.length ?? 0) === 0;
     const saldo = comanda ? avaliarSaldoPagamento(comanda.total, resumoPagamentos) : { disponivel: false as const };
 
@@ -127,7 +130,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
             'Deseja fechar esta comanda? Os itens deixarão de ser editáveis e você poderá registrar o pagamento em seguida',
             [
                 { text: 'Cancelar', style: 'cancel' },
-                { text: 'Fechar comanda', onPress: fechar },
+                { text: 'Fechar comanda', onPress: fechar, textoBranco: true },
             ]
         );
     }
@@ -205,7 +208,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
     function orientarDevolucaoPix() {
         alertar(
             'Devolução de Pix integrado',
-            'A correção local não devolve dinheiro ao cliente. Realize e confira a devolução no Mercado Pago; o ComandaVision só atualizará o estado após a confirmação do provedor',
+            'Faça a devolução deste Pix diretamente pelo Mercado Pago',
             [{ text: 'Entendi' }]
         );
     }
@@ -454,11 +457,26 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
 
                         {comandaCancelada ? (
                             <View style={styles.secao}>
-                                <Text style={styles.secaoTitulo}>Cancelamento</Text>
-                                <Text style={styles.textoInfoPagamento}>Os itens e o histórico foram preservados. Esta ação não realiza devolução de valores.</Text>
-                                <Text style={styles.textoInfoPagamento}>Motivo: {comanda.motivoCancelamento || 'Não registrado (histórico anterior)'}</Text>
-                                <Text style={styles.textoInfoPagamento}>Responsável: {comanda.canceladaPorNome || comanda.canceladaPor || 'Não registrado (histórico anterior)'}</Text>
-                                <Text style={styles.textoInfoPagamento}>Data: {comanda.canceladaEm ? formatarDataHoraCompleta(comanda.canceladaEm) : 'Não registrada (histórico anterior)'}</Text>
+                                <View style={styles.cancelamentoCabecalho}>
+                                    <View style={styles.cancelamentoIcone} accessible={false}>
+                                        <Feather name="x-circle" color={colors.erroTexto} size={19} />
+                                    </View>
+                                    <Text accessibilityRole="header" style={styles.secaoTitulo}>Cancelamento</Text>
+                                </View>
+                                <View style={styles.cancelamentoMotivo}>
+                                    <Text style={styles.cancelamentoRotulo}>Motivo</Text>
+                                    <Text style={styles.cancelamentoValor}>{comanda.motivoCancelamento?.trim() || 'Não informado'}</Text>
+                                </View>
+                                <View style={styles.cancelamentoMetadados}>
+                                    <View style={styles.cancelamentoCampo}>
+                                        <Text style={styles.cancelamentoRotulo}>Responsável</Text>
+                                        <Text style={styles.cancelamentoValor}>{nomeResponsavelCancelamento}</Text>
+                                    </View>
+                                    <View style={styles.cancelamentoCampo}>
+                                        <Text style={styles.cancelamentoRotulo}>Data e hora</Text>
+                                        <Text style={styles.cancelamentoValor}>{comanda.canceladaEm ? formatarDataHoraCompleta(comanda.canceladaEm) : 'Não informadas'}</Text>
+                                    </View>
+                                </View>
                             </View>
                         ) : null}
 
@@ -506,7 +524,7 @@ export function DetalhesComandaScreen({ route, navigation }: Props) {
                         <Text style={styles.modalAviso}>
                             {confirmandoCancelamento
                                 ? 'Esta ação não pode ser desfeita. A comanda e seus itens permanecerão no histórico, com o motivo, responsável e data. Deseja confirmar?'
-                                : 'Informe por que esta comanda precisa ser cancelada. Comandas com pagamento ou cobrança Pix vinculados não podem ser canceladas por este fluxo. Nenhuma devolução será realizada.'}
+                                : 'Informe o motivo do cancelamento'}
                         </Text>
                         {confirmandoCancelamento ? (
                             <Text style={styles.modalAviso}>Motivo: {motivoCancelamento.trim()}</Text>
@@ -762,6 +780,13 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colors.textoPrimario,
     },
+    cancelamentoCabecalho: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    cancelamentoIcone: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.erroFundo },
+    cancelamentoMotivo: { backgroundColor: colors.fundo, borderRadius: raio.md, padding: 12, gap: 4 },
+    cancelamentoMetadados: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 10, paddingTop: 4 },
+    cancelamentoCampo: { flexGrow: 1, flexBasis: 120, minWidth: 0, gap: 4 },
+    cancelamentoRotulo: { fontSize: 13, fontWeight: '600', color: colors.textoSecundario },
+    cancelamentoValor: { fontSize: 14, color: colors.textoPrimario, lineHeight: 20 },
     textoInfoPagamento: {
         fontSize: 14,
         color: colors.textoSecundario,
